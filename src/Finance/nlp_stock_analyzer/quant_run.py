@@ -100,7 +100,11 @@ def main(argv=None) -> int:
     if args.download:
         stock, source = download_prices(args.stooq_symbol, args.ticker)
         market, _ = download_prices(args.market_symbol, "^GSPC")
-        rf = load_fred(fetch(FRED.format(series="DTB3")))
+        try:
+            rf = load_fred(fetch(FRED.format(series="DTB3")))
+        except Exception as exc:  # 13-week T-bill yield from Yahoo, quoted in percent
+            print(f"  FRED unavailable ({exc.__class__.__name__}); using Yahoo ^IRX for the T-bill rate")
+            rf = fetch_yahoo("^IRX") / 100.0
     else:
         if not args.stock:
             sys.exit("Pass --download or --stock CSV (plus --market and --rf)")
