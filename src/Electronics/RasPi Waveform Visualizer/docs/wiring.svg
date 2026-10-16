@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1130" width="1500" height="1130" font-family="Helvetica, Arial, sans-serif">
+  <style>
+    .box { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 10; }
+    .chip { fill: #eef2ff; stroke: #3730a3; stroke-width: 2; }
+    .pwr { fill: #fff7ed; stroke: #c2410c; stroke-width: 2; }
+    .periph { fill: #f0fdf4; stroke: #15803d; stroke-width: 2; }
+    .title { font-size: 16px; font-weight: 700; fill: #0f172a; }
+    .t { font-size: 13px; fill: #1e293b; }
+    .s { font-size: 11.5px; fill: #475569; }
+    .code { font-size: 12px; fill: #6d28d9; font-family: Menlo, Consolas, monospace; }
+    .sig { font-size: 12px; font-weight: 700; }
+    .w { stroke-width: 2.5; fill: none; }
+    .r { stroke: #dc2626; } .g { stroke: #059669; } .b { stroke: #2563eb; }
+    .ck { stroke: #7c3aed; } .ad { stroke: #b45309; } .oe { stroke: #db2777; }
+    .p5 { stroke: #ea580c; stroke-width: 3; fill: none; }
+    .bus { stroke: #15803d; stroke-width: 2.5; fill: none; }
+  </style>
+  <rect width="1500" height="1130" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="690" y="62" class="title" font-size="22" text-anchor="middle">RasPi Waveform Visualizer — wiring plan</text>
+  <text x="690" y="88" class="s" font-size="13" text-anchor="middle">Raspberry Pi 5 → 2 × 74HCT245 (3.3 V → 5 V) → Waveshare 96×48 P2.5 HUB75 panel · BCM GPIO numbers · physical header pins</text>
+
+  <!-- Power supplies -->
+  <rect x="30" y="35" width="300" height="85" class="pwr" rx="10"/>
+  <text x="180" y="62" class="title" text-anchor="middle">PSU 1 · Pi 5</text>
+  <text x="180" y="84" class="t" text-anchor="middle">Official 27 W USB-C, 5.1 V / 5 A</text>
+  <text x="180" y="104" class="s" text-anchor="middle">powers Pi, USB audio, sensors (3.3 V)</text>
+  <path d="M180 120 V150" class="p5"/>
+  <text x="190" y="140" class="s">USB-C</text>
+
+  <rect x="1050" y="35" width="410" height="85" class="pwr" rx="10"/>
+  <text x="1255" y="62" class="title" text-anchor="middle">PSU 2 · Panel</text>
+  <text x="1255" y="84" class="t" text-anchor="middle">5 V, ≥ 5 A switching supply (panel max 4 A, ≤ 20 W)</text>
+  <text x="1255" y="104" class="s" text-anchor="middle">powers panel + U1/U2 · its GND tied to Pi GND</text>
+  <path d="M1345 120 V175" class="p5"/>
+  <text x="1355" y="152" class="s">5 V → VH4 socket</text>
+  <path d="M1050 112 H650 V175" class="p5"/>
+  <text x="662" y="132" class="s">5 V → U1 &amp; U2 VCC (pin 20) and DIR (pin 1)</text>
+
+  <!-- Raspberry Pi 5 -->
+  <rect x="30" y="150" width="300" height="555" class="box"/>
+  <text x="180" y="175" class="title" text-anchor="middle">Raspberry Pi 5</text>
+  <text x="180" y="195" class="s" text-anchor="middle">40-pin header (GPIO · pin)</text>
+  <g class="t" text-anchor="end">
+    <text x="320" y="224">GPIO4 · pin 7</text>
+    <text x="320" y="254">GPIO5 · pin 29</text>
+    <text x="320" y="284">GPIO6 · pin 31</text>
+    <text x="320" y="314">GPIO7 · pin 26</text>
+    <text x="320" y="344">GPIO8 · pin 24</text>
+    <text x="320" y="374">GPIO9 · pin 21</text>
+    <text x="320" y="404">GPIO15 · pin 10</text>
+    <text x="320" y="434">GPIO16 · pin 36</text>
+    <text x="320" y="519">GPIO10 · pin 19</text>
+    <text x="320" y="549">GPIO11 · pin 23</text>
+    <text x="320" y="579">GPIO12 · pin 32</text>
+    <text x="320" y="609">GPIO13 · pin 33</text>
+    <text x="320" y="639">GPIO14 · pin 8</text>
+    <text x="320" y="669">GPIO17 · pin 11</text>
+  </g>
+  <text x="45" y="470" class="s">GND pins 6, 9, 14, 20, 25, 30, 34, 39</text>
+  <text x="45" y="488" class="s">→ common ground with PSU 2</text>
+  <text x="45" y="693" class="code">driver/hub75_pio.c (RP1 PIO)</text>
+
+  <!-- Wires Pi -> buffers (U1) -->
+  <path d="M330 220 H520" class="w r"/><text x="425" y="214" class="sig" fill="#dc2626" text-anchor="middle">R1</text>
+  <path d="M330 250 H520" class="w g"/><text x="425" y="244" class="sig" fill="#059669" text-anchor="middle">G1</text>
+  <path d="M330 280 H520" class="w b"/><text x="425" y="274" class="sig" fill="#2563eb" text-anchor="middle">B1</text>
+  <path d="M330 310 H520" class="w r"/><text x="425" y="304" class="sig" fill="#dc2626" text-anchor="middle">R2</text>
+  <path d="M330 340 H520" class="w g"/><text x="425" y="334" class="sig" fill="#059669" text-anchor="middle">G2</text>
+  <path d="M330 370 H520" class="w b"/><text x="425" y="364" class="sig" fill="#2563eb" text-anchor="middle">B2</text>
+  <path d="M330 400 H520" class="w ck"/><text x="425" y="394" class="sig" fill="#7c3aed" text-anchor="middle">CLK</text>
+  <path d="M330 430 H520" class="w ck"/><text x="425" y="424" class="sig" fill="#7c3aed" text-anchor="middle">LAT</text>
+  <!-- Pi -> U2 -->
+  <path d="M330 515 H520" class="w ad"/><text x="425" y="509" class="sig" fill="#b45309" text-anchor="middle">A</text>
+  <path d="M330 545 H520" class="w ad"/><text x="425" y="539" class="sig" fill="#b45309" text-anchor="middle">B</text>
+  <path d="M330 575 H520" class="w ad"/><text x="425" y="569" class="sig" fill="#b45309" text-anchor="middle">C</text>
+  <path d="M330 605 H520" class="w ad"/><text x="425" y="599" class="sig" fill="#b45309" text-anchor="middle">D</text>
+  <path d="M330 635 H520" class="w ad"/><text x="425" y="629" class="sig" fill="#b45309" text-anchor="middle">E</text>
+  <path d="M330 665 H520" class="w oe"/><text x="425" y="659" class="sig" fill="#db2777" text-anchor="middle">OE̅</text>
+  <text x="425" y="685" class="s" text-anchor="middle">+ 10 kΩ pull-up to 3.3 V</text>
+
+  <!-- U1 -->
+  <rect x="520" y="175" width="260" height="280" class="chip" rx="10"/>
+  <text x="650" y="196" class="title" text-anchor="middle">U1 · 74HCT245</text>
+  <g class="t">
+    <text x="530" y="224">A1 (2)</text><text x="530" y="254">A2 (3)</text><text x="530" y="284">A3 (4)</text>
+    <text x="530" y="314">A4 (5)</text><text x="530" y="344">A5 (6)</text><text x="530" y="374">A6 (7)</text>
+    <text x="530" y="404">A7 (8)</text><text x="530" y="434">A8 (9)</text>
+  </g>
+  <g class="t" text-anchor="end">
+    <text x="770" y="224">B1 (18)</text><text x="770" y="254">B2 (17)</text><text x="770" y="284">B3 (16)</text>
+    <text x="770" y="314">B4 (15)</text><text x="770" y="344">B5 (14)</text><text x="770" y="374">B6 (13)</text>
+    <text x="770" y="404">B7 (12)</text><text x="770" y="434">B8 (11)</text>
+  </g>
+
+  <!-- U2 -->
+  <rect x="520" y="470" width="260" height="225" class="chip" rx="10"/>
+  <text x="650" y="491" class="title" text-anchor="middle">U2 · 74HCT245</text>
+  <g class="t">
+    <text x="530" y="519">A1 (2)</text><text x="530" y="549">A2 (3)</text><text x="530" y="579">A3 (4)</text>
+    <text x="530" y="609">A4 (5)</text><text x="530" y="639">A5 (6)</text><text x="530" y="669">A6 (7)</text>
+  </g>
+  <g class="t" text-anchor="end">
+    <text x="770" y="519">B1 (18)</text><text x="770" y="549">B2 (17)</text><text x="770" y="579">B3 (16)</text>
+    <text x="770" y="609">B4 (15)</text><text x="770" y="639">B5 (14)</text><text x="770" y="669">B6 (13)</text>
+  </g>
+  <text x="650" y="688" class="s" text-anchor="middle">A7, A8 (pins 8, 9) → GND</text>
+
+  <!-- Buffer power note -->
+  <rect x="470" y="712" width="360" height="40" class="pwr" rx="8"/>
+  <text x="650" y="729" class="s" text-anchor="middle">Both chips: pin 20 VCC → 5 V · pin 10 GND · pin 1 DIR → 5 V</text>
+  <text x="650" y="745" class="s" text-anchor="middle">pin 19 OE̅ → GND · 100 nF from pin 20 to GND · no code</text>
+
+  <!-- Wires buffers -> HUB75 -->
+  <path d="M780 220 H1000" class="w r"/><text x="890" y="214" class="sig" fill="#dc2626" text-anchor="middle">R1 5 V</text>
+  <path d="M780 250 H1000" class="w g"/><text x="890" y="244" class="sig" fill="#059669" text-anchor="middle">G1 5 V</text>
+  <path d="M780 280 H1000" class="w b"/><text x="890" y="274" class="sig" fill="#2563eb" text-anchor="middle">B1 5 V</text>
+  <path d="M780 310 H1000" class="w r"/><text x="890" y="304" class="sig" fill="#dc2626" text-anchor="middle">R2 5 V</text>
+  <path d="M780 340 H1000" class="w g"/><text x="890" y="334" class="sig" fill="#059669" text-anchor="middle">G2 5 V</text>
+  <path d="M780 370 H1000" class="w b"/><text x="890" y="364" class="sig" fill="#2563eb" text-anchor="middle">B2 5 V</text>
+  <path d="M780 400 H1000" class="w ck"/><text x="890" y="394" class="sig" fill="#7c3aed" text-anchor="middle">CLK 5 V</text>
+  <path d="M780 430 H1000" class="w ck"/><text x="890" y="424" class="sig" fill="#7c3aed" text-anchor="middle">LAT 5 V</text>
+  <path d="M780 515 H1000" class="w ad"/><text x="890" y="509" class="sig" fill="#b45309" text-anchor="middle">A 5 V</text>
+  <path d="M780 545 H1000" class="w ad"/><text x="890" y="539" class="sig" fill="#b45309" text-anchor="middle">B 5 V</text>
+  <path d="M780 575 H1000" class="w ad"/><text x="890" y="569" class="sig" fill="#b45309" text-anchor="middle">C 5 V</text>
+  <path d="M780 605 H1000" class="w ad"/><text x="890" y="599" class="sig" fill="#b45309" text-anchor="middle">D 5 V</text>
+  <path d="M780 635 H1000" class="w ad"/><text x="890" y="629" class="sig" fill="#b45309" text-anchor="middle">E 5 V</text>
+  <path d="M780 665 H1000" class="w oe"/><text x="890" y="659" class="sig" fill="#db2777" text-anchor="middle">OE̅ 5 V</text>
+
+  <!-- HUB75 connector -->
+  <rect x="1000" y="175" width="180" height="545" class="box"/>
+  <text x="1090" y="196" class="title" text-anchor="middle">HUB75 IN</text>
+  <g class="t" text-anchor="end">
+    <text x="1170" y="224">pin 1 · R1</text><text x="1170" y="254">pin 2 · G1</text><text x="1170" y="284">pin 3 · B1</text>
+    <text x="1170" y="314">pin 5 · R2</text><text x="1170" y="344">pin 6 · G2</text><text x="1170" y="374">pin 7 · B2</text>
+    <text x="1170" y="404">pin 13 · CLK</text><text x="1170" y="434">pin 14 · LAT</text>
+    <text x="1170" y="519">pin 9 · A</text><text x="1170" y="549">pin 10 · B</text><text x="1170" y="579">pin 11 · C</text>
+    <text x="1170" y="609">pin 12 · D</text><text x="1170" y="639">pin 8 · E</text><text x="1170" y="669">pin 15 · OE̅</text>
+  </g>
+  <text x="1090" y="470" class="s" text-anchor="middle">pins 4, 16 → GND</text>
+  <text x="1090" y="705" class="s" text-anchor="middle">16-way IDC ribbon</text>
+
+  <!-- Ribbon to panel -->
+  <path d="M1180 445 H1230" stroke="#64748b" stroke-width="14" fill="none"/>
+
+  <!-- Panel -->
+  <rect x="1230" y="175" width="230" height="545" class="box"/>
+  <text x="1345" y="215" class="title" text-anchor="middle">LED panel</text>
+  <text x="1345" y="240" class="t" text-anchor="middle">Waveshare</text>
+  <text x="1345" y="258" class="t" text-anchor="middle">RGB-Matrix-P2.5-96x48-F</text>
+  <text x="1345" y="290" class="s" text-anchor="middle">96 × 48 px · 1/24 scan</text>
+  <text x="1345" y="308" class="s" text-anchor="middle">rows r and r+24 lit together</text>
+  <text x="1345" y="340" class="s" text-anchor="middle">Power: 5 V via VH4 only</text>
+  <text x="1345" y="358" class="s" text-anchor="middle">check polarity before plugging in</text>
+  <text x="1345" y="390" class="s" text-anchor="middle">Supports V1 panel (silkscreen 24S-A2.1)</text>
+  <text x="1345" y="408" class="s" text-anchor="middle">V2 (24S-A1, SM5368) not yet</text>
+  <text x="1345" y="560" class="code" text-anchor="middle">visualizer/hub75.py</text>
+  <text x="1345" y="578" class="code" text-anchor="middle">→ driver/libhub75.so</text>
+  <text x="1345" y="610" class="s" text-anchor="middle">test: scripts/panel_test.py</text>
+
+  <!-- Peripheral bus -->
+  <path d="M180 705 V775 H1170" class="bus"/>
+  <path d="M180 775 V800 M510 775 V800 M840 775 V800 M1170 775 V800" class="bus"/>
+  <text x="200" y="768" class="s">header GPIO / 3.3 V / GND / USB</text>
+
+  <!-- Encoder -->
+  <rect x="30" y="800" width="300" height="175" class="periph" rx="10"/>
+  <text x="180" y="823" class="title" text-anchor="middle">Rotary encoder · KY-040</text>
+  <text x="45" y="847" class="t">CLK → GPIO22 · pin 15</text>
+  <text x="45" y="867" class="t">DT → GPIO23 · pin 16</text>
+  <text x="45" y="887" class="t">SW → GPIO24 · pin 18</text>
+  <text x="45" y="907" class="t">+ → 3.3 V · pin 17 (not 5 V)</text>
+  <text x="45" y="927" class="t">GND → pin 20</text>
+  <text x="45" y="957" class="code">visualizer/controls.py</text>
+
+  <!-- Buttons -->
+  <rect x="360" y="800" width="300" height="175" class="periph" rx="10"/>
+  <text x="510" y="823" class="title" text-anchor="middle">3 × push buttons</text>
+  <text x="375" y="847" class="t">Mood → GPIO25 · pin 22</text>
+  <text x="375" y="867" class="t">Brightness → GPIO26 · pin 37</text>
+  <text x="375" y="887" class="t">Mode → GPIO27 · pin 13</text>
+  <text x="375" y="907" class="t">other leg → GND · pin 39</text>
+  <text x="375" y="927" class="s">no supply; internal pull-ups</text>
+  <text x="375" y="957" class="code">visualizer/controls.py</text>
+
+  <!-- BH1750 -->
+  <rect x="690" y="800" width="300" height="175" class="periph" rx="10"/>
+  <text x="840" y="823" class="title" text-anchor="middle">Light sensor · BH1750</text>
+  <text x="705" y="847" class="t">VCC → 3.3 V · pin 1</text>
+  <text x="705" y="867" class="t">GND → pin 9</text>
+  <text x="705" y="887" class="t">SDA → GPIO2 · pin 3</text>
+  <text x="705" y="907" class="t">SCL → GPIO3 · pin 5</text>
+  <text x="705" y="927" class="t">ADDR → GND (I2C 0x23)</text>
+  <text x="705" y="957" class="code">visualizer/light_sensor.py</text>
+
+  <!-- USB audio -->
+  <rect x="1020" y="800" width="300" height="175" class="periph" rx="10"/>
+  <text x="1170" y="823" class="title" text-anchor="middle">USB audio interface</text>
+  <text x="1035" y="847" class="t">Any blue USB 3 port</text>
+  <text x="1035" y="867" class="t">bus-powered from Pi</text>
+  <text x="1035" y="887" class="t">line-in or mic preamp</text>
+  <text x="1035" y="907" class="s">no GPIO; GPIO18–21 left free</text>
+  <text x="1035" y="927" class="s">for an optional I2S mic</text>
+  <text x="1035" y="957" class="code">audio_capture.py (next step)</text>
+
+  <!-- Legend -->
+  <g transform="translate(30,1000)">
+    <rect width="1430" height="110" fill="#f8fafc" stroke="#cbd5e1" rx="10"/>
+    <text x="16" y="26" class="title">Legend</text>
+    <path d="M16 50 H56" class="w r"/><text x="64" y="54" class="t">red data</text>
+    <path d="M150 50 H190" class="w g"/><text x="198" y="54" class="t">green data</text>
+    <path d="M300 50 H340" class="w b"/><text x="348" y="54" class="t">blue data</text>
+    <path d="M440 50 H480" class="w ck"/><text x="488" y="54" class="t">clock / latch</text>
+    <path d="M600 50 H640" class="w ad"/><text x="648" y="54" class="t">row address</text>
+    <path d="M760 50 H800" class="w oe"/><text x="808" y="54" class="t">output enable (active low)</text>
+    <path d="M1010 50 H1050" class="p5"/><text x="1058" y="54" class="t">5 V power</text>
+    <path d="M1160 50 H1200" class="bus"/><text x="1208" y="54" class="t">3.3 V peripherals</text>
+    <text x="16" y="84" class="t">All grounds are common (Pi GND, PSU 2 GND, U1/U2 GND and HUB75 pins 4/16). Never connect PSU 2 to the Pi's 5 V pins.</text>
+    <text x="16" y="102" class="t">Disable SPI and the serial console: GPIO7–11 and GPIO14/15 drive the panel. Purple monospace text = code that controls that part.</text>
+  </g>
+</svg>
