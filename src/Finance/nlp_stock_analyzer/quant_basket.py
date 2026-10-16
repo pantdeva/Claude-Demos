@@ -55,7 +55,10 @@ def main(folder: str) -> int:
         for t, d in runs.items():
             hz = d["backtest"]["horizons"][h]
             bh = next(s for s in hz["strategies"] if s["model"] == f"Buy & hold {t}")
+            # Black-Scholes-Merton is risk-neutral (never expects to beat cash), so it is judged on
+            # forecast accuracy only; near-cash strategies are also skipped (Sharpe on tiny returns)
             strats = [s for s in hz["strategies"] if s["rule"] != "benchmark"
+                      and not s["model"].startswith("Black-Scholes")
                       and s.get("avg_exposure", 0) > 0.05 and s.get("sharpe") is not None]
             ranked = sorted(strats, key=lambda s: -s["sharpe"])
             for rank, s in enumerate(ranked, 1):
