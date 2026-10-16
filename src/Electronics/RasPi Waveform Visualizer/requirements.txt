@@ -3,3 +3,4 @@ pillow>=10.0
 gpiozero>=2.0
 lgpio>=0.2
 smbus2>=0.4
+sounddevice>=0.4

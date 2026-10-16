@@ -202,7 +202,7 @@
   <text x="1035" y="887" class="t">line-in or mic preamp</text>
   <text x="1035" y="907" class="s">no GPIO; GPIO18–21 left free</text>
   <text x="1035" y="927" class="s">for an optional I2S mic</text>
-  <text x="1035" y="957" class="code">audio_capture.py (next step)</text>
+  <text x="1035" y="957" class="code">visualizer/audio_capture.py</text>
 
   <!-- Legend -->
   <g transform="translate(30,1000)">

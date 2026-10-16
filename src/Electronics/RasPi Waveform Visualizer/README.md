@@ -176,7 +176,7 @@ Rules:
 | All pin numbers | [`visualizer/pins.py`](visualizer/pins.py) | Single source of truth for Python; must match `hub75_pio.c` |
 | Whole chain | [`scripts/panel_test.py`](scripts/panel_test.py) | Test patterns plus live controls/sensor readout |
 | Setup | [`scripts/install.sh`](scripts/install.sh) | Packages, interfaces, piolib, udev rule, driver build, venv |
-| USB audio | `visualizer/audio_capture.py` | Next stage |
+| USB audio interface | [`visualizer/audio_capture.py`](visualizer/audio_capture.py) | Captures 48 kHz mono, computes 24 log-spaced spectrum bands, loudness and beat onsets. `python -m visualizer.audio_capture` shows a live level meter |
 
 ### Control behaviour
 
@@ -313,7 +313,7 @@ At the defaults (6 planes, clkdiv 8, base_on 40) one frame is 7,200 words (28.8 
 
 ## Limitations
 
-- **Untested on hardware.** The PIO program was hand-assembled and decoded back for verification, and the C compiles against the piolib API. Timing on a real panel still needs to be confirmed.
+- **Untested on hardware.** The PIO program was hand-assembled and decoded back for verification, and the driver compiles and links cleanly against `raspberrypi/utils` piolib. Timing on a real panel still needs to be confirmed.
 - **Panel revision V1 only.** Waveshare ships two revisions. V1 (silkscreen `24S-A2.1`) uses plain A–E addressing, which this driver implements. V2 (`24S-A1`) uses an SM5368 shift-register row driver that needs a different row-select sequence. Check your panel's silkscreen before wiring; V2 support would be a change to the PIO program.
 - **Panel is dark while each row shifts in.** This keeps the PIO program simple and makes ghosting less likely, at the cost of some maximum brightness.
 - **piolib API.** Written against `raspberrypi/utils` piolib. If its API changes, `hub75_pio.c` may need small adjustments.
@@ -322,7 +322,7 @@ At the defaults (6 planes, clkdiv 8, base_on 40) one frame is 7,200 words (28.8 
 ## Roadmap
 
 1. ✅ Display hardware, own driver, controls, light sensor (this stage)
-2. Audio capture from the USB interface; FFT bands, beats, tempo (`audio_capture.py`, `features.py`)
+2. ✅ Audio capture from the USB interface: spectrum bands, loudness, onsets (`audio_capture.py`). Tempo tracking next
 3. Renderer scenes (spectrum, waves, particles, lyric ticker) and mood palettes (`renderer.py`, `fusion.py`)
 4. Lyric understanding: song ID (Chromaprint/AcoustID) → synced lyrics (LRCLIB) → on-device emotion model, with Whisper as a fallback
 5. systemd service so it starts on boot

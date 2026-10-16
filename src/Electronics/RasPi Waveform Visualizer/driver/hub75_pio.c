@@ -215,7 +215,10 @@ hub75_t *hub75_open(int width, int height, int planes, float clkdiv,
         fprintf(stderr, "hub75: PIO instruction memory at offset 0 is busy\n");
         goto fail_pio;
     }
-    uint offset = pio_add_program_at_offset(h->pio, &hub75_program, 0);
+    /* piolib's pio_add_program_at_offset() returns void; on success the
+     * program sits exactly at the offset we asked for. */
+    pio_add_program_at_offset(h->pio, &hub75_program, 0);
+    const uint offset = 0;
 
     const int first = PIN_DATA_BASE;
     const int count = PIN_DATA_COUNT + PIN_SIDE_COUNT;
