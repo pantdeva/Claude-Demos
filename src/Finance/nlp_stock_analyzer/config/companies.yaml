@@ -48,6 +48,20 @@ companies:
       customers: [AI, data center, data centers, capex, GPU, GPUs, Nvidia, NVIDIA, chips,
                   compute, spending]
 
+  MU:
+    name: Micron Technology
+    market: US
+    language: en
+    aliases: [Micron, Micron Technology]
+    competitors: [Samsung Electronics, Samsung, SK Hynix, SK hynix, SanDisk, Sandisk, Kioxia]
+    manufacturing: [DRAM prices, NAND prices, memory prices, memory supply, memory shortage,
+                    HBM, wafer fab equipment, ASML, Applied Materials, Lam Research]
+    customers: [NVIDIA, Nvidia, AMD, Apple, Dell, HP, smartphone demand, PC demand,
+                data center demand]
+    context:
+      competitors: [memory, DRAM, NAND, HBM, chip, chips, semiconductor, earnings, shares, stock]
+      customers: [memory, DRAM, NAND, HBM, Micron, chips, demand, shipments, orders]
+
   TATASTEEL.NS:
     name: Tata Steel
     market: India
