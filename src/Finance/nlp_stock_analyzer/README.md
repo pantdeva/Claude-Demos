@@ -20,7 +20,7 @@ Scores recent news about a stock with **FinBERT** (a finance-tuned BERT model) a
 ## Setup
 
 ```bash
-cd src/ML/nlp_stock_analyzer
+cd src/Finance/nlp_stock_analyzer
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
