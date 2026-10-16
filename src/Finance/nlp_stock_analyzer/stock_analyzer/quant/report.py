@@ -109,7 +109,7 @@ details summary{cursor:pointer;font-weight:600}
       <div class="scroll"><svg id="eq" viewBox="0 0 900 340" role="img" aria-label="Equity curves" style="width:100%;min-width:560px;height:auto"></svg></div>
     </div>
   </div>
-  <div class="panel"><h3>Strategy results</h3><p class="small muted" style="margin:4px 0 10px">Each model sets an allocation between the stock and cash every month, held for the horizon. <b>Sized</b> scales the position by expected excess return over variance; <b>signal</b> is all-in when the model gives better than even odds of beating cash. MPT also uses the S&amp;P 500.</p><div class="scroll"><table id="strat"></table></div></div>
+  <div class="panel"><h3>Strategy results</h3><p class="small muted" style="margin:4px 0 10px">Each model sets an allocation between the stock and cash every month, held for the horizon. <b>Sized</b> scales the position by expected excess return over variance; <b>signal</b> is all-in when the model gives better than even odds of beating cash. MPT also uses the market index.</p><div class="scroll"><table id="strat"></table></div></div>
   <div class="panel"><h3>Forecast accuracy</h3><p class="small muted" style="margin:4px 0 10px">Hit rate: called "beats cash" correctly. 90% coverage should be near 90%. CRPS scores the whole forecast distribution; lower is better.</p><div class="scroll"><table id="skill"></table></div></div>
 </section>
 
@@ -119,7 +119,7 @@ details summary{cursor:pointer;font-weight:600}
   <div class="panel"><div class="scroll"><table id="fc"></table></div><p class="small muted" style="margin-top:8px">Bar: 5th–95th percentile price; tick: median; thin line: today's price.</p></div>
   <div class="grid2">
     <div class="panel"><h3>Black-Scholes-Merton option prices</h3><p class="small muted" style="margin:4px 0 10px">At-the-money European options, priced with the GARCH volatility forecast. No live option quotes were used, so these are model prices, not market prices.</p><div class="scroll"><table id="opt"></table></div></div>
-    <div class="panel"><h3>Mean-variance portfolio (MPT)</h3><p class="small muted" style="margin:4px 0 10px" id="mpt-lede"></p><div class="scroll"><svg id="frontier" viewBox="0 0 420 240" role="img" aria-label="Efficient frontier" style="width:100%;min-width:300px;height:auto"></svg></div></div>
+    <div class="panel" id="mpt-panel"><h3>Mean-variance portfolio (MPT)</h3><p class="small muted" style="margin:4px 0 10px" id="mpt-lede"></p><div class="scroll"><svg id="frontier" viewBox="0 0 420 240" role="img" aria-label="Efficient frontier" style="width:100%;min-width:300px;height:auto"></svg></div></div>
   </div>
   <div class="panel" id="sent-panel" hidden><h3>News sentiment (context only)</h3><p class="small" id="sent"></p></div>
 </section>
@@ -215,7 +215,7 @@ function drawHorizon(){
   const rows = [...hz.strategies].sort((a,b)=> (b.sharpe??-9)-(a.sharpe??-9));
   const bestKey = hz.best.best_risk_adjusted.model + hz.best.best_risk_adjusted.rule;
   $("strat").innerHTML = `<thead><tr><th>Strategy</th><th>Rule</th><th>Sharpe</th><th>Yearly growth</th><th>Volatility</th><th>Worst drop</th><th>$1 became</th><th>Avg. in stock</th></tr></thead><tbody>` +
-    rows.map(s=>`<tr class="${s.rule==='benchmark'?'bench':''} ${s.model+s.rule===bestKey?'top':''}"><td><span class="sw" style="background:${colorOf(s.model)}"></span>${esc(s.model)}</td><td>${esc(s.rule)}</td><td class="num">${f2(s.sharpe)}</td><td class="num">${pct(s.cagr)}</td><td class="num">${pct(s.vol)}</td><td class="num">${pct(s.max_drawdown,0)}</td><td class="num">${s.multiple==null?'—':s.multiple>=100?'$'+Math.round(s.multiple).toLocaleString():'$'+s.multiple.toFixed(2)}</td><td class="num">${s.rule==='benchmark'?'—':pct(s.avg_exposure,0)}${s.avg_market!=null?` <span class="muted">+ ${pct(s.avg_market,0)} S&amp;P</span>`:''}</td></tr>`).join("") + "</tbody>";
+    rows.map(s=>`<tr class="${s.rule==='benchmark'?'bench':''} ${s.model+s.rule===bestKey?'top':''}"><td><span class="sw" style="background:${colorOf(s.model)}"></span>${esc(s.model)}</td><td>${esc(s.rule)}</td><td class="num">${f2(s.sharpe)}</td><td class="num">${pct(s.cagr)}</td><td class="num">${pct(s.vol)}</td><td class="num">${pct(s.max_drawdown,0)}</td><td class="num">${s.multiple==null?'—':s.multiple>=100?'$'+Math.round(s.multiple).toLocaleString():'$'+s.multiple.toFixed(2)}</td><td class="num">${s.rule==='benchmark'?'—':pct(s.avg_exposure,0)}${s.avg_market!=null?` <span class="muted">+ ${pct(s.avg_market,0)} index</span>`:''}</td></tr>`).join("") + "</tbody>";
   const sk = [...hz.skill].sort((a,b)=>a.crps-b.crps);
   $("skill").innerHTML = `<thead><tr><th>Model</th><th>Forecasts</th><th>Hit rate</th><th>Mean abs. error</th><th>90% coverage</th><th>90% band width</th><th>CRPS</th></tr></thead><tbody>` +
     sk.map((s,i)=>{ const cov = Math.abs(s.coverage90-0.9) <= 0.05 ? 'good' : (s.coverage90 < 0.8 || s.coverage90 > 0.97 ? 'bad':'neutral');
@@ -225,7 +225,7 @@ drawHorizon();
 
 // ---------- today's forecasts
 const C = D.current;
-$("f-lede").textContent = `Each model fitted on the ${Math.round(D.data.window/252)} years to ${C.as_of}. Last close ${money(C.price)}; cash yield ${pct(C.rf,2)} a year.`;
+$("f-lede").textContent = `Each model fitted on the ${Math.round(D.data.window/252)} years to ${C.as_of}. Last close ${money(C.price)}; cash yield ${pct(C.rf,2)} a year (${esc(D.data.rf_source||'US 3-month T-bill')}).`;
 let lo=Infinity, hi=-Infinity;
 C.models.forEach(m=>H.forEach(h=>{ lo=Math.min(lo,m.horizons[h].p05_price); hi=Math.max(hi,m.horizons[h].p95_price); }));
 lo=Math.min(lo,C.price); hi=Math.max(hi,C.price);
@@ -236,9 +236,10 @@ $("fc").innerHTML = `<thead><tr><th>Model</th>${H.map(h=>`<th>${esc(h)}: median<
 $("opt").innerHTML = `<thead><tr><th>Expiry</th><th>Strike</th><th>Volatility</th><th>Call</th><th>Put</th><th>Implied vol (check)</th></tr></thead><tbody>` +
   C.options.map(o=>`<tr><td>${esc(o.horizon)}</td><td class="num">${money(o.strike)}</td><td class="num">${pct(o.vol_used)}</td><td class="num">${money(o.call)}</td><td class="num">${money(o.put)}</td><td class="num">${pct(o.implied_vol_check)}</td></tr>`).join("") + "</tbody>";
 
+if (!C.mpt) { $("mpt-panel").hidden = true; }
 if (C.mpt){
   const w = C.mpt.weights;
-  $("mpt-lede").innerHTML = `Best long-only mix of ${esc(D.ticker)}, the S&amp;P 500 and cash for risk aversion ${D.data.gamma}, from the last ${Math.round(D.data.window/252)} years: <b class="num">${pct(w[D.ticker]??w.NVDA,0)}</b> ${esc(D.ticker)}, <b class="num">${pct(w["S&P 500"],0)}</b> S&amp;P 500, <b class="num">${pct(w.Cash,0)}</b> cash. Past means are a weak guide to future returns.`;
+  $("mpt-lede").innerHTML = `Best long-only mix of ${esc(D.ticker)}, ${esc(D.market_name)} and cash for risk aversion ${D.data.gamma}, from the last ${Math.round(D.data.window/252)} years: <b class="num">${pct(w[D.ticker],0)}</b> ${esc(D.ticker)}, <b class="num">${pct(w[D.market_name],0)}</b> ${esc(D.market_name)}, <b class="num">${pct(w.Cash,0)}</b> cash. Past means are a weak guide to future returns.`;
   const svg=$("frontier"), W=420, Hh=240, L=44, R=14, T=12, B=30;
   const pts = C.mpt.frontier, assets = C.mpt.assets;
   const xs = pts.map(p=>p[0]).concat(Object.values(assets).map(a=>a[0])), ys = pts.map(p=>p[1]).concat(Object.values(assets).map(a=>a[1]), [C.rf]);
@@ -259,7 +260,7 @@ if (D.sentiment){ const s=D.sentiment; $("sent-panel").hidden=false;
 $("method").innerHTML = [
   `Forecast dates every ${D.data.step} trading days. At each date every model is fitted on the previous ${Math.round(D.data.window/252)} years of daily returns only, so no future data leaks into a forecast.`,
   `GBM: constant drift and volatility. Black-Scholes-Merton: the risk-neutral version (drifts at the T-bill rate, volatility from an EWMA estimate), so it never expects to beat cash. GARCH(1,1) with Student-t errors: volatility that clusters. ARIMA: AR/MA order picked by AIC each month. Merton jump-diffusion: GBM plus random jumps, fitted by maximum likelihood. Monte Carlo: resamples 10-day blocks of real past returns.`,
-  `Position sizing: share in stock = (expected return − cash) ÷ (${D.data.gamma} × variance), capped between 0% and 100%; no leverage, no shorting. MPT does the same across ${esc(D.ticker)}, the S&P 500 and cash.`,
+  `Position sizing: share in stock = (expected return − cash) ÷ (${D.data.gamma} × variance), capped between 0% and 100%; no leverage, no shorting. MPT does the same across ${esc(D.ticker)}, ${esc(D.market_name)} and cash.`,
   `Each month's decision is held for the full horizon, so 3-month results average 3 overlapping tranches and 1-year results average 12. Costs and taxes are ignored.`,
   `${esc(D.ticker)} was chosen after the fact and has been one of the best-performing stocks of the period. Any model that leans long will look good here; the same test on a stock that fell would rank the models differently.`,
   `1-year forecasts give only about ${Math.round((D.data.days-D.data.window)/252)} independent years, so differences between models there are not statistically strong.`,
@@ -273,3 +274,115 @@ $("params").innerHTML = `<thead><tr><th>Model</th><th style="text-align:left">Fi
 def render_dashboard(result: dict) -> str:
     data = json.dumps(result, separators=(",", ":")).replace("</", "<\\/")
     return TEMPLATE.replace("__DATA__", data).replace("__TICKER__", result.get("ticker", "Stock"))
+
+
+# ---------------------------------------------------------------- cross-stock page
+_HEAD = TEMPLATE.split("<style>")[0].replace("__TICKER__ Model Comparison", "Quant Model Basket Test")
+_STYLE = "<style>" + TEMPLATE.split("<style>")[1].split("</style>")[0] + """
+.heat td.cell{font-family:var(--font-data);font-variant-numeric:tabular-nums;text-align:center;min-width:64px}
+.heat th.rot{white-space:normal;text-align:center;min-width:64px;line-height:1.2}
+.chip{display:inline-block;font:12px var(--font-body);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+</style>"""
+
+BASKET_BODY = r"""
+<div class="wrap">
+<header>
+  <span class="eyebrow">Walk-forward backtest · seven models · <span id="nstocks"></span> stocks</span>
+  <h1>Which model works across very different stocks?</h1>
+  <p class="muted">The same test as the NVIDIA dashboard, repeated on winners, decliners, cyclicals, steady names, Indian stocks and the S&amp;P 500 itself. Every stock uses data from 1999 onward, a 5-year fitting window and monthly forecasts.</p>
+  <div class="meta" id="meta"></div>
+</header>
+
+<section aria-labelledby="v-h">
+  <h2 id="v-h">Verdict</h2>
+  <div class="verdicts" id="verdicts"></div>
+  <div class="panel" id="notes-panel" hidden><h3>What the basket says</h3><ul class="notes" id="notes"></ul></div>
+</section>
+
+<section aria-labelledby="r-h">
+  <h2 id="r-h">Rankings by horizon</h2>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="panel"><h3>Strategy league table</h3><p class="small muted" style="margin:4px 0 10px">Strategies are ranked by Sharpe ratio within each stock, then averaged. Differences are versus simply holding that stock: positive Sharpe and worst-drop differences are better; growth differences show what was given up.</p><div class="scroll"><table id="league"></table></div></div>
+  <div class="panel"><h3>Sharpe ratio versus buy &amp; hold, stock by stock</h3><p class="small muted" style="margin:4px 0 10px">Green: the strategy beat holding the stock on risk-adjusted return. Red: it did worse.</p><div class="scroll"><table class="heat" id="heat"></table></div></div>
+  <div class="grid2">
+    <div class="panel"><h3>Best strategy per stock</h3><div class="scroll"><table id="perstock"></table></div></div>
+    <div class="panel"><h3>Forecast accuracy across stocks</h3><p class="small muted" style="margin:4px 0 10px">Average CRPS rank (1 = most accurate distribution) and how many stocks each model forecast best.</p><div class="scroll"><table id="skill"></table></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="m-h">
+  <h2 id="m-h">Method and limits</h2>
+  <div class="panel"><ul class="notes small" id="method"></ul></div>
+  <p class="small muted">For research and education only. Not investment advice.</p>
+</section>
+</div>
+
+<script>
+const D = __DATA__;
+const $ = id => document.getElementById(id);
+const pct = (v,d=1) => v==null ? "—" : (v*100).toFixed(d)+"%";
+const sp = (v,d=1) => v==null ? "—" : (v>0?"+":"")+(v*100).toFixed(d)+" pts";
+const f2 = v => v==null ? "—" : v.toFixed(2);
+const s2 = v => v==null ? "—" : (v>0?"+":"")+v.toFixed(2);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const H = Object.keys(D.horizons);
+const nameOf = t => (D.stocks.find(s=>s.ticker===t)||{name:t}).name;
+$("nstocks").textContent = D.stocks.length;
+$("meta").innerHTML = D.stocks.map(s=>`<span class="chip" title="${esc(s.group)}">${esc(s.name)}</span>`).join(" ");
+
+$("verdicts").innerHTML = H.map(h=>{
+  const hz = D.horizons[h], top = hz.ranking[0];
+  const beat = hz.per_stock.filter(p=>p.beat_bh).length, n = hz.per_stock.length;
+  const fc = hz.skill[0];
+  return `<div class="panel verdict"><span class="eyebrow">${esc(h)} horizon</span>
+    <div class="pick">${esc(top.strategy)}</div>
+    <span><span class="pill neutral">best average rank: ${top.avg_rank.toFixed(1)}</span></span>
+    <div class="kv">
+      <div><span class="v">${top.beat_bh}/${top.stocks}</span><span class="k">Beat holding</span></div>
+      <div><span class="v">${s2(top.med_d_sharpe)}</span><span class="k">Median Sharpe vs hold</span></div>
+      <div><span class="v">${sp(top.med_d_dd,0)}</span><span class="k">Worst drop vs hold</span></div>
+      <div><span class="v">${sp(top.med_d_cagr)}</span><span class="k">Growth vs hold / yr</span></div>
+    </div>
+    <span class="vs">On ${beat} of ${n} stocks the best model strategy beat buy &amp; hold on Sharpe. Most accurate forecaster overall: ${esc(fc.model)} (best on ${fc.wins} of ${n}).</span></div>`;}).join("");
+if (D.notes && D.notes.length){ $("notes-panel").hidden=false; $("notes").innerHTML = D.notes.map(n=>`<li>${esc(n)}</li>`).join(""); }
+
+let cur = H[0];
+$("tabs").innerHTML = H.map((h,i)=>`<button role="tab" id="tab-${i}" aria-selected="${i===0}">${esc(h)}</button>`).join("");
+H.forEach((h,i)=>$("tab-"+i).addEventListener("click",()=>{cur=h;H.forEach((_,j)=>$("tab-"+j).setAttribute("aria-selected",j===i));draw();}));
+
+function heatColor(v){
+  if (v==null) return "transparent";
+  const a = Math.min(Math.abs(v)/0.4, 1) * 0.55 + 0.08;
+  return `color-mix(in srgb, ${v>=0?css('--good'):css('--bad')} ${Math.round(a*100)}%, transparent)`;
+}
+function draw(){
+  const hz = D.horizons[cur];
+  $("league").innerHTML = `<thead><tr><th>Strategy</th><th>Avg. rank</th><th>Top 3</th><th>Beat holding</th><th>Median Sharpe vs hold</th><th>Median growth vs hold</th><th>Median worst drop vs hold</th><th>Avg. in stock</th></tr></thead><tbody>` +
+    hz.ranking.map((r,i)=>`<tr class="${i===0?'top':''}"><td>${esc(r.strategy)}</td><td class="num">${r.avg_rank.toFixed(1)}</td><td class="num">${r.top3}/${r.stocks}</td><td><span class="pill ${r.beat_bh/r.stocks>=0.5?'good':(r.beat_bh===0?'bad':'neutral')} num">${r.beat_bh}/${r.stocks}</span></td><td class="num">${s2(r.med_d_sharpe)}</td><td class="num">${sp(r.med_d_cagr)}</td><td class="num">${sp(r.med_d_dd,0)}</td><td class="num">${pct(r.avg_exposure,0)}</td></tr>`).join("") + "</tbody>";
+  const g = hz.grid;
+  $("heat").innerHTML = `<thead><tr><th>Strategy</th>${g.tickers.map(t=>`<th class="rot">${esc(nameOf(t))}</th>`).join("")}</tr></thead><tbody>` +
+    g.strategies.map((s,i)=>`<tr><td>${esc(s)}</td>${g.values[i].map(v=>`<td class="cell" style="background:${heatColor(v)}">${v==null?'—':s2(v)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  $("perstock").innerHTML = `<thead><tr><th>Stock</th><th>Hold: growth / yr</th><th>Hold: worst drop</th><th>Best strategy</th><th>Its Sharpe vs hold</th></tr></thead><tbody>` +
+    hz.per_stock.map(p=>`<tr><td>${esc(p.name)}<br><span class="small muted">${esc(p.group)}</span></td><td class="num">${pct(p.bh_cagr)}</td><td class="num">${pct(p.bh_dd,0)}</td><td style="white-space:normal">${esc(p.best||'—')}</td><td><span class="pill ${p.beat_bh?'good':'bad'} num">${f2(p.best_sharpe)} vs ${f2(p.bh_sharpe)}</span></td></tr>`).join("") + "</tbody>";
+  $("skill").innerHTML = `<thead><tr><th>Model</th><th>Avg. CRPS rank</th><th>Best on</th><th>Hit rate</th><th>90% coverage</th></tr></thead><tbody>` +
+    hz.skill.map((s,i)=>`<tr class="${i===0?'top':''}"><td>${esc(s.model)}</td><td class="num">${s.avg_crps_rank.toFixed(1)}</td><td class="num">${s.wins}</td><td class="num">${pct(s.hit_rate,0)}</td><td class="num">${pct(s.coverage90,0)}</td></tr>`).join("") + "</tbody>";
+}
+draw();
+const india = D.stocks.filter(s=>s.rf_source && s.rf_source.startsWith("fixed")).map(s=>s.name);
+$("method").innerHTML = [
+  "Each stock: daily prices from Yahoo Finance from 1 January 1999 (or the first available date), one-day price spikes that reverse the next day removed as data errors.",
+  "Every month each model is fitted on the previous 5 years only and sets an allocation for the next 3 months or 1 year. No future data is used.",
+  "US stocks use the S&P 500 for MPT and US 3-month T-bills as cash." + (india.length ? ` ${india.join(" and ")} use the Sensex and a fixed 6.5% cash rate (an approximation of Indian T-bill yields, since no current series was available).` : ""),
+  "The S&P 500 run skips MPT because the stock and the index are the same thing.",
+  "Strategies that stayed almost entirely in cash on most stocks are left out of the league table: " + ([...new Set(H.flatMap(h=>D.horizons[h].excluded||[]))].join(", ") || "none") + ". Black-Scholes-Merton is a risk-neutral pricing model that never expects to beat cash, so it is judged on forecast accuracy only.",
+  "Ranks compare model strategies within a stock; buy & hold is the yardstick, not a ranked entry. Strategies that were almost never invested are left out of the ranking.",
+  "Costs, taxes and dividends beyond Yahoo's adjusted prices are ignored. With 22 years per stock, small differences between models are noise.",
+].map(x=>`<li>${esc(x)}</li>`).join("");
+</script>
+"""
+
+
+def render_basket(result: dict) -> str:
+    data = json.dumps(result, separators=(",", ":"), default=float).replace("</", "<\\/")
+    return _HEAD + _STYLE + BASKET_BODY.replace("__DATA__", data)

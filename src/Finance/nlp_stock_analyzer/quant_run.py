@@ -59,6 +59,23 @@ def download_prices(stooq_sym: str, yahoo_sym: str) -> tuple[pd.Series, str]:
         return fetch_yahoo(yahoo_sym), "Yahoo Finance"
 
 
+def clean_spikes(px: pd.Series, jump: float = 0.5, back: float = 0.1) -> tuple[pd.Series, int]:
+    """Drop single-day price spikes that fully reverse the next day (data errors).
+    A point is removed when its log move exceeds `jump` and the next day undoes it
+    to within `back`; genuine one-way moves (crashes, earnings gaps) are kept."""
+    px = px.copy()
+    removed = 0
+    for _ in range(3):
+        lr = np.log(px).diff()
+        nxt = lr.shift(-1)
+        bad = (lr.abs() > jump) & ((lr + nxt).abs() < back)
+        if not bad.any():
+            break
+        removed += int(bad.sum())
+        px = px[~bad]
+    return px, removed
+
+
 def to_jsonable(obj):
     if isinstance(obj, dict):
         return {str(k): to_jsonable(v) for k, v in obj.items()}
@@ -84,9 +101,13 @@ def pick_best(strategies: list[dict]) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--ticker", default="NVDA")
-    ap.add_argument("--stooq-symbol", default="nvda.us")
-    ap.add_argument("--market-symbol", default="^spx")
+    ap.add_argument("--ticker", default="NVDA", help="Yahoo Finance symbol, e.g. NVDA, INFY.NS")
+    ap.add_argument("--stooq-symbol", help="Stooq symbol to try first, e.g. nvda.us")
+    ap.add_argument("--market-ticker", default="^GSPC", help="index for MPT and the benchmark")
+    ap.add_argument("--market-name", default="S&P 500")
+    ap.add_argument("--no-market", action="store_true", help="skip MPT (e.g. when the stock is the index)")
+    ap.add_argument("--start", help="ignore data before this date, e.g. 1999-01-01")
+    ap.add_argument("--rf-const", type=float, help="fixed annual cash rate instead of US T-bills, e.g. 0.065")
     ap.add_argument("--download", action="store_true")
     ap.add_argument("--stock"), ap.add_argument("--market"), ap.add_argument("--rf")
     ap.add_argument("--window", type=int, default=1260, help="daily returns per fit (default 5 years)")
@@ -98,8 +119,11 @@ def main(argv=None) -> int:
 
     source = "local CSV files"
     if args.download:
-        stock, source = download_prices(args.stooq_symbol, args.ticker)
-        market, _ = download_prices(args.market_symbol, "^GSPC")
+        if args.stooq_symbol:
+            stock, source = download_prices(args.stooq_symbol, args.ticker)
+        else:
+            stock, source = fetch_yahoo(args.ticker), "Yahoo Finance"
+        market = None if args.no_market else fetch_yahoo(args.market_ticker)
         try:
             rf = load_fred(fetch(FRED.format(series="DTB3")))
         except Exception as exc:  # 13-week T-bill yield from Yahoo, quoted in percent
@@ -112,7 +136,18 @@ def main(argv=None) -> int:
         market = load_stooq(args.market) if args.market else None
         rf = load_fred(args.rf) if args.rf else None
 
-    bt = Backtest(stock, market, rf, window=args.window, step=args.step, gamma=args.gamma)
+    stock, n_spikes = clean_spikes(stock)
+    if n_spikes:
+        print(f"  removed {n_spikes} one-day price spikes that reversed the next day (bad ticks)")
+    if market is not None:
+        market, _ = clean_spikes(market)
+    if args.start:
+        stock = stock[args.start:]
+        market = market[args.start:] if market is not None else None
+    if args.rf_const is not None:
+        rf = pd.Series(args.rf_const, index=stock.index)
+    bt = Backtest(stock, market, rf, window=args.window, step=args.step, gamma=args.gamma,
+                  name=args.ticker, market_name=args.market_name)
     t0 = time.time()
     n_orig = len(bt.origins())
     print(f"{args.ticker}: {len(bt.px)} trading days {bt.px.index[0].date()} → {bt.px.index[-1].date()}, "
@@ -129,9 +164,11 @@ def main(argv=None) -> int:
 
     result = {
         "ticker": args.ticker,
+        "market_name": None if args.no_market else args.market_name,
         "data": {"first": str(bt.px.index[0].date()), "last": str(bt.px.index[-1].date()),
                  "days": int(len(bt.px)), "origins": n_orig, "source": source, "window": args.window, "step": args.step,
-                 "gamma": args.gamma},
+                 "gamma": args.gamma, "rf_source": f"fixed {args.rf_const:.1%}" if args.rf_const is not None
+                 else "US 3-month T-bill"},
         "backtest": summary,
         "current": current,
     }

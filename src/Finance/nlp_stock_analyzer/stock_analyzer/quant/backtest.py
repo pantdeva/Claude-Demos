@@ -71,13 +71,15 @@ def perf_stats(daily: pd.Series, rf_daily: pd.Series) -> dict:
 @dataclass
 class Backtest:
     prices: pd.Series                       # the stock
-    market: pd.Series | None = None         # S&P 500, for MPT
+    market: pd.Series | None = None         # market index, for MPT
     rf: pd.Series | None = None             # annual risk-free rate (decimal)
     horizons: dict = field(default_factory=lambda: {"3 months": 63, "1 year": 252})
     window: int = 1260                      # 5 years of daily returns per fit
     step: int = 21                          # monthly origins
     gamma: float = 2.0                      # risk aversion for position sizing
     n_sims: int = 3000
+    name: str = "NVDA"                      # labels used in results
+    market_name: str = "S&P 500"
 
     def __post_init__(self):
         idx = self.prices.dropna().index
@@ -191,11 +193,11 @@ class Backtest:
             from .portfolio import efficient_frontier
             mu, cov = X.mean(axis=0) * TRADING_DAYS, np.cov(X.T) * TRADING_DAYS
             w = mean_variance_weights(mu, cov, rf0, self.gamma)
-            out["mpt"] = {"weights": {"NVDA": float(w[0]), "S&P 500": float(w[1]),
+            out["mpt"] = {"weights": {self.name: float(w[0]), self.market_name: float(w[1]),
                                       "Cash": float(1 - w.sum())},
                           "frontier": efficient_frontier(mu, cov, rf0),
-                          "assets": {"NVDA": [float(np.sqrt(cov[0, 0])), float(mu[0])],
-                                     "S&P 500": [float(np.sqrt(cov[1, 1])), float(mu[1])]}}
+                          "assets": {self.name: [float(np.sqrt(cov[0, 0])), float(mu[0])],
+                                     self.market_name: [float(np.sqrt(cov[1, 1])), float(mu[1])]}}
         return out
 
     # -------------------------------------------------------------- strategies
@@ -262,14 +264,14 @@ class Backtest:
             ref = next(iter(curves.values()))
             bh = self.simple.reindex(ref.index)
             s_ = perf_stats(bh, self.rf_daily)
-            s_.update({"model": "Buy & hold NVDA", "rule": "benchmark", "avg_exposure": 1.0})
+            s_.update({"model": f"Buy & hold {self.name}", "rule": "benchmark", "avg_exposure": 1.0})
             strategies.append(s_)
-            curves["Buy & hold NVDA"] = bh
+            curves[f"Buy & hold {self.name}"] = bh
             if self.mkt_simple is not None:
                 s_ = perf_stats(self.mkt_simple.reindex(ref.index), self.rf_daily)
-                s_.update({"model": "Buy & hold S&P 500", "rule": "benchmark", "avg_exposure": 0.0})
+                s_.update({"model": f"Buy & hold {self.market_name}", "rule": "benchmark", "avg_exposure": 0.0})
                 strategies.append(s_)
-                curves["Buy & hold S&P 500"] = self.mkt_simple.reindex(ref.index)
+                curves[f"Buy & hold {self.market_name}"] = self.mkt_simple.reindex(ref.index)
             out["horizons"][hname] = {"h": h, "skill": skill, "strategies": strategies,
                                       "curves": {k: (1 + v.fillna(0)).cumprod() for k, v in curves.items()}}
             out["period"] = (str(ref.index[0].date()), str(ref.index[-1].date()))
