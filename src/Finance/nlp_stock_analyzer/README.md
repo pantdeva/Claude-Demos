@@ -56,6 +56,29 @@ python run.py --all
 python run.py NVDA --scorer numpy --model-dir ./finbert
 ```
 
+## Quant model comparison
+
+`quant_run.py` backtests seven price models on a stock and builds a dashboard (`results/quant_<TICKER>.html`, also shown on the Streamlit app's **Quant Models** page):
+
+| Model | What it adds |
+|---|---|
+| GBM | Constant drift and volatility (the baseline) |
+| Black-Scholes-Merton | Risk-neutral distribution and option prices; implied-vol solver |
+| GARCH(1,1), Student-t | Volatility clustering and fat tails |
+| ARIMA | Autoregressive / moving-average structure, order picked by AIC |
+| Merton jump-diffusion | Sudden jumps on top of GBM |
+| Monte Carlo (bootstrap) | Resamples real past returns, no distribution assumed |
+| MPT (mean-variance) | Long-only allocation across the stock, the S&P 500 and cash |
+
+Every month each model is fitted on the previous 5 years only, forecasts 3-month and 1-year returns, and sets an allocation. Forecasts are scored (hit rate, 90% interval coverage, CRPS) and the resulting strategies are compared with buy & hold.
+
+```bash
+python quant_run.py --download            # prices from Stooq or Yahoo Finance, T-bill rate from FRED (Yahoo ^IRX fallback)
+python quant_run.py --download --step 63  # faster: quarterly forecast dates
+```
+
+Everything is NumPy/SciPy only. `tests/test_quant.py` checks each model recovers known parameters from simulated data.
+
 ## Adding a company
 
 Add an entry under `companies:` in `config/companies.yaml`:
