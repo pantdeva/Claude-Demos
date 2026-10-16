@@ -36,6 +36,29 @@ def fetch(url: str) -> str:
     return r.text
 
 
+YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?period1=0&period2=9999999999&interval=1d&events=split"
+
+
+def fetch_yahoo(sym: str) -> pd.Series:
+    """Split- and dividend-adjusted daily closes from Yahoo Finance's chart API."""
+    r = requests.get(YAHOO.format(sym=requests.utils.quote(sym)), timeout=60,
+                     headers={"User-Agent": "Mozilla/5.0"})
+    r.raise_for_status()
+    res = r.json()["chart"]["result"][0]
+    ts = pd.to_datetime(res["timestamp"], unit="s").normalize()
+    adj = res["indicators"].get("adjclose", [{}])[0].get("adjclose") or res["indicators"]["quote"][0]["close"]
+    s = pd.Series(adj, index=ts, dtype=float).dropna()
+    return s[~s.index.duplicated(keep="last")].sort_index()
+
+
+def download_prices(stooq_sym: str, yahoo_sym: str) -> tuple[pd.Series, str]:
+    try:
+        return load_stooq(fetch(STOOQ.format(sym=stooq_sym))), "Stooq"
+    except Exception as exc:  # fall back to Yahoo Finance
+        print(f"  Stooq unavailable ({exc.__class__.__name__}); trying Yahoo Finance")
+        return fetch_yahoo(yahoo_sym), "Yahoo Finance"
+
+
 def to_jsonable(obj):
     if isinstance(obj, dict):
         return {str(k): to_jsonable(v) for k, v in obj.items()}
@@ -73,9 +96,10 @@ def main(argv=None) -> int:
     ap.add_argument("--out", default=str(ROOT / "results"))
     args = ap.parse_args(argv)
 
+    source = "local CSV files"
     if args.download:
-        stock = load_stooq(fetch(STOOQ.format(sym=args.stooq_symbol)))
-        market = load_stooq(fetch(STOOQ.format(sym=args.market_symbol)))
+        stock, source = download_prices(args.stooq_symbol, args.ticker)
+        market, _ = download_prices(args.market_symbol, "^GSPC")
         rf = load_fred(fetch(FRED.format(series="DTB3")))
     else:
         if not args.stock:
@@ -102,7 +126,7 @@ def main(argv=None) -> int:
     result = {
         "ticker": args.ticker,
         "data": {"first": str(bt.px.index[0].date()), "last": str(bt.px.index[-1].date()),
-                 "days": int(len(bt.px)), "origins": n_orig, "window": args.window, "step": args.step,
+                 "days": int(len(bt.px)), "origins": n_orig, "source": source, "window": args.window, "step": args.step,
                  "gamma": args.gamma},
         "backtest": summary,
         "current": current,

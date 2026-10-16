@@ -150,7 +150,7 @@ $("h1").textContent = `${D.ticker}: which model wins over 3 months and 1 year?`;
 $("lede").textContent = `Seven quantitative models forecast ${D.ticker} at monthly intervals using only the data available at the time, then trade on their own forecasts. Results are compared against simply holding the stock.`;
 const p = D.backtest.period;
 $("meta").innerHTML = [
-  `Data ${D.data.first} → ${D.data.last}`, `${D.data.days.toLocaleString()} trading days`,
+  `Data ${D.data.first} → ${D.data.last}${D.data.source?` (${D.data.source})`:''}`, `${D.data.days.toLocaleString()} trading days`,
   `${D.data.origins} forecast dates`, `Fit window ${Math.round(D.data.window/252)} years`,
   `Trading ${p[0]} → ${p[1]}`].map(x=>`<span>${esc(x)}</span>`).join("");
 
