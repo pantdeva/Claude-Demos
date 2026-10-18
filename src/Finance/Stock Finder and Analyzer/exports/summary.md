@@ -1,6 +1,6 @@
 # Stage 0 classification summary
 
-Built 2026-10-18T15:42:21Z. 826 companies, 2221 listings.
+Built 2026-10-18T18:59:36Z. 826 companies, 2221 listings.
 
 ## 1. Market development
 
