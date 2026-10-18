@@ -121,7 +121,7 @@ ul.notes{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
   </div>
   <h3>Top 25 companies</h3>
   <div class="scroll"><table id="companies"></table></div>
-  <p class="small muted">Score: average of the four percentile ranks within the index. Upside and odds: median across the six forecasting models (Black-Scholes-Merton excluded, as it assumes cash-like returns).</p>
+  <p class="small muted">Score: average of the four percentile ranks within the index. Upside and odds: median across the six forecasting models (Black-Scholes-Merton excluded, as it assumes cash-like returns). * Listed for under about 6½ years: the models extrapolate a short history, often a single rally, so treat these figures as unreliable. "Hold" means the best-scoring model never stepped out of the stock, so it matched buy &amp; hold.</p>
 </section>
 
 <section class="panel detail" id="detail" hidden></section>
@@ -174,7 +174,7 @@ function drawOverview(){
   $("overview").innerHTML = `<thead><tr><th>Index</th><th>Level</th><th class="hide-sm">1-yr return</th><th class="l">Top-scored company</th><th class="l">Best strategy (${esc(h)})</th><th>Beat holding</th><th class="hide-sm">Median model upside</th></tr></thead><tbody>` +
     D.indexes.map((ix,i)=>{
       const lg = ix.league[h], top = lg.rows[0];
-      const ups = ix.stocks.map(s=>s.model&&s.model.current&&s.model.current.consensus[h]&&s.model.current.consensus[h].median_ret).filter(v=>v!=null).sort((a,b)=>a-b);
+      const ups = ix.stocks.filter(s=>s.model&&s.model.horizons).map(s=>s.model.current&&s.model.current.consensus[h]&&s.model.current.consensus[h].median_ret).filter(v=>v!=null).sort((a,b)=>a-b);
       const med = ups.length ? ups[Math.floor(ups.length/2)] : null;
       return `<tr class="click" data-i="${i}"><td><b>${esc(ix.name)}</b></td><td class="num">${ix.quote?lvl(ix.quote.level):"—"} <span class="${cls(ix.quote&&ix.quote.change)}">${ix.quote?spct(ix.quote.change,2):""}</span></td><td class="num hide-sm ${cls(ix.quote&&ix.quote.ret_1y)}">${ix.quote?spct(ix.quote.ret_1y):"—"}</td><td class="l wrapcell">${esc(ix.stocks[0]?ix.stocks[0].name:"—")}</td><td class="l wrapcell">${top?esc(top.k):"—"}</td><td>${top?`<span class="pill ${top.beat/top.stocks>=0.5?"good":(top.beat===0?"bad":"neutral")} num">${top.beat}/${top.stocks}</span>`:"—"}</td><td class="num hide-sm ${cls(med)}">${spct(med)}</td></tr>`;
     }).join("") + "</tbody>";
@@ -213,8 +213,10 @@ function drawIndex(){
   $("companies").innerHTML = `<thead><tr><th>#</th><th class="l">Company</th><th>Market value</th><th class="hide-sm">Revenue</th><th>Growth</th><th>Net margin</th><th class="hide-sm">P/E</th><th>Score</th><th class="l">Best strategy</th><th>Model upside</th><th class="hide-sm">Beats cash</th></tr></thead><tbody>` +
     ix.stocks.map((s,i)=>{
       const m = s.model||{}, hz = m.horizons&&m.horizons[h], c = m.current&&m.current.consensus&&m.current.consensus[h];
-      const best = hz&&hz.best ? `<span class="${hz.best.sharpe>(hz.bh.sharpe??-9)?"up":""}">${esc(hz.best.k)}</span>` : `<span class="pill warn">${m.current?"too new to backtest":"no model data"}</span>`;
-      return `<tr class="click ${state.stock===s.t?"sel":""}" data-i="${i}"><td class="num">${s.rank}</td><td class="l co">${esc(s.name)}<div class="tk">${esc(s.t)}</div></td><td class="num">${usd(s.mcap)}</td><td class="num hide-sm">${usd(s.rev)}</td><td class="num ${cls(s.growth)}">${spct(s.growth)}</td><td class="num ${cls(s.margin)}">${pct(s.margin)}</td><td class="num hide-sm">${s.pe==null?"—":s.pe.toFixed(1)}</td><td><div class="score"><span class="num">${s.score==null?"—":(s.score*100).toFixed(0)}</span><span class="b"><i style="width:${((s.score||0)*100).toFixed(0)}%"></i></span></div></td><td class="l wrapcell small">${best}</td><td class="num ${cls(c&&c.median_ret)}">${c?spct(c.median_ret):"—"}</td><td class="num hide-sm">${c?pct(c.p_beat_cash,0):"—"}</td></tr>`;
+      const holdLike = hz&&hz.best && (hz.best.exp??0) >= 0.97 && Math.abs((hz.best.sharpe??0)-(hz.bh.sharpe??0)) < 0.01;
+      const best = hz&&hz.best ? (holdLike ? `<span class="muted" title="${esc(hz.best.k)} stayed fully invested, so it matched buy & hold">Hold (models stayed invested)</span>` : `<span class="${hz.best.sharpe>(hz.bh.sharpe??-9)?"up":""}">${esc(hz.best.k)}</span>`) : `<span class="pill warn">${m.current?"too new to backtest":"no model data"}</span>`;
+      const shortHist = !(m.horizons);
+      return `<tr class="click ${state.stock===s.t?"sel":""}" data-i="${i}"><td class="num">${s.rank}</td><td class="l co">${esc(s.name)}<div class="tk">${esc(s.t)}</div></td><td class="num">${usd(s.mcap)}</td><td class="num hide-sm">${usd(s.rev)}</td><td class="num ${cls(s.growth)}">${spct(s.growth)}</td><td class="num ${cls(s.margin)}">${pct(s.margin)}</td><td class="num hide-sm">${s.pe==null?"—":s.pe.toFixed(1)}</td><td><div class="score"><span class="num">${s.score==null?"—":(s.score*100).toFixed(0)}</span><span class="b"><i style="width:${((s.score||0)*100).toFixed(0)}%"></i></span></div></td><td class="l wrapcell small">${best}</td><td class="num ${shortHist?"muted":cls(c&&c.median_ret)}" ${shortHist?'title="Short price history: unreliable"':''}>${c?spct(c.median_ret)+(shortHist?"*":""):"—"}</td><td class="num hide-sm ${shortHist?"muted":""}">${c?pct(c.p_beat_cash,0):"—"}</td></tr>`;
     }).join("") + "</tbody>";
   $("companies").querySelectorAll("tr.click").forEach(tr=>tr.addEventListener("click",()=>{ state.stock = ix.stocks[+tr.dataset.i].t; render(); $("detail").scrollIntoView({behavior:"smooth",block:"start"}); }));
 }

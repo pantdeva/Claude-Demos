@@ -97,8 +97,8 @@ def run_one(job):
             res["origins"] = len(bt.origins())
             res["current"] = bt.current_forecasts()
         elif len(px) >= 300:
-            win = len(px) - 2
-            bt = Backtest(px, mkt, rf, window=win, step=STEP, n_sims=2000, name=sym, market_name=index_sym)
+            bt = Backtest(px, mkt, rf, window=len(px) - 2, step=STEP, n_sims=2000, name=sym, market_name=index_sym)
+            bt.window = len(bt.px) - 2   # size the window after aligning dates with the index
             res["current"] = bt.current_forecasts()
             res["note"] = f"Only {len(px)} trading days of history: too short to backtest; forecasts use all of it."
         else:
