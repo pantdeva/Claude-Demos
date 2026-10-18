@@ -12,9 +12,10 @@ Record of the working sessions with Claude that built this repository: GitHub se
 
 | Branch | Contents |
 |---|---|
-| `main` | Folder skeleton: `src/Finance`, `src/ML`, `src/Electronics` (commit `6c5fd86`) |
+| `main` | Started as the folder skeleton `src/Finance`, `src/ML`, `src/Electronics` (commit `6c5fd86`); `STA` (PR #2) and `ML` (PR #3) are now merged in, so `main` holds everything in sections 2–7 |
 | `STA` | `4654680` "First Stage STA repo bringup": two STA decks |
 | `ML` | Everything in sections 3–7 (finance tools live in `src/Finance/nlp_stock_analyzer/`) |
+| `Electronics` | `src/Electronics/RasPi Waveform Visualizer/`: Raspberry Pi 5 music visualizer for a 96×48 HUB75 LED panel (74HCT245 level-shifter board, RP1 PIO C driver, controls and light sensor); not merged into `main` |
 
 Key ML-branch commits: `f2463ea` "Financial Prediction Tool Phase 1", `d8ca5f0` move to `src/Finance`, then the quant, basket, top-100 and 14-index work.
 
@@ -124,6 +125,7 @@ The same pages are saved as HTML under `src/Finance/nlp_stock_analyzer/reports/`
 
 - Network allowlist (claude.ai Settings → Capabilities) was extended to newsapi.org, huggingface.co, *.hf.co, fred.stlouisfed.org and Yahoo Finance; stooq.com stayed blocked. Package installs from PyPI were blocked, so PyTorch, transformers and Streamlit could not run in the session.
 - An earlier version of this file was emailed to mitul.sharma160696@gmail.com on 16 Oct 2026.
+- 16 Oct 2026: both STA decks were also delivered as files in chat for offline use.
 
 ---
 
@@ -132,7 +134,7 @@ The same pages are saved as HTML under `src/Finance/nlp_stock_analyzer/reports/`
 1. Create tag `V2.0.0` on GitHub.
 2. Optional: per-company "competitor news as sector signal" option (helps Micron).
 3. Optional: update or disable the `demos-default-repo` skill if no default repo is wanted.
-4. Optional: merge `STA` and `ML` into `main` via pull requests.
+4. ~~Merge `STA` and `ML` into `main` via pull requests.~~ Done (PRs #2 and #3). `Electronics` is not merged yet.
 5. Regenerate the NewsAPI key that was shared in chat.
 
 All results are research output, not investment advice.
