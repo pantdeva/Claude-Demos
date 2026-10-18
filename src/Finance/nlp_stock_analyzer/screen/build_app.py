@@ -136,7 +136,6 @@ def main():
                 "growth": r(c.get("rev_growth")), "margin": r(c.get("net_margin")), "pe": r(c.get("pe"), 2),
                 "growth_basis": c.get("growth_basis"), "score": r(c.get("score"), 4),
                 "pct": {k: r(c.get(f"pct_{k}"), 3) for k in ("mcap_usd", "revenue_usd", "rev_growth", "net_margin")},
-                "model": cache[t],
             })
         data["indexes"].append({
             "sym": sym, "name": ix["name"], "region": ix["region"], "ccy": ix["ccy"],
@@ -144,11 +143,23 @@ def main():
             "stocks": stocks,
             "league": {h: index_league(stocks, h) for h in ("3 months", "1 year")},
         })
+    # each stock's model results are stored once, even if it is in several indexes
+    data["models"] = {t: m for t, m in cache.items() if m}
     APP.mkdir(exist_ok=True)
     blob = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
     (APP / "data.json").write_text(blob, encoding="utf-8")
     tpl = (HERE / "app_template.html").read_text(encoding="utf-8")
     (APP / "index.html").write_text(tpl.replace("__DATA__", blob.replace("</", "<\\/")), encoding="utf-8")
+    # phone copy: growth curves thinned to quarterly points
+    lite = json.loads(blob)
+    for m in lite["models"].values():
+        for hz in (m.get("horizons") or {}).values():
+            for name, cv in hz["curves"].items():
+                keep = [i for i in range(len(cv["d"])) if i % 3 == 0 or i == len(cv["d"]) - 1]
+                hz["curves"][name] = {"d": [cv["d"][i] for i in keep], "v": [cv["v"][i] for i in keep]}
+    lblob = json.dumps(lite, separators=(",", ":"), ensure_ascii=False)
+    (APP / "dashboard_mobile.html").write_text(tpl.replace("__DATA__", lblob.replace("</", "<\\/")), encoding="utf-8")
+    print(f"app/dashboard_mobile.html written: {len(lblob) / 1e6:.1f} MB of data")
     n_mod = sum(1 for v in cache.values() if v and v.get("horizons"))
     print(f"app/index.html written: {len(data['indexes'])} indexes, {len(cache)} stocks "
           f"({n_mod} backtested), {len(blob) / 1e6:.1f} MB of data")

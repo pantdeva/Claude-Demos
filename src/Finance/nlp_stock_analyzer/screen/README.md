@@ -15,6 +15,8 @@ python build_app.py      # → app/index.html and app/data.json
 python serve.py          # opens http://localhost:8000
 ```
 
+On a phone, open `app/dashboard_mobile.html` directly: it is a single self-contained file (curves thinned to quarterly points) and needs no server.
+
 `serve.py --host 0.0.0.0` lets other devices on your network open it at `http://<your-computer's-IP>:8000`.
 
 The built dashboard is committed in `app/`, so `python serve.py` works straight away without rerunning the pipeline.

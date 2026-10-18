@@ -136,6 +136,7 @@ ul.notes{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
 
 <script>
 const D = __DATA__;
+D.indexes.forEach(ix => ix.stocks.forEach(s => { s.model = (D.models || {})[s.t] || null; }));
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pct = (v,d=1) => v==null ? "—" : (v*100).toFixed(d)+"%";
