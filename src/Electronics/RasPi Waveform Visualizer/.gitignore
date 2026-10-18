@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+driver/libhub75.so
+preview*.png
