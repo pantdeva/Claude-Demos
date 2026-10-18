@@ -92,7 +92,7 @@ def main(argv=None):
     elif a.cmd == "leads":
         from .finder import leads, routes
         for d in leads.top(con, a.kind, a.n):
-            print(f"{d['score']:+.2f}  {d['name'][:38]:38} {d['symbol'] or '':12} news {d['news_score'] if d['news_score'] is None else round(d['news_score'], 2)}"
+            print(f"{(d["score"] if d["score"] is not None else float("nan")):+.2f}  {d['name'][:38]:38} {d['symbol'] or '':12} news {d['news_score'] if d['news_score'] is None else round(d['news_score'], 2)}"
                   f"  model {d['model_score'] if d['model_score'] is None else round(d['model_score'], 2)}  → {routes.best(d['routes'] or [])}")
     elif a.cmd == "service":
         service.run(once=a.once)

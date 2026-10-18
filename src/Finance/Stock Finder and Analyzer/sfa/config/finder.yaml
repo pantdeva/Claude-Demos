@@ -28,9 +28,10 @@ rules:
 leads:
   # Lead score (−1…+1) = news composite (rules A–D) combined with the quant-model
   # signal (Milestone 2 chosen model): excess expected return scaled by volatility,
-  # and the probability of beating cash.
+  # floored at min_sd_1y.
   weights: {news: 0.5, model: 0.5}
-  model_scale: 0.5           # tanh(excess return / (scale × 1-year vol)) → −1…+1
+  model_scale: 1.0           # tanh(excess return / (scale × 1-year sd)) → −1…+1 (a 1-year Sharpe of 0.5 → +0.46)
+  min_sd_1y: 0.10            # floor on the forecast spread (pinned prices, e.g. takeover targets, look riskless)
   horizon: "1 year"
   top_n: 50                  # leads exported
   min_news_items: 3

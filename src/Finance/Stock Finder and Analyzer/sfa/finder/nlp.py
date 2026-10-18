@@ -68,7 +68,8 @@ def score_pending(con, limit: int = 5000, log=print) -> dict:
     cut = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rows = con.execute("""SELECT n.id, n.title, n.summary FROM news_items n
                           LEFT JOIN news_sentiment s ON s.news_id=n.id WHERE s.news_id IS NULL
-                          AND COALESCE(n.published, n.fetched) >= ?
+                          AND (COALESCE(n.published, n.fetched) >= ?
+                               OR EXISTS (SELECT 1 FROM ipo_events e WHERE e.news_id=n.id))
                           ORDER BY n.published DESC LIMIT ?""", (cut, limit)).fetchall()
     if not rows:
         return {"scored": 0}

@@ -128,7 +128,7 @@ def _md(con, listed, new, ipo, exp, k) -> str:
         out.append("| Market | Exchange | Stories | Growth stories | Sentiment | Sectors | Suggest |")
         out.append("|---|---|---|---|---|---|---|")
         for e in exp:
-            groups = ", ".join(g for g, _ in json.loads(e["top_groups"] or "[]"))
+            groups = " / ".join(g for g, _ in json.loads(e["top_groups"] or "[]"))
             out.append(f"| {e['country']} | {e['exchange']} | {e['n_items']} | {e['growth_items']} | "
                        f"{e['sentiment']:+.2f} | {groups or '—'} | {'**yes**' if e['suggest'] else 'no'} |")
     else:

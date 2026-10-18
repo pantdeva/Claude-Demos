@@ -23,7 +23,7 @@ sectors:
     customers: [consumer spending, consumer confidence, retail sales, discretionary spending, household income]
   Consumer Defensive:
     manufacturing: [commodity prices, crop, input costs, packaging costs, food inflation, monsoon]
-    customers: [consumer spending, retail sales, rural demand, volume growth, food prices]
+    customers: [consumer spending, retail sales, rural demand, food prices]
   Energy:
     manufacturing: [rig count, drilling, oilfield services, refinery, crude supply, OPEC]
     customers: [oil demand, fuel demand, gasoline demand, jet fuel, energy demand, power demand]
@@ -100,13 +100,13 @@ industries:
     customers: [travel demand, tourism, occupancy, business travel, RevPAR]
   Packaged Foods:
     manufacturing: [wheat prices, sugar prices, palm oil, cocoa prices, commodity prices, packaging costs]
-    customers: [consumer spending, rural demand, volume growth, retail sales, food inflation]
+    customers: [consumer spending, rural demand, retail sales, food inflation]
   Grocery Stores:
     manufacturing: [food inflation, supplier costs, wage costs]
     customers: [consumer spending, shopper traffic, basket size, retail sales]
   Household & Personal Products:
     manufacturing: [palm oil, crude derivatives, packaging costs, input costs]
-    customers: [rural demand, consumer spending, volume growth, premiumisation]
+    customers: [rural demand, consumer spending, premiumisation]
   Tobacco:
     manufacturing: [leaf tobacco, excise duty, regulation]
     customers: [smokers, cigarette volumes, vaping demand, nicotine pouches]
@@ -118,7 +118,7 @@ industries:
     customers: [spirits demand, consumer spending, premiumisation, duty free]
   Beverages - Non-Alcoholic:
     manufacturing: [sugar prices, aluminium cans, PET, juice concentrate]
-    customers: [consumer spending, volume growth, emerging markets demand]
+    customers: [consumer spending, emerging markets demand]
   Oil & Gas Integrated:
     manufacturing: [crude oil, OPEC, oilfield services, rig count, LNG supply]
     customers: [oil demand, fuel demand, refining margins, LNG demand, China demand]
@@ -148,10 +148,10 @@ industries:
     customers: [premium growth, policy sales, annuity demand, insurance penetration]
   Insurance - Property & Casualty:
     manufacturing: [catastrophe losses, reinsurance rates, claims inflation, hurricane, wildfire]
-    customers: [premium growth, pricing, policy renewals, motor insurance]
+    customers: [premium growth, insurance pricing, policy renewals, motor insurance]
   Insurance - Diversified:
     manufacturing: [interest rates, catastrophe losses, reinsurance rates]
-    customers: [premium growth, policy sales, pricing]
+    customers: [premium growth, policy sales, insurance pricing]
   Capital Markets:
     manufacturing: [interest rates, regulation, market volatility]
     customers: [deal activity, IPO market, trading volumes, M&A, retail investors]

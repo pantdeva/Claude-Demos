@@ -38,8 +38,9 @@ def model_signal(growth_detail: dict | None, growth_value) -> tuple[float | None
     except (KeyError, TypeError, ValueError):
         return None, {}
     rf = growth_detail.get("rf_annual") or 0.0
-    if sd <= 0:
+    if not math.isfinite(sd) or sd <= 0:
         return None, {}
+    sd = max(sd, cfg.get("min_sd_1y", 0.10))
     sig = math.tanh((exp - rf) / (cfg["model_scale"] * sd))
     return sig, {"model": growth_detail.get("model"), "expected_1y": exp, "rf": rf, "sd_1y": sd,
                  "p_beat_cash": growth_detail.get("p_beat_cash"), "basis": growth_detail.get("basis")}
@@ -165,8 +166,9 @@ def build(con, log=print) -> dict:
 
 
 def top(con, kind: str, k: int) -> list[dict]:
-    rows = con.execute("SELECT * FROM finder_leads WHERE status='active' AND kind=? AND score IS NOT NULL "
-                       "ORDER BY score DESC LIMIT ?", (kind, k)).fetchall()
+    cond = "" if kind == "ipo_pipeline" else " AND score IS NOT NULL"     # unscored IPO names are still leads
+    rows = con.execute(f"SELECT * FROM finder_leads WHERE status='active' AND kind=?{cond} "
+                       "ORDER BY score IS NULL, score DESC LIMIT ?", (kind, k)).fetchall()
     out = []
     for r in rows:
         d = dict(r)
