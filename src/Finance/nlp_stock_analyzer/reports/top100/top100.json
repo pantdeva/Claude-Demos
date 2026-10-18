@@ -1,0 +1,1077 @@
+[
+ {
+  "rank": 1,
+  "name": "NVIDIA",
+  "ticker": "NVDA",
+  "mcap_b": 5170.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 2,
+  "name": "Apple",
+  "ticker": "AAPL",
+  "mcap_b": 5012.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 3,
+  "name": "Alphabet (Google)",
+  "ticker": "GOOGL",
+  "mcap_b": 4120.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ],
+  "note": "Joined the Dow on 29 Jun 2026"
+ },
+ {
+  "rank": 4,
+  "name": "Microsoft",
+  "ticker": "MSFT",
+  "mcap_b": 3928.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 5,
+  "name": "Amazon",
+  "ticker": "AMZN",
+  "mcap_b": 2696.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 6,
+  "name": "TSMC",
+  "ticker": "2330.TW",
+  "mcap_b": 2139.0,
+  "country": "Taiwan",
+  "indexes": [
+   "TAIEX"
+  ]
+ },
+ {
+  "rank": 7,
+  "name": "SpaceX",
+  "ticker": "SPCX",
+  "mcap_b": 1923.0,
+  "country": "USA",
+  "indexes": [
+   "Nasdaq-100"
+  ],
+  "note": "Listed June 2026; joined Nasdaq-100 on 7 Jul 2026; S&P 500 not before mid-2027"
+ },
+ {
+  "rank": 8,
+  "name": "Meta Platforms",
+  "ticker": "META",
+  "mcap_b": 1807.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 9,
+  "name": "Saudi Aramco",
+  "ticker": "2222.SR",
+  "mcap_b": 1629.0,
+  "country": "Saudi Arabia",
+  "indexes": [
+   "Tadawul (TASI)"
+  ]
+ },
+ {
+  "rank": 10,
+  "name": "Broadcom",
+  "ticker": "AVGO",
+  "mcap_b": 1569.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 11,
+  "name": "Tesla",
+  "ticker": "TSLA",
+  "mcap_b": 1400.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 12,
+  "name": "Berkshire Hathaway",
+  "ticker": "BRK-B",
+  "mcap_b": 1138.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 13,
+  "name": "Eli Lilly",
+  "ticker": "LLY",
+  "mcap_b": 1120.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 14,
+  "name": "Samsung Electronics",
+  "ticker": "005930.KS",
+  "mcap_b": 1051.0,
+  "country": "South Korea",
+  "indexes": [
+   "KOSPI"
+  ]
+ },
+ {
+  "rank": 15,
+  "name": "Micron Technology",
+  "ticker": "MU",
+  "mcap_b": 994.34,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 16,
+  "name": "Walmart",
+  "ticker": "WMT",
+  "mcap_b": 942.6,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ],
+  "note": "Moved to Nasdaq; joined the Nasdaq-100 in Jan 2026"
+ },
+ {
+  "rank": 17,
+  "name": "JPMorgan Chase",
+  "ticker": "JPM",
+  "mcap_b": 902.16,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 18,
+  "name": "AMD",
+  "ticker": "AMD",
+  "mcap_b": 863.17,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 19,
+  "name": "Visa",
+  "ticker": "V",
+  "mcap_b": 755.84,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 20,
+  "name": "Exxon Mobil",
+  "ticker": "XOM",
+  "mcap_b": 735.95,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 21,
+  "name": "SK Hynix",
+  "ticker": "000660.KS",
+  "mcap_b": 694.66,
+  "country": "South Korea",
+  "indexes": [
+   "KOSPI"
+  ]
+ },
+ {
+  "rank": 22,
+  "name": "ASML",
+  "ticker": "ASML",
+  "mcap_b": 630.5,
+  "country": "Netherlands",
+  "indexes": [
+   "Nasdaq-100",
+   "Euro Stoxx 50",
+   "AEX"
+  ]
+ },
+ {
+  "rank": 23,
+  "name": "Johnson & Johnson",
+  "ticker": "JNJ",
+  "mcap_b": 615.87,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 24,
+  "name": "Mastercard",
+  "ticker": "MA",
+  "mcap_b": 540.86,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 25,
+  "name": "AbbVie",
+  "ticker": "ABBV",
+  "mcap_b": 504.37,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 26,
+  "name": "CXMT",
+  "ticker": "688825.SS",
+  "mcap_b": 477.54,
+  "country": "China",
+  "indexes": [
+   "MSCI China (not yet CSI 300)"
+  ],
+  "note": "Listed on Shanghai's STAR Market July 2026; added to MSCI China in August"
+ },
+ {
+  "rank": 27,
+  "name": "Tencent",
+  "ticker": "0700.HK",
+  "mcap_b": 476.49,
+  "country": "China",
+  "indexes": [
+   "Hang Seng"
+  ]
+ },
+ {
+  "rank": 28,
+  "name": "Intel",
+  "ticker": "INTC",
+  "mcap_b": 474.95,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 29,
+  "name": "China Construction Bank",
+  "ticker": "0939.HK",
+  "mcap_b": 448.67,
+  "country": "China",
+  "indexes": [
+   "Hang Seng",
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 30,
+  "name": "Palantir",
+  "ticker": "PLTR",
+  "mcap_b": 447.04,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 31,
+  "name": "Chevron",
+  "ticker": "CVX",
+  "mcap_b": 441.34,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 32,
+  "name": "Costco",
+  "ticker": "COST",
+  "mcap_b": 438.3,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 33,
+  "name": "Cisco",
+  "ticker": "CSCO",
+  "mcap_b": 423.39,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 34,
+  "name": "Coca-Cola",
+  "ticker": "KO",
+  "mcap_b": 404.0,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 35,
+  "name": "Oracle",
+  "ticker": "ORCL",
+  "mcap_b": 388.72,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 36,
+  "name": "Agricultural Bank of China",
+  "ticker": "601288.SS",
+  "mcap_b": 379.55,
+  "country": "China",
+  "indexes": [
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 37,
+  "name": "Roche",
+  "ticker": "ROG.SW",
+  "mcap_b": 371.73,
+  "country": "Switzerland",
+  "indexes": [
+   "SMI"
+  ]
+ },
+ {
+  "rank": 38,
+  "name": "Procter & Gamble",
+  "ticker": "PG",
+  "mcap_b": 370.39,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 39,
+  "name": "UnitedHealth",
+  "ticker": "UNH",
+  "mcap_b": 360.32,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 40,
+  "name": "Merck & Co.",
+  "ticker": "MRK",
+  "mcap_b": 360.08,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 41,
+  "name": "Bank of America",
+  "ticker": "BAC",
+  "mcap_b": 358.23,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 42,
+  "name": "ICBC",
+  "ticker": "1398.HK",
+  "mcap_b": 344.69,
+  "country": "China",
+  "indexes": [
+   "Hang Seng",
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 43,
+  "name": "Caterpillar",
+  "ticker": "CAT",
+  "mcap_b": 335.91,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 44,
+  "name": "Bank of China",
+  "ticker": "3988.HK",
+  "mcap_b": 333.98,
+  "country": "China",
+  "indexes": [
+   "Hang Seng",
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 45,
+  "name": "Lam Research",
+  "ticker": "LRCX",
+  "mcap_b": 330.3,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 46,
+  "name": "General Electric",
+  "ticker": "GE",
+  "mcap_b": 325.61,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 47,
+  "name": "Applied Materials",
+  "ticker": "AMAT",
+  "mcap_b": 324.81,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 48,
+  "name": "HSBC",
+  "ticker": "HSBA.L",
+  "mcap_b": 323.42,
+  "country": "UK",
+  "indexes": [
+   "FTSE 100",
+   "Hang Seng"
+  ]
+ },
+ {
+  "rank": 49,
+  "name": "Philip Morris International",
+  "ticker": "PM",
+  "mcap_b": 319.82,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 50,
+  "name": "Home Depot",
+  "ticker": "HD",
+  "mcap_b": 308.91,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 51,
+  "name": "Shell",
+  "ticker": "SHEL.L",
+  "mcap_b": 303.38,
+  "country": "UK",
+  "indexes": [
+   "FTSE 100"
+  ]
+ },
+ {
+  "rank": 52,
+  "name": "Netflix",
+  "ticker": "NFLX",
+  "mcap_b": 293.68,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 53,
+  "name": "Dell Technologies",
+  "ticker": "DELL",
+  "mcap_b": 287.2,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 54,
+  "name": "Novartis",
+  "ticker": "NOVN.SW",
+  "mcap_b": 286.28,
+  "country": "Switzerland",
+  "indexes": [
+   "SMI"
+  ]
+ },
+ {
+  "rank": 55,
+  "name": "Morgan Stanley",
+  "ticker": "MS",
+  "mcap_b": 283.59,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 56,
+  "name": "Palo Alto Networks",
+  "ticker": "PANW",
+  "mcap_b": 279.75,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 57,
+  "name": "Royal Bank of Canada",
+  "ticker": "RY.TO",
+  "mcap_b": 273.84,
+  "country": "Canada",
+  "indexes": [
+   "S&P/TSX 60"
+  ]
+ },
+ {
+  "rank": 58,
+  "name": "Alibaba",
+  "ticker": "9988.HK",
+  "mcap_b": 271.43,
+  "country": "China",
+  "indexes": [
+   "Hang Seng"
+  ]
+ },
+ {
+  "rank": 59,
+  "name": "RTX",
+  "ticker": "RTX",
+  "mcap_b": 261.35,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 60,
+  "name": "SAP",
+  "ticker": "SAP.DE",
+  "mcap_b": 258.87,
+  "country": "Germany",
+  "indexes": [
+   "Euro Stoxx 50",
+   "DAX"
+  ]
+ },
+ {
+  "rank": 61,
+  "name": "Nestl\u00e9",
+  "ticker": "NESN.SW",
+  "mcap_b": 257.21,
+  "country": "Switzerland",
+  "indexes": [
+   "SMI"
+  ]
+ },
+ {
+  "rank": 62,
+  "name": "Goldman Sachs",
+  "ticker": "GS",
+  "mcap_b": 256.59,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 63,
+  "name": "AstraZeneca",
+  "ticker": "AZN.L",
+  "mcap_b": 256.53,
+  "country": "UK",
+  "indexes": [
+   "FTSE 100"
+  ],
+  "note": "Left the Nasdaq-100 in Jan 2026"
+ },
+ {
+  "rank": 64,
+  "name": "Thermo Fisher Scientific",
+  "ticker": "TMO",
+  "mcap_b": 255.12,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 65,
+  "name": "Texas Instruments",
+  "ticker": "TXN",
+  "mcap_b": 252.49,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 66,
+  "name": "Wells Fargo",
+  "ticker": "WFC",
+  "mcap_b": 251.74,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 67,
+  "name": "Kweichow Moutai",
+  "ticker": "600519.SS",
+  "mcap_b": 248.85,
+  "country": "China",
+  "indexes": [
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 68,
+  "name": "Mitsubishi UFJ Financial",
+  "ticker": "8306.T",
+  "mcap_b": 246.27,
+  "country": "Japan",
+  "indexes": [
+   "Nikkei 225"
+  ]
+ },
+ {
+  "rank": 69,
+  "name": "GE Vernova",
+  "ticker": "GEV",
+  "mcap_b": 245.34,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 70,
+  "name": "L'Or\u00e9al",
+  "ticker": "OR.PA",
+  "mcap_b": 243.62,
+  "country": "France",
+  "indexes": [
+   "Euro Stoxx 50",
+   "CAC 40"
+  ]
+ },
+ {
+  "rank": 71,
+  "name": "Arm Holdings",
+  "ticker": "ARM",
+  "mcap_b": 243.29,
+  "country": "UK",
+  "indexes": [
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 72,
+  "name": "Amgen",
+  "ticker": "AMGN",
+  "mcap_b": 233.81,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 73,
+  "name": "PetroChina",
+  "ticker": "0857.HK",
+  "mcap_b": 233.09,
+  "country": "China",
+  "indexes": [
+   "Hang Seng",
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 74,
+  "name": "CrowdStrike",
+  "ticker": "CRWD",
+  "mcap_b": 232.83,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 75,
+  "name": "Siemens",
+  "ticker": "SIE.DE",
+  "mcap_b": 232.69,
+  "country": "Germany",
+  "indexes": [
+   "Euro Stoxx 50",
+   "DAX"
+  ]
+ },
+ {
+  "rank": 76,
+  "name": "Linde",
+  "ticker": "LIN",
+  "mcap_b": 229.76,
+  "country": "UK",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ],
+  "note": "Listed in New York; incorporated in Ireland, HQ in UK"
+ },
+ {
+  "rank": 77,
+  "name": "Toyota",
+  "ticker": "7203.T",
+  "mcap_b": 229.21,
+  "country": "Japan",
+  "indexes": [
+   "Nikkei 225"
+  ]
+ },
+ {
+  "rank": 78,
+  "name": "China Mobile",
+  "ticker": "0941.HK",
+  "mcap_b": 223.66,
+  "country": "China",
+  "indexes": [
+   "Hang Seng",
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 79,
+  "name": "Arista Networks",
+  "ticker": "ANET",
+  "mcap_b": 223.21,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 80,
+  "name": "LVMH",
+  "ticker": "MC.PA",
+  "mcap_b": 219.82,
+  "country": "France",
+  "indexes": [
+   "Euro Stoxx 50",
+   "CAC 40"
+  ]
+ },
+ {
+  "rank": 81,
+  "name": "IBM",
+  "ticker": "IBM",
+  "mcap_b": 218.7,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 82,
+  "name": "Shopify",
+  "ticker": "SHOP",
+  "mcap_b": 218.11,
+  "country": "Canada",
+  "indexes": [
+   "Nasdaq-100",
+   "S&P/TSX 60"
+  ]
+ },
+ {
+  "rank": 83,
+  "name": "KLA",
+  "ticker": "KLAC",
+  "mcap_b": 216.29,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 84,
+  "name": "American Express",
+  "ticker": "AXP",
+  "mcap_b": 211.77,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 85,
+  "name": "BHP Group",
+  "ticker": "BHP.AX",
+  "mcap_b": 211.67,
+  "country": "Australia",
+  "indexes": [
+   "S&P/ASX 200"
+  ]
+ },
+ {
+  "rank": 86,
+  "name": "International Holding Company",
+  "ticker": "IHC.AE",
+  "mcap_b": 210.6,
+  "country": "UAE",
+  "indexes": [
+   "FTSE ADX General"
+  ]
+ },
+ {
+  "rank": 87,
+  "name": "MediaTek",
+  "ticker": "2454.TW",
+  "mcap_b": 209.38,
+  "country": "Taiwan",
+  "indexes": [
+   "TAIEX"
+  ]
+ },
+ {
+  "rank": 88,
+  "name": "Citigroup",
+  "ticker": "C",
+  "mcap_b": 208.43,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 89,
+  "name": "Marvell Technology",
+  "ticker": "MRVL",
+  "mcap_b": 204.75,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ],
+  "note": "Joined the S&P 500 on 22 Jun 2026"
+ },
+ {
+  "rank": 90,
+  "name": "TotalEnergies",
+  "ticker": "TTE.PA",
+  "mcap_b": 201.38,
+  "country": "France",
+  "indexes": [
+   "Euro Stoxx 50",
+   "CAC 40"
+  ]
+ },
+ {
+  "rank": 91,
+  "name": "Salesforce",
+  "ticker": "CRM",
+  "mcap_b": 198.09,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 92,
+  "name": "Toronto-Dominion Bank",
+  "ticker": "TD.TO",
+  "mcap_b": 196.59,
+  "country": "Canada",
+  "indexes": [
+   "S&P/TSX 60"
+  ]
+ },
+ {
+  "rank": 93,
+  "name": "Amphenol",
+  "ticker": "APH",
+  "mcap_b": 195.67,
+  "country": "USA",
+  "indexes": [
+   "S&P 500"
+  ]
+ },
+ {
+  "rank": 94,
+  "name": "Inditex",
+  "ticker": "ITX.MC",
+  "mcap_b": 195.44,
+  "country": "Spain",
+  "indexes": [
+   "Euro Stoxx 50",
+   "IBEX 35"
+  ]
+ },
+ {
+  "rank": 95,
+  "name": "Gilead Sciences",
+  "ticker": "GILD",
+  "mcap_b": 193.66,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 96,
+  "name": "Banco Santander",
+  "ticker": "SAN.MC",
+  "mcap_b": 192.28,
+  "country": "Spain",
+  "indexes": [
+   "Euro Stoxx 50",
+   "IBEX 35"
+  ]
+ },
+ {
+  "rank": 97,
+  "name": "CATL",
+  "ticker": "300750.SZ",
+  "mcap_b": 191.99,
+  "country": "China",
+  "indexes": [
+   "CSI 300"
+  ]
+ },
+ {
+  "rank": 98,
+  "name": "Analog Devices",
+  "ticker": "ADI",
+  "mcap_b": 191.61,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ]
+ },
+ {
+  "rank": 99,
+  "name": "Walt Disney",
+  "ticker": "DIS",
+  "mcap_b": 190.95,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Dow 30"
+  ]
+ },
+ {
+  "rank": 100,
+  "name": "Sandisk",
+  "ticker": "SNDK",
+  "mcap_b": 187.78,
+  "country": "USA",
+  "indexes": [
+   "S&P 500",
+   "Nasdaq-100"
+  ],
+  "note": "Joined the Nasdaq-100 on 20 Apr 2026"
+ }
+]

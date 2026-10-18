@@ -1,0 +1,34 @@
+{
+  "ticker": "MU",
+  "name": "Micron Technology",
+  "market": "US",
+  "window_utc": [
+    "2026-10-09T05:57:52.287453+00:00",
+    "2026-10-16T05:57:52.287453+00:00"
+  ],
+  "composite": -0.055821603990975854,
+  "verdict": "Neutral",
+  "factors": {
+    "market_sentiment": {
+      "label": "Market sentiment",
+      "score": -0.321161995490812,
+      "articles": 80
+    },
+    "competition": {
+      "label": "Competition & news releases",
+      "score": 0.1497972512925766,
+      "articles": 82
+    },
+    "manufacturing": {
+      "label": "Manufacturing industry",
+      "score": 0.12735005608667696,
+      "articles": 85
+    },
+    "customers": {
+      "label": "Customers",
+      "score": -0.08956931753684724,
+      "articles": 47
+    }
+  },
+  "warnings": []
+}

@@ -1,0 +1,34 @@
+{
+  "ticker": "NVDA",
+  "name": "NVIDIA",
+  "market": "US",
+  "window_utc": [
+    "2026-10-09T05:51:38.478800+00:00",
+    "2026-10-16T05:51:38.478800+00:00"
+  ],
+  "composite": 0.14244735051060078,
+  "verdict": "Neutral",
+  "factors": {
+    "market_sentiment": {
+      "label": "Market sentiment",
+      "score": 0.09508028349598412,
+      "articles": 73
+    },
+    "competition": {
+      "label": "Competition & news releases",
+      "score": 0.1546963316817398,
+      "articles": 125
+    },
+    "manufacturing": {
+      "label": "Manufacturing industry",
+      "score": 0.3169274552937109,
+      "articles": 75
+    },
+    "customers": {
+      "label": "Customers",
+      "score": 0.0474547659305137,
+      "articles": 55
+    }
+  },
+  "warnings": []
+}

@@ -1,0 +1,34 @@
+{
+  "ticker": "TATASTEEL.NS",
+  "name": "Tata Steel",
+  "market": "India",
+  "window_utc": [
+    "2026-10-09T05:53:31.444524+00:00",
+    "2026-10-16T05:53:31.444524+00:00"
+  ],
+  "composite": 0.26360364975475475,
+  "verdict": "Bullish",
+  "factors": {
+    "market_sentiment": {
+      "label": "Market sentiment",
+      "score": 0.05650862365686416,
+      "articles": 5
+    },
+    "competition": {
+      "label": "Competition & news releases",
+      "score": -0.20446008942188348,
+      "articles": 5
+    },
+    "manufacturing": {
+      "label": "Manufacturing industry",
+      "score": 0.4528170860632521,
+      "articles": 14
+    },
+    "customers": {
+      "label": "Customers",
+      "score": 0.8288106712020639,
+      "articles": 4
+    }
+  },
+  "warnings": []
+}
