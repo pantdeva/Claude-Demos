@@ -9,7 +9,9 @@
     python -m sfa all                  universe → prices → fundamentals → classify
     python -m sfa service [--once]     background scheduler
     python -m sfa jobs                 job schedule and last runs
-    python -m sfa show SYMBOL          one company's classification
+    python -m sfa show SYMBOL          one company's classification and predictions
+    python -m sfa models [--jobs N]    Milestone 2: walk-forward → leaderboard → MPT vs 1/N → predictions → export
+    python -m sfa leaderboard          rebuild the leaderboard and exports from stored forecasts
 """
 
 from __future__ import annotations
@@ -26,8 +28,11 @@ from .db import connect
 def main(argv=None):
     p = argparse.ArgumentParser(prog="sfa", description="Stock Finder and Analyzer – Stage 0 backend")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for c in ("init", "prices", "fundamentals", "classify", "news", "feeds", "all", "jobs"):
+    for c in ("init", "prices", "fundamentals", "classify", "news", "feeds", "all", "jobs", "leaderboard"):
         sub.add_parser(c)
+    mo = sub.add_parser("models")
+    mo.add_argument("--jobs", type=int)
+    mo.add_argument("--only", nargs="*", help="home symbols to run (default: all)")
     u = sub.add_parser("universe")
     u.add_argument("--limit", type=int)
     u.add_argument("--only", nargs="*")
@@ -59,6 +64,16 @@ def main(argv=None):
     elif a.cmd == "all":
         for name in ("universe", "prices", "fundamentals", "classify"):
             print(name, service.run_job(con, name))
+    elif a.cmd == "models":
+        from .models import run_all
+        only = None
+        if a.only:
+            only = [r[0] for r in con.execute(
+                f"SELECT company_id FROM listings WHERE symbol IN ({','.join('?' * len(a.only))})", a.only)]
+        print(run_all(con, jobs=a.jobs, only=only))
+    elif a.cmd == "leaderboard":
+        from .models import leaderboard, report
+        print(leaderboard.build(con), report.export(con))
     elif a.cmd == "service":
         service.run(once=a.once)
     elif a.cmd == "jobs":

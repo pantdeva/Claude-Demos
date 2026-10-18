@@ -1,0 +1,57 @@
+# Milestone 2: model leaderboard settings.
+
+walk_forward:
+  window_days: 1260        # 5 years of daily returns per fit (no look-ahead)
+  step_days: 126           # forecast dates every ~6 months; 63 (quarterly) is finer but ~2x slower
+  first_origin: 2010-01-01 # earliest forecast date
+  horizons: {"3 months": 63, "1 year": 252}
+  n_sims: 2000
+  min_history_days: 1575   # window + 3 months: shorter histories are forecast-only
+  jobs: 2                  # parallel processes
+
+# Models compared. ids are stable keys stored in the database.
+models:
+  rw:      {name: "Random walk (zero drift)", kind: baseline}
+  ewma:    {name: "EWMA vol + shrunk drift", kind: baseline}
+  gjr:     {name: "GJR-GARCH(1,1)-t", kind: baseline}
+  gbm:     {name: "GBM", kind: candidate}
+  bsm:     {name: "Black-Scholes-Merton", kind: candidate}
+  garch:   {name: "GARCH(1,1)-t", kind: candidate}
+  arima:   {name: "ARIMA", kind: candidate}
+  merton:  {name: "Merton jump-diffusion", kind: candidate}
+  mc:      {name: "Monte Carlo (bootstrap)", kind: candidate}
+
+# Research-based default for each cell before any evidence: GJR-GARCH-t for
+# 3-month forecasts in emerging markets (volatility clustering and leverage effects
+# are strongest there); EWMA volatility with a drift shrunk towards rf + equity
+# premium elsewhere and for 1 year (historical drifts are too noisy to use raw).
+baseline_rule:
+  "3 months": {Emerging: gjr, Frontier: gjr, Standalone: gjr, default: ewma}
+  "1 year":   {default: ewma}
+
+# A candidate replaces the baseline only on a clear out-of-sample win: lower mean
+# CRPS and a Diebold–Mariano statistic (Newey–West variance) at or above this value.
+promotion:
+  dm_t: 1.96
+  min_origins: 8           # forecast dates needed in a group before it can be judged
+  min_stocks_cell: 5
+
+# Drift shrinkage for the EWMA baseline: mu = w * mu_hist + (1 - w) * (rf + ERP),
+# w = tau^2 / (tau^2 + s^2 / T)  (precision weighting; tau = spread of true drifts).
+shrinkage:
+  tau_annual: 0.05
+
+# Equity risk premium used as the drift prior (annual). Damodaran's mature-market
+# premium for developed markets; country premiums are loaded from Damodaran's file in
+# Milestone 4 — until then emerging markets use the India figure from the
+# research table as a stand-in and are flagged.
+erp:
+  mature: 0.0423
+  by_country: {IN: 0.0708}
+  emerging_default: 0.0708
+
+# MPT vs 1/N inside each cell: rebalance every 3 months, hold 3 months, USD returns.
+portfolio:
+  gamma: 3.0
+  rebalance_days: 63
+  max_assets: 60           # largest stocks by market value in the cell

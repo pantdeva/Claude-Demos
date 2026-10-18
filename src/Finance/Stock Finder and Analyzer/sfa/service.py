@@ -26,7 +26,13 @@ JOBS = {
     "fundamentals": lambda con, log: pipeline.refresh_fundamentals(con, refresh=True, log=log),
     "classify": lambda con, log: {**pipeline.classify_all(con, log=log), **export.export(con)},
     "news": lambda con, log: rss.poll(con),
+    "leaderboard": lambda con, log: _models(con, log),
 }
+
+
+def _models(con, log):
+    from .models import run_all
+    return run_all(con, log=log)
 
 _stop = [False]
 
@@ -78,7 +84,7 @@ def run(once: bool = False, log=print):
     con = connect()
     signal.signal(signal.SIGINT, lambda *_: _stop.__setitem__(0, True))
     signal.signal(signal.SIGTERM, lambda *_: _stop.__setitem__(0, True))
-    order = ["universe", "prices", "fundamentals", "classify", "news"]
+    order = ["universe", "prices", "fundamentals", "classify", "leaderboard", "news"]
     log(f"sfa service started {now()}")
     while not _stop[0]:
         for name in sorted(due_jobs(con), key=lambda n: order.index(n) if n in order else 99):

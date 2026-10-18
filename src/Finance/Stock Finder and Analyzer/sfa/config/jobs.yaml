@@ -7,7 +7,7 @@ jobs:
   prices:        {at: "06:30",       enabled: true,  desc: "Refresh daily prices for every listing and benchmark"}
   fundamentals:  {every_hours: 168, enabled: true,  desc: "Refresh market value, revenue, earnings, book value"}
   classify:      {at: "07:00",       enabled: true,  desc: "Recompute all Stage 0 classifications and export"}
-  leaderboard:   {every_hours: 168, enabled: false, desc: "Milestone 2: model leaderboard per class x sector x horizon"}
+  leaderboard:   {every_hours: 168, enabled: true,  desc: "Walk-forward forecasts (new dates only), leaderboard, MPT vs 1/N, growth predictions"}
   news:          {every_hours: 1,   enabled: false, desc: "Milestone 3: RSS ingestion and FinBERT scoring"}
   ipo_pipeline:  {every_hours: 6,   enabled: false, desc: "Milestone 3: SEC EDGAR, Nasdaq, SEBI, HKEX, JPX new listings"}
   finder:        {every_hours: 6,   enabled: false, desc: "Milestone 3: lead scoring and investment routes"}
