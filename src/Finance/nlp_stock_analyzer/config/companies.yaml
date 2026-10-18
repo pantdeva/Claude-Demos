@@ -1,0 +1,76 @@
+# NLP Stock Analyzer configuration
+#
+# Each company lists the words the analyzer searches NewsAPI for, grouped by
+# the four factors. Matching is on whole words. Terms with a capital letter are
+# case-sensitive ("Intel" won't match "intel sharing", "SAIL" won't match "sail");
+# all-lowercase terms ("iron ore") match in any case.
+#
+# Optional per company:
+#   context:  extra words an article must ALSO contain for that group, to keep
+#             broad names (Microsoft, Meta) to the stories that matter
+#   exclude:  articles containing any of these words are dropped everywhere
+
+settings:
+  lookback_days: 7          # how far back to pull news (NewsAPI free plan: up to ~30 days, 24h delay)
+  half_life_days: 3         # newer articles count more; an article this old counts half
+  max_articles_per_query: 100
+  thresholds:
+    bullish: 0.15           # composite above this -> Bullish
+    bearish: -0.15          # composite below this -> Bearish
+  weights:                  # default factor weights (the dashboard lets you change them)
+    market_sentiment: 0.30
+    competition: 0.25
+    manufacturing: 0.20
+    customers: 0.25
+  # Good news about a competitor is usually bad for the company, so competitor
+  # sentiment is flipped (-1). Set to 1 to treat competitor news as a sector signal.
+  competitor_direction: -1
+  # Words that mark an article as the company's own announcement or release.
+  release_keywords: [announces, announced, launches, launched, unveils, partnership,
+                     agreement, acquisition, earnings, results, guidance, quarterly]
+  # Deal, coupon and package-index sites that add noise rather than news.
+  exclude_sources: [Slickdeals.net, Dealcatcher.com, 9to5Toys, Holidaypirates.com,
+                    Pypi.org, Dealnews.com]
+
+companies:
+  NVDA:
+    name: NVIDIA
+    market: US
+    language: en
+    aliases: [NVIDIA, Nvidia]
+    competitors: [AMD, Intel, Broadcom, Qualcomm]
+    manufacturing: [TSMC, semiconductor foundry, chip supply, HBM, advanced packaging]
+    customers: [Microsoft, Meta, Amazon Web Services, AWS, Alphabet, Google Cloud, Oracle,
+                data center spending]
+    context:
+      competitors: [AI, chip, chips, GPU, GPUs, accelerator, accelerators, data center,
+                    semiconductor, earnings, shares, stock]
+      customers: [AI, data center, data centers, capex, GPU, GPUs, Nvidia, NVIDIA, chips,
+                  compute, spending]
+
+  MU:
+    name: Micron Technology
+    market: US
+    language: en
+    aliases: [Micron, Micron Technology]
+    competitors: [Samsung Electronics, Samsung, SK Hynix, SK hynix, SanDisk, Sandisk, Kioxia]
+    manufacturing: [DRAM prices, NAND prices, memory prices, memory supply, memory shortage,
+                    HBM, wafer fab equipment, ASML, Applied Materials, Lam Research]
+    customers: [NVIDIA, Nvidia, AMD, Apple, Dell, HP, smartphone demand, PC demand,
+                data center demand]
+    context:
+      competitors: [memory, DRAM, NAND, HBM, chip, chips, semiconductor, earnings, shares, stock]
+      customers: [memory, DRAM, NAND, HBM, Micron, chips, demand, shipments, orders]
+
+  TATASTEEL.NS:
+    name: Tata Steel
+    market: India
+    language: en
+    aliases: [Tata Steel]
+    competitors: [JSW Steel, SAIL, Steel Authority of India, Jindal Steel]
+    manufacturing: [iron ore, coking coal, steel production, steel prices, steel imports]
+    customers: [automobile sales, auto sales, passenger vehicle sales, construction activity,
+                construction sector, infrastructure projects, capital goods]
+    context:
+      customers: [India, Indian, steel]
+    exclude: [AI infrastructure, data center, data centers]

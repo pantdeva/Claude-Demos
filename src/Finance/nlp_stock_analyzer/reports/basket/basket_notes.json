@@ -1,0 +1,9 @@
+[
+ "No model reliably beat simply holding the stock. Even the top-ranked strategy beat buy & hold on Sharpe for only 1 of 11 stocks, and every strategy's median result was slightly worse than holding.",
+ "Both horizons crowned the same strategy: GARCH with the all-in signal. It stays invested about 90% of the time and steps aside only when its forecast turns poor, so it tracks buy & hold closely (median Sharpe −0.03 at 3 months, −0.015 at 1 year).",
+ "Runner-up at both horizons was the Monte Carlo bootstrap signal. It was the most accurate forecaster overall, with the best average CRPS at both horizons and 90% bands that held about 90% of the time at 3 months.",
+ "Position sizing works as insurance, not as a return booster. Sized strategies cut the worst drop by a median of 10–15 points at 3 months and about 25 points at 1 year, at a cost of roughly 3–4 points of growth a year.",
+ "Diversification beat prediction on the stocks that fell. MPT, which can move money into the market index, was the best strategy for Citigroup (holding lost 98% at the worst point), ExxonMobil and Intel.",
+ "Cyclicals are where the volatility models earned their keep. On Micron, the jump-diffusion and GARCH signal strategies beat holding at both horizons.",
+ "Where models 'won' on Coca-Cola and Infosys, the margin was tiny (Sharpe 0.474 vs 0.474, and 0.411 vs 0.407), which is noise rather than skill."
+]

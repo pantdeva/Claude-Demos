@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+.venv/
+results/
+finbert/
+screen/cache/
+screen/results/

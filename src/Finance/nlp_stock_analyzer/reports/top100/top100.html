@@ -1,0 +1,184 @@
+<title>World's Top 100 Companies</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: market-data screener. Headline numbers, country split, then a filterable ranked table. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#15202b; --muted:#5a6676; --line:#dbe1e8;
+  --accent:#2c56c9; --accent-soft:#e3eafb; --bar:#9fb4ea;
+  --font-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --c1:#2c56c9; --c2:#c2410c; --c3:#0e7490; --c4:#b9720b; --c5:#1d7f55; --c6:#8a3fb8; --c7:#be185d; --c8:#7b8794;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1319; --surface:#151c24; --ink:#e5eaf0; --muted:#94a1b0; --line:#26303b;
+  --accent:#7fa2ff; --accent-soft:#1c2a47; --bar:#3a5bb0;
+  --c1:#7fa2ff; --c2:#fb8b4e; --c3:#4fc3dc; --c4:#e3a33c; --c5:#4cc28f; --c6:#c18ae8; --c7:#f472b6; --c8:#7b8794;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1319; --surface:#151c24; --ink:#e5eaf0; --muted:#94a1b0; --line:#26303b;
+  --accent:#7fa2ff; --accent-soft:#1c2a47; --bar:#3a5bb0;
+  --c1:#7fa2ff; --c2:#fb8b4e; --c3:#4fc3dc; --c4:#e3a33c; --c5:#4cc28f; --c6:#c18ae8; --c7:#f472b6; --c8:#7b8794;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:var(--font-display);font-weight:600;margin:0;text-wrap:balance}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.1}
+h2{font-size:18px}
+p{margin:0;max-width:70ch}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.eyebrow{font:500 11px/1 var(--font-data);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+header{display:flex;flex-direction:column;gap:10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat .v{font:500 24px/1.2 var(--font-data);font-variant-numeric:tabular-nums}
+.stat .k{font-size:12.5px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.stack{display:flex;height:22px;border-radius:5px;overflow:hidden;gap:2px}
+.stack span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+.legend .num{font-family:var(--font-data);color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls input{flex:1 1 220px;min-width:0;font:14px var(--font-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:13px var(--font-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 11px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.chips button .n{font-family:var(--font-data);font-size:11.5px;opacity:.75;margin-left:4px}
+button:focus-visible,input:focus-visible,th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scroll{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:500 11px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;position:sticky;top:0;background:var(--surface)}
+th button{all:unset;cursor:pointer}
+th button::after{content:"";margin-left:4px}
+th button[data-dir="asc"]::after{content:"▲"}
+th button[data-dir="desc"]::after{content:"▼"}
+td.rank,td.cap{font-family:var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.rank{color:var(--muted);width:3em}
+.co{font-weight:600}
+.tk{font:12px var(--font-data);color:var(--muted)}
+.note{font-size:12px;color:var(--muted);margin-top:2px}
+.capbar{height:4px;border-radius:2px;background:var(--bar);margin-top:5px}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font:11.5px/1 var(--font-body);padding:4px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+footer{display:flex;flex-direction:column;gap:6px}
+.show-sm{display:none}
+@media (max-width:560px){ .hide-sm{display:none} .show-sm{display:inline} td,th{padding:7px 6px} }
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Market value · 18 Oct 2026</span>
+  <h1>The world's 100 largest listed companies</h1>
+  <p class="muted">Ranked by market capitalisation in US dollars, with the major stock indexes each company belongs to. Filter by index or search by name, ticker or country.</p>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="panel">
+  <h2>Where the value sits</h2>
+  <div class="stack" id="stack" role="img" aria-label="Share of combined market value by country"></div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div class="panel">
+  <div class="controls">
+    <input id="q" type="search" placeholder="Search company, ticker or country" aria-label="Search">
+  </div>
+  <div class="chips" id="chips" aria-label="Filter by index"></div>
+  <p class="small muted" id="count"></p>
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th><button data-k="rank" data-dir="asc">#</button></th>
+        <th><button data-k="name">Company</button></th>
+        <th class="hide-sm"><button data-k="country">Country</button></th>
+        <th><button data-k="mcap_b">Market value</button></th>
+        <th>Indexes</th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer class="small muted">
+  <p>Market values from companiesmarketcap.com on 18 Oct 2026, based on delayed prices; they move daily. Index memberships checked against index provider announcements and current constituent lists, including 2026 changes (SpaceX and Sandisk into the Nasdaq-100, Walmart replacing AstraZeneca there, Alphabet into the Dow, Marvell into the S&amp;P 500).</p>
+  <p>No Indian company is in the top 100: the largest, Reliance Industries, is worth about $173 billion, just below Sandisk at #100. Reliance, Bharti Airtel and HDFC Bank lead the Nifty 50 and Sensex.</p>
+  <p>Companies listed in more than one market show the ticker of their main listing. For research only, not investment advice.</p>
+</footer>
+</div>
+
+<script>
+const D = [{"rank":1,"name":"NVIDIA","ticker":"NVDA","mcap_b":5170.0,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"]},{"rank":2,"name":"Apple","ticker":"AAPL","mcap_b":5012.0,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"]},{"rank":3,"name":"Alphabet (Google)","ticker":"GOOGL","mcap_b":4120.0,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"],"note":"Joined the Dow on 29 Jun 2026"},{"rank":4,"name":"Microsoft","ticker":"MSFT","mcap_b":3928.0,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"]},{"rank":5,"name":"Amazon","ticker":"AMZN","mcap_b":2696.0,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"]},{"rank":6,"name":"TSMC","ticker":"2330.TW","mcap_b":2139.0,"country":"Taiwan","indexes":["TAIEX"]},{"rank":7,"name":"SpaceX","ticker":"SPCX","mcap_b":1923.0,"country":"USA","indexes":["Nasdaq-100"],"note":"Listed June 2026; joined Nasdaq-100 on 7 Jul 2026; S&P 500 not before mid-2027"},{"rank":8,"name":"Meta Platforms","ticker":"META","mcap_b":1807.0,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":9,"name":"Saudi Aramco","ticker":"2222.SR","mcap_b":1629.0,"country":"Saudi Arabia","indexes":["Tadawul (TASI)"]},{"rank":10,"name":"Broadcom","ticker":"AVGO","mcap_b":1569.0,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":11,"name":"Tesla","ticker":"TSLA","mcap_b":1400.0,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":12,"name":"Berkshire Hathaway","ticker":"BRK-B","mcap_b":1138.0,"country":"USA","indexes":["S&P 500"]},{"rank":13,"name":"Eli Lilly","ticker":"LLY","mcap_b":1120.0,"country":"USA","indexes":["S&P 500"]},{"rank":14,"name":"Samsung Electronics","ticker":"005930.KS","mcap_b":1051.0,"country":"South Korea","indexes":["KOSPI"]},{"rank":15,"name":"Micron Technology","ticker":"MU","mcap_b":994.34,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":16,"name":"Walmart","ticker":"WMT","mcap_b":942.6,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"],"note":"Moved to Nasdaq; joined the Nasdaq-100 in Jan 2026"},{"rank":17,"name":"JPMorgan Chase","ticker":"JPM","mcap_b":902.16,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":18,"name":"AMD","ticker":"AMD","mcap_b":863.17,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":19,"name":"Visa","ticker":"V","mcap_b":755.84,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":20,"name":"Exxon Mobil","ticker":"XOM","mcap_b":735.95,"country":"USA","indexes":["S&P 500"]},{"rank":21,"name":"SK Hynix","ticker":"000660.KS","mcap_b":694.66,"country":"South Korea","indexes":["KOSPI"]},{"rank":22,"name":"ASML","ticker":"ASML","mcap_b":630.5,"country":"Netherlands","indexes":["Nasdaq-100","Euro Stoxx 50","AEX"]},{"rank":23,"name":"Johnson & Johnson","ticker":"JNJ","mcap_b":615.87,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":24,"name":"Mastercard","ticker":"MA","mcap_b":540.86,"country":"USA","indexes":["S&P 500"]},{"rank":25,"name":"AbbVie","ticker":"ABBV","mcap_b":504.37,"country":"USA","indexes":["S&P 500"]},{"rank":26,"name":"CXMT","ticker":"688825.SS","mcap_b":477.54,"country":"China","indexes":["MSCI China (not yet CSI 300)"],"note":"Listed on Shanghai's STAR Market July 2026; added to MSCI China in August"},{"rank":27,"name":"Tencent","ticker":"0700.HK","mcap_b":476.49,"country":"China","indexes":["Hang Seng"]},{"rank":28,"name":"Intel","ticker":"INTC","mcap_b":474.95,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":29,"name":"China Construction Bank","ticker":"0939.HK","mcap_b":448.67,"country":"China","indexes":["Hang Seng","CSI 300"]},{"rank":30,"name":"Palantir","ticker":"PLTR","mcap_b":447.04,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":31,"name":"Chevron","ticker":"CVX","mcap_b":441.34,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":32,"name":"Costco","ticker":"COST","mcap_b":438.3,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":33,"name":"Cisco","ticker":"CSCO","mcap_b":423.39,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"]},{"rank":34,"name":"Coca-Cola","ticker":"KO","mcap_b":404.0,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":35,"name":"Oracle","ticker":"ORCL","mcap_b":388.72,"country":"USA","indexes":["S&P 500"]},{"rank":36,"name":"Agricultural Bank of China","ticker":"601288.SS","mcap_b":379.55,"country":"China","indexes":["CSI 300"]},{"rank":37,"name":"Roche","ticker":"ROG.SW","mcap_b":371.73,"country":"Switzerland","indexes":["SMI"]},{"rank":38,"name":"Procter & Gamble","ticker":"PG","mcap_b":370.39,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":39,"name":"UnitedHealth","ticker":"UNH","mcap_b":360.32,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":40,"name":"Merck & Co.","ticker":"MRK","mcap_b":360.08,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":41,"name":"Bank of America","ticker":"BAC","mcap_b":358.23,"country":"USA","indexes":["S&P 500"]},{"rank":42,"name":"ICBC","ticker":"1398.HK","mcap_b":344.69,"country":"China","indexes":["Hang Seng","CSI 300"]},{"rank":43,"name":"Caterpillar","ticker":"CAT","mcap_b":335.91,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":44,"name":"Bank of China","ticker":"3988.HK","mcap_b":333.98,"country":"China","indexes":["Hang Seng","CSI 300"]},{"rank":45,"name":"Lam Research","ticker":"LRCX","mcap_b":330.3,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":46,"name":"General Electric","ticker":"GE","mcap_b":325.61,"country":"USA","indexes":["S&P 500"]},{"rank":47,"name":"Applied Materials","ticker":"AMAT","mcap_b":324.81,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":48,"name":"HSBC","ticker":"HSBA.L","mcap_b":323.42,"country":"UK","indexes":["FTSE 100","Hang Seng"]},{"rank":49,"name":"Philip Morris International","ticker":"PM","mcap_b":319.82,"country":"USA","indexes":["S&P 500"]},{"rank":50,"name":"Home Depot","ticker":"HD","mcap_b":308.91,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":51,"name":"Shell","ticker":"SHEL.L","mcap_b":303.38,"country":"UK","indexes":["FTSE 100"]},{"rank":52,"name":"Netflix","ticker":"NFLX","mcap_b":293.68,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":53,"name":"Dell Technologies","ticker":"DELL","mcap_b":287.2,"country":"USA","indexes":["S&P 500"]},{"rank":54,"name":"Novartis","ticker":"NOVN.SW","mcap_b":286.28,"country":"Switzerland","indexes":["SMI"]},{"rank":55,"name":"Morgan Stanley","ticker":"MS","mcap_b":283.59,"country":"USA","indexes":["S&P 500"]},{"rank":56,"name":"Palo Alto Networks","ticker":"PANW","mcap_b":279.75,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":57,"name":"Royal Bank of Canada","ticker":"RY.TO","mcap_b":273.84,"country":"Canada","indexes":["S&P/TSX 60"]},{"rank":58,"name":"Alibaba","ticker":"9988.HK","mcap_b":271.43,"country":"China","indexes":["Hang Seng"]},{"rank":59,"name":"RTX","ticker":"RTX","mcap_b":261.35,"country":"USA","indexes":["S&P 500"]},{"rank":60,"name":"SAP","ticker":"SAP.DE","mcap_b":258.87,"country":"Germany","indexes":["Euro Stoxx 50","DAX"]},{"rank":61,"name":"Nestlé","ticker":"NESN.SW","mcap_b":257.21,"country":"Switzerland","indexes":["SMI"]},{"rank":62,"name":"Goldman Sachs","ticker":"GS","mcap_b":256.59,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":63,"name":"AstraZeneca","ticker":"AZN.L","mcap_b":256.53,"country":"UK","indexes":["FTSE 100"],"note":"Left the Nasdaq-100 in Jan 2026"},{"rank":64,"name":"Thermo Fisher Scientific","ticker":"TMO","mcap_b":255.12,"country":"USA","indexes":["S&P 500"]},{"rank":65,"name":"Texas Instruments","ticker":"TXN","mcap_b":252.49,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":66,"name":"Wells Fargo","ticker":"WFC","mcap_b":251.74,"country":"USA","indexes":["S&P 500"]},{"rank":67,"name":"Kweichow Moutai","ticker":"600519.SS","mcap_b":248.85,"country":"China","indexes":["CSI 300"]},{"rank":68,"name":"Mitsubishi UFJ Financial","ticker":"8306.T","mcap_b":246.27,"country":"Japan","indexes":["Nikkei 225"]},{"rank":69,"name":"GE Vernova","ticker":"GEV","mcap_b":245.34,"country":"USA","indexes":["S&P 500"]},{"rank":70,"name":"L'Oréal","ticker":"OR.PA","mcap_b":243.62,"country":"France","indexes":["Euro Stoxx 50","CAC 40"]},{"rank":71,"name":"Arm Holdings","ticker":"ARM","mcap_b":243.29,"country":"UK","indexes":["Nasdaq-100"]},{"rank":72,"name":"Amgen","ticker":"AMGN","mcap_b":233.81,"country":"USA","indexes":["S&P 500","Nasdaq-100","Dow 30"]},{"rank":73,"name":"PetroChina","ticker":"0857.HK","mcap_b":233.09,"country":"China","indexes":["Hang Seng","CSI 300"]},{"rank":74,"name":"CrowdStrike","ticker":"CRWD","mcap_b":232.83,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":75,"name":"Siemens","ticker":"SIE.DE","mcap_b":232.69,"country":"Germany","indexes":["Euro Stoxx 50","DAX"]},{"rank":76,"name":"Linde","ticker":"LIN","mcap_b":229.76,"country":"UK","indexes":["S&P 500","Nasdaq-100"],"note":"Listed in New York; incorporated in Ireland, HQ in UK"},{"rank":77,"name":"Toyota","ticker":"7203.T","mcap_b":229.21,"country":"Japan","indexes":["Nikkei 225"]},{"rank":78,"name":"China Mobile","ticker":"0941.HK","mcap_b":223.66,"country":"China","indexes":["Hang Seng","CSI 300"]},{"rank":79,"name":"Arista Networks","ticker":"ANET","mcap_b":223.21,"country":"USA","indexes":["S&P 500"]},{"rank":80,"name":"LVMH","ticker":"MC.PA","mcap_b":219.82,"country":"France","indexes":["Euro Stoxx 50","CAC 40"]},{"rank":81,"name":"IBM","ticker":"IBM","mcap_b":218.7,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":82,"name":"Shopify","ticker":"SHOP","mcap_b":218.11,"country":"Canada","indexes":["Nasdaq-100","S&P/TSX 60"]},{"rank":83,"name":"KLA","ticker":"KLAC","mcap_b":216.29,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":84,"name":"American Express","ticker":"AXP","mcap_b":211.77,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":85,"name":"BHP Group","ticker":"BHP.AX","mcap_b":211.67,"country":"Australia","indexes":["S&P/ASX 200"]},{"rank":86,"name":"International Holding Company","ticker":"IHC.AE","mcap_b":210.6,"country":"UAE","indexes":["FTSE ADX General"]},{"rank":87,"name":"MediaTek","ticker":"2454.TW","mcap_b":209.38,"country":"Taiwan","indexes":["TAIEX"]},{"rank":88,"name":"Citigroup","ticker":"C","mcap_b":208.43,"country":"USA","indexes":["S&P 500"]},{"rank":89,"name":"Marvell Technology","ticker":"MRVL","mcap_b":204.75,"country":"USA","indexes":["S&P 500","Nasdaq-100"],"note":"Joined the S&P 500 on 22 Jun 2026"},{"rank":90,"name":"TotalEnergies","ticker":"TTE.PA","mcap_b":201.38,"country":"France","indexes":["Euro Stoxx 50","CAC 40"]},{"rank":91,"name":"Salesforce","ticker":"CRM","mcap_b":198.09,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":92,"name":"Toronto-Dominion Bank","ticker":"TD.TO","mcap_b":196.59,"country":"Canada","indexes":["S&P/TSX 60"]},{"rank":93,"name":"Amphenol","ticker":"APH","mcap_b":195.67,"country":"USA","indexes":["S&P 500"]},{"rank":94,"name":"Inditex","ticker":"ITX.MC","mcap_b":195.44,"country":"Spain","indexes":["Euro Stoxx 50","IBEX 35"]},{"rank":95,"name":"Gilead Sciences","ticker":"GILD","mcap_b":193.66,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":96,"name":"Banco Santander","ticker":"SAN.MC","mcap_b":192.28,"country":"Spain","indexes":["Euro Stoxx 50","IBEX 35"]},{"rank":97,"name":"CATL","ticker":"300750.SZ","mcap_b":191.99,"country":"China","indexes":["CSI 300"]},{"rank":98,"name":"Analog Devices","ticker":"ADI","mcap_b":191.61,"country":"USA","indexes":["S&P 500","Nasdaq-100"]},{"rank":99,"name":"Walt Disney","ticker":"DIS","mcap_b":190.95,"country":"USA","indexes":["S&P 500","Dow 30"]},{"rank":100,"name":"Sandisk","ticker":"SNDK","mcap_b":187.78,"country":"USA","indexes":["S&P 500","Nasdaq-100"],"note":"Joined the Nasdaq-100 on 20 Apr 2026"}];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money = b => b >= 1000 ? "$" + (b/1000).toFixed(2) + " T" : "$" + Math.round(b) + " B";
+const total = D.reduce((s,r)=>s+r.mcap_b,0);
+
+const us = D.filter(r=>r.country==="USA");
+const top10 = D.slice(0,10).reduce((s,r)=>s+r.mcap_b,0);
+$("stats").innerHTML = [
+  [money(total), "Combined market value"],
+  [us.length + " of 100", "Based in the US"],
+  [Math.round(top10/total*100) + "%", "Held by the top 10"],
+  [new Set(D.map(r=>r.country)).size, "Countries represented"],
+].map(([v,k])=>`<div class="stat"><span class="v">${esc(v)}</span><span class="k">${esc(k)}</span></div>`).join("");
+
+const byC = {};
+D.forEach(r=>{ byC[r.country]=(byC[r.country]||0)+r.mcap_b; });
+const cs = Object.entries(byC).sort((a,b)=>b[1]-a[1]);
+const shown = cs.slice(0,6), rest = cs.slice(6).reduce((s,[,v])=>s+v,0);
+const parts = [...shown, ["Other " + (cs.length-6) + " countries", rest]];
+const col = i => `var(--c${i+1})`;
+$("stack").innerHTML = parts.map(([k,v],i)=>`<span style="width:${(v/total*100).toFixed(2)}%;background:${col(i)}" title="${esc(k)}"></span>`).join("");
+$("legend").innerHTML = parts.map(([k,v],i)=>`<span><i style="background:${col(i)}"></i>${esc(k)} <span class="num">${(v/total*100).toFixed(1)}%</span></span>`).join("");
+
+const counts = {};
+D.forEach(r=>r.indexes.forEach(i=>{ counts[i]=(counts[i]||0)+1; }));
+const order = ["S&P 500","Nasdaq-100","Dow 30","Euro Stoxx 50","FTSE 100","DAX","CAC 40","SMI","AEX","IBEX 35","Hang Seng","CSI 300","Nikkei 225","KOSPI","TAIEX","S&P/TSX 60","S&P/ASX 200","Tadawul (TASI)","FTSE ADX General","MSCI China (not yet CSI 300)"];
+const idxList = order.filter(i=>counts[i]);
+let filter = null;
+$("chips").innerHTML = `<button aria-pressed="true" data-i="">All<span class="n">100</span></button>` +
+  idxList.map(i=>`<button aria-pressed="false" data-i="${esc(i)}">${esc(i.replace(" (not yet CSI 300)",""))}<span class="n">${counts[i]}</span></button>`).join("");
+$("chips").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+  filter = b.dataset.i || null;
+  $("chips").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b));
+  draw();
+}));
+
+let sortK = "rank", sortDir = 1;
+document.querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{
+  const k = b.dataset.k;
+  sortDir = (k===sortK) ? -sortDir : (k==="mcap_b" ? -1 : 1);
+  sortK = k;
+  document.querySelectorAll("th button").forEach(x=>x.removeAttribute("data-dir"));
+  b.setAttribute("data-dir", sortDir>0?"asc":"desc");
+  draw();
+}));
+$("q").addEventListener("input", draw);
+
+const maxCap = D[0].mcap_b;
+function draw(){
+  const q = $("q").value.trim().toLowerCase();
+  let rows = D.filter(r => (!filter || r.indexes.includes(filter)) &&
+    (!q || (r.name+" "+r.ticker+" "+r.country).toLowerCase().includes(q)));
+  rows.sort((a,b)=>{ const x=a[sortK], y=b[sortK]; return (x>y?1:x<y?-1:0)*sortDir; });
+  const sum = rows.reduce((s,r)=>s+r.mcap_b,0);
+  $("count").textContent = `${rows.length} ${rows.length===1?"company":"companies"} · ${money(sum)} combined (${(sum/total*100).toFixed(1)}% of the top 100)`;
+  $("tb").innerHTML = rows.length ? rows.map(r=>`<tr>
+    <td class="rank">${r.rank}</td>
+    <td><div class="co">${esc(r.name)}</div><div class="tk">${esc(r.ticker)}<span class="show-sm"> · ${esc(r.country)}</span></div>${r.note?`<div class="note">${esc(r.note)}</div>`:""}</td>
+    <td class="hide-sm">${esc(r.country)}</td>
+    <td class="cap">${money(r.mcap_b)}<div class="capbar" style="width:${Math.max(2,r.mcap_b/maxCap*100).toFixed(1)}%"></div></td>
+    <td><div class="tags">${r.indexes.map(i=>`<span class="tag">${esc(i)}</span>`).join("")}</div></td>
+  </tr>`).join("") : `<tr><td colspan="5" class="empty">No companies match. Clear the search or pick another index.</td></tr>`;
+}
+draw();
+</script>

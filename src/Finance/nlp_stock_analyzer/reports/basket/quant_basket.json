@@ -1,0 +1,1156 @@
+{
+ "stocks": [
+  {
+   "ticker": "C",
+   "name": "Citigroup",
+   "group": "Fell or stalled",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": "S&P 500",
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "CSCO",
+   "name": "Cisco",
+   "group": "Fell or stalled",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": "S&P 500",
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "INFY.NS",
+   "name": "Infosys",
+   "group": "Indian IT",
+   "first": "1999-01-04",
+   "last": "2026-10-16",
+   "period": [
+    "2004-01-30",
+    "2026-10-16"
+   ],
+   "market": "Sensex",
+   "rf_source": "fixed 6.5%"
+  },
+  {
+   "ticker": "INTC",
+   "name": "Intel",
+   "group": "Fell or stalled",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": "S&P 500",
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "KO",
+   "name": "Coca-Cola",
+   "group": "Steady",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": "S&P 500",
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "MU",
+   "name": "Micron",
+   "group": "Boom and bust",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": "S&P 500",
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "NVDA",
+   "name": "NVIDIA",
+   "group": "Big winner",
+   "first": "1999-01-22",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-29",
+    "2026-10-15"
+   ],
+   "market": null,
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "PG",
+   "name": "Procter & Gamble",
+   "group": "Steady",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": "S&P 500",
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "TATASTEEL.NS",
+   "name": "Tata Steel",
+   "group": "Boom and bust",
+   "first": "1999-01-04",
+   "last": "2026-10-16",
+   "period": [
+    "2004-02-03",
+    "2026-10-16"
+   ],
+   "market": "Sensex",
+   "rf_source": "fixed 6.5%"
+  },
+  {
+   "ticker": "XOM",
+   "name": "ExxonMobil",
+   "group": "Boom and bust",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": "S&P 500",
+   "rf_source": "US 3-month T-bill"
+  },
+  {
+   "ticker": "^GSPC",
+   "name": "S&P 500 index",
+   "group": "Market index",
+   "first": "1999-01-04",
+   "last": "2026-10-15",
+   "period": [
+    "2004-01-09",
+    "2026-10-15"
+   ],
+   "market": null,
+   "rf_source": "US 3-month T-bill"
+  }
+ ],
+ "horizons": {
+  "3 months": {
+   "ranking": [
+    {
+     "strategy": "GARCH(1,1) \u00b7 signal",
+     "avg_rank": 3.5454545454545454,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.029892987555831196,
+     "med_d_cagr": -0.009350829521920012,
+     "med_d_dd": 0.0,
+     "avg_exposure": 0.9011886989415079,
+     "top3": 6
+    },
+    {
+     "strategy": "Monte Carlo (bootstrap) \u00b7 signal",
+     "avg_rank": 3.727272727272727,
+     "stocks": 11,
+     "beat_bh": 3,
+     "med_d_sharpe": -0.024737320194541,
+     "med_d_cagr": -0.009627642812474413,
+     "med_d_dd": 7.771561172376096e-16,
+     "avg_exposure": 0.7955677281519978,
+     "top3": 7
+    },
+    {
+     "strategy": "Merton jump-diffusion \u00b7 signal",
+     "avg_rank": 5.454545454545454,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.05442857416861824,
+     "med_d_cagr": -0.013817259835078533,
+     "med_d_dd": 0.015321870990540054,
+     "avg_exposure": 0.7451424979514868,
+     "top3": 5
+    },
+    {
+     "strategy": "GARCH(1,1) \u00b7 sized",
+     "avg_rank": 6.0,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.07820579493542179,
+     "med_d_cagr": -0.029768700675908644,
+     "med_d_dd": 0.09673984364559063,
+     "avg_exposure": 0.7130352052577074,
+     "top3": 4
+    },
+    {
+     "strategy": "ARIMA \u00b7 signal",
+     "avg_rank": 6.090909090909091,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.06990841949916304,
+     "med_d_cagr": -0.01738388976972116,
+     "med_d_dd": 0.036078523794359496,
+     "avg_exposure": 0.7441434969524857,
+     "top3": 1
+    },
+    {
+     "strategy": "GBM \u00b7 signal",
+     "avg_rank": 6.181818181818182,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.07037872433310705,
+     "med_d_cagr": -0.01735466377227257,
+     "med_d_dd": 0.03607852379435983,
+     "avg_exposure": 0.7414794942884831,
+     "top3": 1
+    },
+    {
+     "strategy": "MPT (mean-variance)",
+     "avg_rank": 6.6,
+     "stocks": 10,
+     "beat_bh": 2,
+     "med_d_sharpe": -0.08326326342397714,
+     "med_d_cagr": -0.034656386414614326,
+     "med_d_dd": 0.1095740032422634,
+     "avg_exposure": 0.3801209931256046,
+     "top3": 2
+    },
+    {
+     "strategy": "Monte Carlo (bootstrap) \u00b7 sized",
+     "avg_rank": 6.818181818181818,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.09447168649430282,
+     "med_d_cagr": -0.03041612946175909,
+     "med_d_dd": 0.1401078704996772,
+     "avg_exposure": 0.5986775831158693,
+     "top3": 1
+    },
+    {
+     "strategy": "Merton jump-diffusion \u00b7 sized",
+     "avg_rank": 6.909090909090909,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.09710633832955617,
+     "med_d_cagr": -0.030969736470792597,
+     "med_d_dd": 0.17171904442660946,
+     "avg_exposure": 0.5745477832594694,
+     "top3": 2
+    },
+    {
+     "strategy": "GBM \u00b7 sized",
+     "avg_rank": 7.090909090909091,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.09671298619866384,
+     "med_d_cagr": -0.031627051349050195,
+     "med_d_dd": 0.14922457849922555,
+     "avg_exposure": 0.5712620994491424,
+     "top3": 2
+    },
+    {
+     "strategy": "ARIMA \u00b7 sized",
+     "avg_rank": 7.181818181818182,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.09093618405443821,
+     "med_d_cagr": -0.031131506462503067,
+     "med_d_dd": 0.1503396217356986,
+     "avg_exposure": 0.5847632595880614,
+     "top3": 2
+    }
+   ],
+   "excluded": [],
+   "skill": [
+    {
+     "model": "Monte Carlo (bootstrap)",
+     "avg_crps_rank": 2.1818181818181817,
+     "wins": 4,
+     "hit_rate": 0.5621212121212121,
+     "coverage90": 0.9025941230486686
+    },
+    {
+     "model": "GARCH(1,1)",
+     "avg_crps_rank": 2.6363636363636362,
+     "wins": 2,
+     "hit_rate": 0.5674931129476584,
+     "coverage90": 0.9097337006427915
+    },
+    {
+     "model": "Black-Scholes-Merton",
+     "avg_crps_rank": 3.0,
+     "wins": 4,
+     "hit_rate": 0.4146005509641873,
+     "coverage90": 0.8823232323232323
+    },
+    {
+     "model": "Merton jump-diffusion",
+     "avg_crps_rank": 3.8181818181818183,
+     "wins": 1,
+     "hit_rate": 0.5496709519436792,
+     "coverage90": 0.9201637588001224
+    },
+    {
+     "model": "ARIMA",
+     "avg_crps_rank": 4.363636363636363,
+     "wins": 0,
+     "hit_rate": 0.5459366391184574,
+     "coverage90": 0.9087235996326904
+    },
+    {
+     "model": "GBM",
+     "avg_crps_rank": 5.0,
+     "wins": 0,
+     "hit_rate": 0.5459366391184574,
+     "coverage90": 0.9218472604836241
+    }
+   ],
+   "per_stock": [
+    {
+     "ticker": "C",
+     "name": "Citigroup",
+     "group": "Fell or stalled",
+     "bh_cagr": -0.037783650286914106,
+     "bh_sharpe": 0.11281295285211768,
+     "bh_dd": -0.9800024564905783,
+     "best": "MPT (mean-variance)",
+     "best_sharpe": 0.22974192142198133,
+     "best_cagr": 0.04213043168003883,
+     "best_dd": -0.5222555071534926,
+     "beat_bh": true,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "CSCO",
+     "name": "Cisco",
+     "group": "Fell or stalled",
+     "bh_cagr": 0.08605245861535482,
+     "bh_sharpe": 0.37171213544683224,
+     "bh_dd": -0.6003520349220333,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.34181914789100104,
+     "best_cagr": 0.07670162909343481,
+     "best_dd": -0.6158727279847411,
+     "beat_bh": false,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "INFY.NS",
+     "name": "Infosys",
+     "group": "Indian IT",
+     "bh_cagr": 0.15229052855874214,
+     "bh_sharpe": 0.4074718281684324,
+     "bh_dd": -0.5240946525740977,
+     "best": "Monte Carlo (bootstrap) \u00b7 signal",
+     "best_sharpe": 0.41140128379646423,
+     "best_cagr": 0.15254626091624246,
+     "best_dd": -0.5240946525740969,
+     "beat_bh": true,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "INTC",
+     "name": "Intel",
+     "group": "Fell or stalled",
+     "bh_cagr": 0.07192471087319485,
+     "bh_sharpe": 0.3256487686777799,
+     "bh_dd": -0.7079731977861432,
+     "best": "GBM \u00b7 sized",
+     "best_sharpe": 0.22893578247911608,
+     "best_cagr": 0.043655830486440506,
+     "best_dd": -0.3852236493578689,
+     "beat_bh": false,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    },
+    {
+     "ticker": "KO",
+     "name": "Coca-Cola",
+     "group": "Steady",
+     "bh_cagr": 0.09081730363539364,
+     "bh_sharpe": 0.4740011155697384,
+     "bh_dd": -0.4059539620329595,
+     "best": "Monte Carlo (bootstrap) \u00b7 signal",
+     "best_sharpe": 0.47428932210978025,
+     "best_cagr": 0.08806793833088022,
+     "best_dd": -0.4059539620329592,
+     "beat_bh": true,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    },
+    {
+     "ticker": "MU",
+     "name": "Micron",
+     "group": "Boom and bust",
+     "bh_cagr": 0.1988787122852813,
+     "bh_sharpe": 0.5744115356104447,
+     "bh_dd": -0.9089930163066093,
+     "best": "Merton jump-diffusion \u00b7 signal",
+     "best_sharpe": 0.6530358376542511,
+     "best_cagr": 0.21232222641692466,
+     "best_dd": -0.7344478079177483,
+     "beat_bh": true,
+     "best_forecaster": "GARCH(1,1)"
+    },
+    {
+     "ticker": "NVDA",
+     "name": "NVIDIA",
+     "group": "Big winner",
+     "bh_cagr": 0.3700928194044657,
+     "bh_sharpe": 0.855139450856234,
+     "bh_dd": -0.8507840087670439,
+     "best": "GBM \u00b7 sized",
+     "best_sharpe": 0.8269202989334372,
+     "best_cagr": 0.27169818586169936,
+     "best_dd": -0.595663996481407,
+     "beat_bh": false,
+     "best_forecaster": "GARCH(1,1)"
+    },
+    {
+     "ticker": "PG",
+     "name": "Procter & Gamble",
+     "group": "Steady",
+     "bh_cagr": 0.08120202201796345,
+     "bh_sharpe": 0.426100548221041,
+     "bh_dd": -0.39010119501420637,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.426100548221041,
+     "best_cagr": 0.08120202201796345,
+     "best_dd": -0.39010119501420637,
+     "beat_bh": false,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "TATASTEEL.NS",
+     "name": "Tata Steel",
+     "group": "Boom and bust",
+     "bh_cagr": 0.12708873313433822,
+     "bh_sharpe": 0.33925015896336586,
+     "bh_dd": -0.8366199180581801,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.3060001837939407,
+     "best_cagr": 0.1165134870099871,
+     "best_dd": -0.8366199180581801,
+     "beat_bh": false,
+     "best_forecaster": "Merton jump-diffusion"
+    },
+    {
+     "ticker": "XOM",
+     "name": "ExxonMobil",
+     "group": "Boom and bust",
+     "bh_cagr": 0.10141376546825431,
+     "bh_sharpe": 0.43333506612546085,
+     "bh_dd": -0.6239596207588962,
+     "best": "MPT (mean-variance)",
+     "best_sharpe": 0.4781512888024681,
+     "best_cagr": 0.09732593249766341,
+     "best_dd": -0.33726279940059245,
+     "beat_bh": true,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    },
+    {
+     "ticker": "^GSPC",
+     "name": "S&P 500 index",
+     "group": "Market index",
+     "bh_cagr": 0.08828355011581301,
+     "bh_sharpe": 0.452834190402725,
+     "bh_dd": -0.5677538774277286,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.452834190402725,
+     "best_cagr": 0.08828355011581301,
+     "best_dd": -0.5677538774277286,
+     "beat_bh": false,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    }
+   ],
+   "grid": {
+    "strategies": [
+     "GARCH(1,1) \u00b7 signal",
+     "Monte Carlo (bootstrap) \u00b7 signal",
+     "Merton jump-diffusion \u00b7 signal",
+     "GARCH(1,1) \u00b7 sized",
+     "ARIMA \u00b7 signal",
+     "GBM \u00b7 signal",
+     "MPT (mean-variance)",
+     "Monte Carlo (bootstrap) \u00b7 sized",
+     "Merton jump-diffusion \u00b7 sized",
+     "GBM \u00b7 sized",
+     "ARIMA \u00b7 sized"
+    ],
+    "tickers": [
+     "C",
+     "CSCO",
+     "INFY.NS",
+     "INTC",
+     "KO",
+     "MU",
+     "NVDA",
+     "PG",
+     "TATASTEEL.NS",
+     "XOM",
+     "^GSPC"
+    ],
+    "values": [
+     [
+      -0.06265877757312147,
+      -0.029892987555831196,
+      -0.0028062930340310155,
+      -0.19112172426759938,
+      -0.06246874283554171,
+      0.048325133546423205,
+      -0.07857248314914489,
+      0.0,
+      -0.03324997516942513,
+      -0.01838600230585402,
+      0.0
+     ],
+     [
+      -0.003973270613531976,
+      -0.10482544311961378,
+      0.003929455628031819,
+      -0.2154220551814458,
+      0.00028820654004185764,
+      0.06316630686159674,
+      -0.05085982388835941,
+      -0.024737320194541,
+      -0.07506219420218074,
+      -0.006943708729643172,
+      -0.06497631701103368
+     ],
+     [
+      -0.1424047509095534,
+      -0.13509630484789759,
+      -0.005215516190470115,
+      -0.18150750885662403,
+      -0.05393109404646096,
+      0.07862430204380644,
+      -0.05442857416861824,
+      -0.03158037198718561,
+      -0.0796711251905835,
+      -0.009840883918269705,
+      -0.15844003385857242
+     ],
+     [
+      -0.1863288104701459,
+      -0.04843438931924893,
+      -0.09372374120111437,
+      -0.17195670622809983,
+      -0.040997594710883545,
+      0.03182648064050286,
+      -0.14866737324180468,
+      -0.002319407828627773,
+      -0.12191010441764852,
+      -0.07820579493542179,
+      -0.03339008890632511
+     ],
+     [
+      -0.08224249575044909,
+      -0.07438603956592327,
+      -0.02501752056671591,
+      -0.21820856005495062,
+      -0.06990841949916304,
+      0.0711430873219785,
+      -0.06493185676392943,
+      -0.06023550435125952,
+      -0.08833600615744702,
+      -0.028800582640176986,
+      -0.15648732899658424
+     ],
+     [
+      -0.12078981887382872,
+      -0.0803909848617026,
+      -0.02501752056671591,
+      -0.22756887075332144,
+      -0.07037872433310705,
+      0.06435613040232335,
+      -0.06493185676392943,
+      -0.06490918332548679,
+      -0.08833600615744702,
+      -0.021963710439150907,
+      -0.13559353087708909
+     ],
+     [
+      0.11692896856986365,
+      -0.10778577778853554,
+      -0.1628375964477186,
+      -0.13964835589191182,
+      -0.1466974592096999,
+      -0.07804724684089248,
+      -0.08567706425089994,
+      -0.04704799179890401,
+      -0.08084946259705433,
+      0.044816222677007245,
+      null
+     ],
+     [
+      -0.12111895830824419,
+      -0.058008927244403596,
+      -0.14341406547521446,
+      -0.10017656775024555,
+      -0.08476083129690165,
+      0.02500907468940483,
+      -0.03614954821624683,
+      -0.09238100618244055,
+      -0.10424375637603797,
+      -0.09447168649430282,
+      -0.1538545191943979
+     ],
+     [
+      -0.09110236036156173,
+      -0.05232199889054023,
+      -0.1713047958486051,
+      -0.09710633832955617,
+      -0.09092424324942444,
+      0.007291114964285805,
+      -0.0334447207481019,
+      -0.12779696356014553,
+      -0.10630370852611104,
+      -0.11641367916538065,
+      -0.14248814869226062
+     ],
+     [
+      -0.08394225420213922,
+      -0.052852014653303914,
+      -0.1829368478360409,
+      -0.09671298619866384,
+      -0.0910350903310373,
+      0.016712965632553978,
+      -0.02821915192279678,
+      -0.1370688798752921,
+      -0.1089654907843888,
+      -0.12046700908313196,
+      -0.14991525059927602
+     ],
+     [
+      -0.08787470676838023,
+      -0.050928882205404924,
+      -0.1880401643013143,
+      -0.10967458563476606,
+      -0.08289348270783459,
+      0.010395933758881037,
+      -0.03559435851333603,
+      -0.11871415967450916,
+      -0.10722572719724976,
+      -0.09093618405443821,
+      -0.1595500133665249
+     ]
+    ]
+   }
+  },
+  "1 year": {
+   "ranking": [
+    {
+     "strategy": "GARCH(1,1) \u00b7 signal",
+     "avg_rank": 3.272727272727273,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.014862191604241792,
+     "med_d_cagr": -0.004980924437559597,
+     "med_d_dd": 0.0,
+     "avg_exposure": 0.9015366655816094,
+     "top3": 8
+    },
+    {
+     "strategy": "Monte Carlo (bootstrap) \u00b7 signal",
+     "avg_rank": 4.090909090909091,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.03747705704303217,
+     "med_d_cagr": -0.01366362072856897,
+     "med_d_dd": 0.03607852379435972,
+     "avg_exposure": 0.761208828624559,
+     "top3": 8
+    },
+    {
+     "strategy": "ARIMA \u00b7 signal",
+     "avg_rank": 5.181818181818182,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.03462507995312836,
+     "med_d_cagr": -0.015093221545953162,
+     "med_d_dd": 0.03607852379435961,
+     "avg_exposure": 0.7431444959534848,
+     "top3": 3
+    },
+    {
+     "strategy": "GBM \u00b7 signal",
+     "avg_rank": 5.7272727272727275,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.03462507995312836,
+     "med_d_cagr": -0.015093221545953162,
+     "med_d_dd": 0.03607852379435961,
+     "avg_exposure": 0.7418124946214835,
+     "top3": 2
+    },
+    {
+     "strategy": "MPT (mean-variance)",
+     "avg_rank": 6.0,
+     "stocks": 10,
+     "beat_bh": 2,
+     "med_d_sharpe": -0.1148160262835488,
+     "med_d_cagr": -0.03450749516749341,
+     "med_d_dd": 0.09963619452604744,
+     "avg_exposure": 0.3800697929934991,
+     "top3": 4
+    },
+    {
+     "strategy": "Merton jump-diffusion \u00b7 signal",
+     "avg_rank": 6.2727272727272725,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.0411571048181375,
+     "med_d_cagr": -0.015531003128108622,
+     "med_d_dd": 0.03607852379435961,
+     "avg_exposure": 0.7424710121339335,
+     "top3": 3
+    },
+    {
+     "strategy": "Monte Carlo (bootstrap) \u00b7 sized",
+     "avg_rank": 6.2727272727272725,
+     "stocks": 11,
+     "beat_bh": 0,
+     "med_d_sharpe": -0.09404127002664142,
+     "med_d_cagr": -0.03594267783783156,
+     "med_d_dd": 0.24537825001366154,
+     "avg_exposure": 0.524487575473356,
+     "top3": 2
+    },
+    {
+     "strategy": "ARIMA \u00b7 sized",
+     "avg_rank": 6.636363636363637,
+     "stocks": 11,
+     "beat_bh": 0,
+     "med_d_sharpe": -0.08292817395727903,
+     "med_d_cagr": -0.03493309551614998,
+     "med_d_dd": 0.24862893690295496,
+     "avg_exposure": 0.510350749578336,
+     "top3": 0
+    },
+    {
+     "strategy": "GBM \u00b7 sized",
+     "avg_rank": 7.090909090909091,
+     "stocks": 11,
+     "beat_bh": 0,
+     "med_d_sharpe": -0.10556974582625478,
+     "med_d_cagr": -0.03792723240443174,
+     "med_d_dd": 0.25035290274213806,
+     "avg_exposure": 0.4891636746244019,
+     "top3": 1
+    },
+    {
+     "strategy": "Merton jump-diffusion \u00b7 sized",
+     "avg_rank": 7.363636363636363,
+     "stocks": 11,
+     "beat_bh": 0,
+     "med_d_sharpe": -0.11039098667622216,
+     "med_d_cagr": -0.03700492513581932,
+     "med_d_dd": 0.24385843983685018,
+     "avg_exposure": 0.4941360616475842,
+     "top3": 0
+    },
+    {
+     "strategy": "GARCH(1,1) \u00b7 sized",
+     "avg_rank": 7.636363636363637,
+     "stocks": 11,
+     "beat_bh": 1,
+     "med_d_sharpe": -0.10840358399692465,
+     "med_d_cagr": -0.03618321349048692,
+     "med_d_dd": 0.23540462657196182,
+     "avg_exposure": 0.49112078684775357,
+     "top3": 2
+    }
+   ],
+   "excluded": [],
+   "skill": [
+    {
+     "model": "Monte Carlo (bootstrap)",
+     "avg_crps_rank": 2.272727272727273,
+     "wins": 4,
+     "hit_rate": 0.5835515397381523,
+     "coverage90": 0.8642735673161636
+    },
+    {
+     "model": "Black-Scholes-Merton",
+     "avg_crps_rank": 3.4545454545454546,
+     "wins": 4,
+     "hit_rate": 0.3413567725940951,
+     "coverage90": 0.8353391931485238
+    },
+    {
+     "model": "ARIMA",
+     "avg_crps_rank": 3.727272727272727,
+     "wins": 0,
+     "hit_rate": 0.5741143688405352,
+     "coverage90": 0.8698875161349805
+    },
+    {
+     "model": "GARCH(1,1)",
+     "avg_crps_rank": 3.8181818181818183,
+     "wins": 3,
+     "hit_rate": 0.6310037494621673,
+     "coverage90": 0.8666707644395271
+    },
+    {
+     "model": "GBM",
+     "avg_crps_rank": 3.8181818181818183,
+     "wins": 0,
+     "hit_rate": 0.569918249431434,
+     "coverage90": 0.8817136886102404
+    },
+    {
+     "model": "Merton jump-diffusion",
+     "avg_crps_rank": 3.909090909090909,
+     "wins": 0,
+     "hit_rate": 0.5699510316143176,
+     "coverage90": 0.8796238244514106
+    }
+   ],
+   "per_stock": [
+    {
+     "ticker": "C",
+     "name": "Citigroup",
+     "group": "Fell or stalled",
+     "bh_cagr": -0.037783650286914106,
+     "bh_sharpe": 0.11281295285211768,
+     "bh_dd": -0.9800024564905783,
+     "best": "MPT (mean-variance)",
+     "best_sharpe": 0.19541548534328618,
+     "best_cagr": 0.0367498140600222,
+     "best_dd": -0.5965027703466956,
+     "beat_bh": true,
+     "best_forecaster": "GARCH(1,1)"
+    },
+    {
+     "ticker": "CSCO",
+     "name": "Cisco",
+     "group": "Fell or stalled",
+     "bh_cagr": 0.08605245861535482,
+     "bh_sharpe": 0.37171213544683224,
+     "bh_dd": -0.6003520349220333,
+     "best": "GARCH(1,1) \u00b7 sized",
+     "best_sharpe": 0.39193666118011034,
+     "best_cagr": 0.0740407741172413,
+     "best_dd": -0.41903692731908215,
+     "beat_bh": true,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "INFY.NS",
+     "name": "Infosys",
+     "group": "Indian IT",
+     "bh_cagr": 0.15229052855874214,
+     "bh_sharpe": 0.4074718281684324,
+     "bh_dd": -0.5240946525740977,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.40539545570453206,
+     "best_cagr": 0.15137360342450767,
+     "best_dd": -0.5240946525740977,
+     "beat_bh": false,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "INTC",
+     "name": "Intel",
+     "group": "Fell or stalled",
+     "bh_cagr": 0.07192471087319485,
+     "bh_sharpe": 0.3256487686777799,
+     "bh_dd": -0.7079731977861432,
+     "best": "MPT (mean-variance)",
+     "best_sharpe": 0.2217301333078676,
+     "best_cagr": 0.042244278409915514,
+     "best_dd": -0.47386723850832735,
+     "beat_bh": false,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "KO",
+     "name": "Coca-Cola",
+     "group": "Steady",
+     "bh_cagr": 0.09081730363539364,
+     "bh_sharpe": 0.4740011155697384,
+     "bh_dd": -0.4059539620329595,
+     "best": "Monte Carlo (bootstrap) \u00b7 signal",
+     "best_sharpe": 0.45485478439290983,
+     "best_cagr": 0.08308658383900003,
+     "best_dd": -0.3698754382385998,
+     "beat_bh": false,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    },
+    {
+     "ticker": "MU",
+     "name": "Micron",
+     "group": "Boom and bust",
+     "bh_cagr": 0.1988787122852813,
+     "bh_sharpe": 0.5744115356104447,
+     "bh_dd": -0.9089930163066093,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.658345428301105,
+     "best_cagr": 0.21982471215607258,
+     "best_dd": -0.7380104334627372,
+     "beat_bh": true,
+     "best_forecaster": "GARCH(1,1)"
+    },
+    {
+     "ticker": "NVDA",
+     "name": "NVIDIA",
+     "group": "Big winner",
+     "bh_cagr": 0.3700928194044657,
+     "bh_sharpe": 0.855139450856234,
+     "bh_dd": -0.8507840087670439,
+     "best": "GBM \u00b7 signal",
+     "best_sharpe": 0.8205143709031056,
+     "best_cagr": 0.33449036971593915,
+     "best_dd": -0.834745080073769,
+     "beat_bh": false,
+     "best_forecaster": "GARCH(1,1)"
+    },
+    {
+     "ticker": "PG",
+     "name": "Procter & Gamble",
+     "group": "Steady",
+     "bh_cagr": 0.08120202201796345,
+     "bh_sharpe": 0.426100548221041,
+     "bh_dd": -0.39010119501420637,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.426100548221041,
+     "best_cagr": 0.08120202201796345,
+     "best_dd": -0.39010119501420637,
+     "beat_bh": false,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    },
+    {
+     "ticker": "TATASTEEL.NS",
+     "name": "Tata Steel",
+     "group": "Boom and bust",
+     "bh_cagr": 0.12708873313433822,
+     "bh_sharpe": 0.33925015896336586,
+     "bh_dd": -0.8366199180581801,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.2580895999805333,
+     "best_cagr": 0.09756362034981425,
+     "best_dd": -0.8366199180581801,
+     "beat_bh": false,
+     "best_forecaster": "Black-Scholes-Merton"
+    },
+    {
+     "ticker": "XOM",
+     "name": "ExxonMobil",
+     "group": "Boom and bust",
+     "bh_cagr": 0.10141376546825431,
+     "bh_sharpe": 0.43333506612546085,
+     "bh_dd": -0.6239596207588962,
+     "best": "MPT (mean-variance)",
+     "best_sharpe": 0.4914761835612169,
+     "best_cagr": 0.09958598301298638,
+     "best_dd": -0.33855115636617117,
+     "beat_bh": true,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    },
+    {
+     "ticker": "^GSPC",
+     "name": "S&P 500 index",
+     "group": "Market index",
+     "bh_cagr": 0.08828355011581301,
+     "bh_sharpe": 0.452834190402725,
+     "bh_dd": -0.5677538774277286,
+     "best": "GARCH(1,1) \u00b7 signal",
+     "best_sharpe": 0.452834190402725,
+     "best_cagr": 0.08828355011581301,
+     "best_dd": -0.5677538774277286,
+     "beat_bh": false,
+     "best_forecaster": "Monte Carlo (bootstrap)"
+    }
+   ],
+   "grid": {
+    "strategies": [
+     "GARCH(1,1) \u00b7 signal",
+     "Monte Carlo (bootstrap) \u00b7 signal",
+     "ARIMA \u00b7 signal",
+     "GBM \u00b7 signal",
+     "MPT (mean-variance)",
+     "Merton jump-diffusion \u00b7 signal",
+     "Monte Carlo (bootstrap) \u00b7 sized",
+     "ARIMA \u00b7 sized",
+     "GBM \u00b7 sized",
+     "Merton jump-diffusion \u00b7 sized",
+     "GARCH(1,1) \u00b7 sized"
+    ],
+    "tickers": [
+     "C",
+     "CSCO",
+     "INFY.NS",
+     "INTC",
+     "KO",
+     "MU",
+     "NVDA",
+     "PG",
+     "TATASTEEL.NS",
+     "XOM",
+     "^GSPC"
+    ],
+    "values": [
+     [
+      -0.06820190259513126,
+      -0.014862191604241792,
+      -0.0020763724639003556,
+      -0.1431769076468771,
+      -0.057439883111288725,
+      0.08393389269066032,
+      -0.06120840442244457,
+      0.0,
+      -0.08116055898283253,
+      -0.00029605663130499726,
+      0.0
+     ],
+     [
+      -0.10984295154523677,
+      -0.11271597042851,
+      -0.018882342547156372,
+      -0.20656616609096193,
+      -0.019146331176828568,
+      0.06563839856715159,
+      -0.03747705704303217,
+      -0.010783604196522245,
+      -0.17427878390130466,
+      -0.015187902520165275,
+      -0.11105528449700247
+     ],
+     [
+      -0.16284126026742898,
+      -0.0942524309719519,
+      -0.02927209157318955,
+      -0.1742146755627953,
+      -0.02531354243115702,
+      0.040406493043344316,
+      -0.03462507995312836,
+      -0.018421914832112918,
+      -0.17932945853428067,
+      -0.019972113594243113,
+      -0.13411825678081063
+     ],
+     [
+      -0.17350706636334684,
+      -0.09667236464198437,
+      -0.03260100680327521,
+      -0.1766511049342294,
+      -0.02531354243115702,
+      0.036748817894677765,
+      -0.03462507995312836,
+      -0.019258324842339136,
+      -0.1825187923069701,
+      -0.019972113594243113,
+      -0.13431669726619389
+     ],
+     [
+      0.0826025324911685,
+      -0.12571341719718526,
+      -0.1440524370921043,
+      -0.10391863536991233,
+      -0.08924471445819426,
+      -0.17776526215007482,
+      -0.12641059310737768,
+      -0.019083668096126438,
+      -0.1324752504511844,
+      0.05814111743575606,
+      null
+     ],
+     [
+      -0.18578259699193833,
+      -0.12221930269772724,
+      -0.01633598575775569,
+      -0.2008093926962875,
+      -0.028799661453856595,
+      0.04399941443771804,
+      -0.0411571048181375,
+      -0.017218491020030424,
+      -0.2132104217767057,
+      -0.02269750687421135,
+      -0.1408490464834215
+     ],
+     [
+      -0.15645284044492044,
+      -0.07080155657918064,
+      -0.17660819845129921,
+      -0.11012753898840213,
+      -0.04092998317035085,
+      -0.06120545008073597,
+      -0.03754601669449664,
+      -0.07041536803264337,
+      -0.17246827223165728,
+      -0.09404127002664142,
+      -0.15825600361348063
+     ],
+     [
+      -0.14458502047406033,
+      -0.07181423759243954,
+      -0.17629388923850492,
+      -0.11445134640473797,
+      -0.04334862197371758,
+      -0.06686408719784465,
+      -0.05062646583548658,
+      -0.07521014400573983,
+      -0.1723796327824199,
+      -0.08292817395727903,
+      -0.15696041881047368
+     ],
+     [
+      -0.141351085961333,
+      -0.07453087300685196,
+      -0.16340554149561917,
+      -0.10556974582625478,
+      -0.04846791522499372,
+      -0.05426858263218426,
+      -0.04873802857513254,
+      -0.09333245274895724,
+      -0.17518923626557611,
+      -0.12637288104345556,
+      -0.1657157555892631
+     ],
+     [
+      -0.14706062084903496,
+      -0.07414363713482269,
+      -0.1717199563712817,
+      -0.11039098667622216,
+      -0.04633178905504026,
+      -0.052645910232782756,
+      -0.058029642996238584,
+      -0.08955654360572907,
+      -0.1747869213775139,
+      -0.12912435627989605,
+      -0.16082072947941944
+     ],
+     [
+      -0.4114183255989304,
+      0.020224525733278098,
+      -0.16606126330795695,
+      -0.11381634647153568,
+      -0.07520227990830919,
+      -0.07068520251782717,
+      -0.4557428388876162,
+      -0.04898836303413395,
+      -0.10840358399692465,
+      -0.10068867480797877,
+      -0.3012946029567737
+     ]
+    ]
+   }
+  }
+ },
+ "notes": [
+  "No model reliably beat simply holding the stock. Even the top-ranked strategy beat buy & hold on Sharpe for only 1 of 11 stocks, and every strategy's median result was slightly worse than holding.",
+  "Both horizons crowned the same strategy: GARCH with the all-in signal. It stays invested about 90% of the time and steps aside only when its forecast turns poor, so it tracks buy & hold closely (median Sharpe \u22120.03 at 3 months, \u22120.015 at 1 year).",
+  "Runner-up at both horizons was the Monte Carlo bootstrap signal. It was the most accurate forecaster overall, with the best average CRPS at both horizons and 90% bands that held about 90% of the time at 3 months.",
+  "Position sizing works as insurance, not as a return booster. Sized strategies cut the worst drop by a median of 10\u201315 points at 3 months and about 25 points at 1 year, at a cost of roughly 3\u20134 points of growth a year.",
+  "Diversification beat prediction on the stocks that fell. MPT, which can move money into the market index, was the best strategy for Citigroup (holding lost 98% at the worst point), ExxonMobil and Intel.",
+  "Cyclicals are where the volatility models earned their keep. On Micron, the jump-diffusion and GARCH signal strategies beat holding at both horizons.",
+  "Where models 'won' on Coca-Cola and Infosys, the margin was tiny (Sharpe 0.474 vs 0.474, and 0.411 vs 0.407), which is noise rather than skill."
+ ]
+}
