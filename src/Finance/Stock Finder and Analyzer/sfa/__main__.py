@@ -12,6 +12,8 @@
     python -m sfa show SYMBOL          one company's classification and predictions
     python -m sfa models [--jobs N]    Milestone 2: walk-forward → leaderboard → MPT vs 1/N → predictions → export
     python -m sfa leaderboard          rebuild the leaderboard and exports from stored forecasts
+    python -m sfa finder [--step news|ipo|leads|all]   Milestone 3: Stage 1 company finder
+    python -m sfa leads [--kind listed|new_listing|ipo_pipeline] [-n N]   show current leads
 """
 
 from __future__ import annotations
@@ -30,6 +32,11 @@ def main(argv=None):
     sub = p.add_subparsers(dest="cmd", required=True)
     for c in ("init", "prices", "fundamentals", "classify", "news", "feeds", "all", "jobs", "leaderboard"):
         sub.add_parser(c)
+    fi = sub.add_parser("finder")
+    fi.add_argument("--step", choices=["news", "ipo", "leads", "all"], default="all")
+    le = sub.add_parser("leads")
+    le.add_argument("--kind", default="listed")
+    le.add_argument("-n", type=int, default=20)
     mo = sub.add_parser("models")
     mo.add_argument("--jobs", type=int)
     mo.add_argument("--only", nargs="*", help="home symbols to run (default: all)")
@@ -74,6 +81,19 @@ def main(argv=None):
     elif a.cmd == "leaderboard":
         from .models import leaderboard, report
         print(leaderboard.build(con), report.export(con))
+    elif a.cmd == "finder":
+        from . import finder
+        if a.step in ("news", "all"):
+            print("news", finder.run_news(con))
+        if a.step in ("ipo", "all"):
+            print("ipo", finder.run_ipo(con))
+        if a.step in ("leads", "all"):
+            print("finder", finder.run_finder(con))
+    elif a.cmd == "leads":
+        from .finder import leads, routes
+        for d in leads.top(con, a.kind, a.n):
+            print(f"{d['score']:+.2f}  {d['name'][:38]:38} {d['symbol'] or '':12} news {d['news_score'] if d['news_score'] is None else round(d['news_score'], 2)}"
+                  f"  model {d['model_score'] if d['model_score'] is None else round(d['model_score'], 2)}  → {routes.best(d['routes'] or [])}")
     elif a.cmd == "service":
         service.run(once=a.once)
     elif a.cmd == "jobs":

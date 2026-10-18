@@ -1,0 +1,87 @@
+# Milestone 3: Stage 1 company finder.
+
+news:
+  lookback_days: 14          # news window for the rule scores
+  half_life_days: 3          # an article this old counts half
+  yahoo_batch: 120           # companies whose Yahoo Finance news is fetched per run (rotates through the universe)
+  yahoo_news_per_query: 10
+  min_items_for_signal: 2    # a rule needs at least this many items to count
+  finbert:
+    dir_env: SFA_FINBERT_DIR # folder with config.json, vocab.txt, model.safetensors (ProsusAI/finbert)
+    default_dir: db/models/finbert
+    hf_repo: ProsusAI/finbert
+    max_length: 96
+    batch_size: 16
+
+rules:
+  # A–D from the brief; weights sum to 1.
+  weights: {A_market_sentiment: 0.30, B_competition: 0.25, C_manufacturing: 0.20, D_customers: 0.25}
+  # Good news for a competitor is usually bad for the company (flipped). The company's
+  # own releases count positively.
+  competitor_direction: -1
+  peers_per_company: 6       # largest companies in the same Yahoo industry
+  release_keywords: [announces, announced, launches, launched, unveils, partnership, agreement, acquisition,
+                     acquires, earnings, results, guidance, quarterly, order, contract, wins, approval, dividend,
+                     buyback, expansion, capacity]
+  thresholds: {bullish: 0.15, bearish: -0.15}
+
+leads:
+  # Lead score (−1…+1) = news composite (rules A–D) combined with the quant-model
+  # signal (Milestone 2 chosen model): excess expected return scaled by volatility,
+  # and the probability of beating cash.
+  weights: {news: 0.5, model: 0.5}
+  model_scale: 0.5           # tanh(excess return / (scale × 1-year vol)) → −1…+1
+  horizon: "1 year"
+  top_n: 50                  # leads exported
+  min_news_items: 3
+  deep_dive_top: 10          # NewsAPI deep dives on the best leads each run (if NEWSAPI_KEY is set)
+
+ipo:
+  # Headline patterns that mark an IPO pipeline event. {name} is the company.
+  stages:
+    planning:  ["plans? (an |a |its )?([A-Z][\\w.]* )?(IPO|initial public offering|listing)",
+                "considers? (an |a |its )?([A-Z][\\w.]* )?(IPO|listing)",
+                "(mulls|weighs|eyes|explores|targets|prepares|readies) (an |a |its )?([A-Z][\\w.]* )?(IPO|listing)",
+                "hires? banks? for (an |a |its )?([A-Z][\\w.]* )?(IPO|listing)",
+                "IPO[- ]bound", "pre-IPO"]
+    filed:     ["files? (for )?(an |a |its )?(IPO|initial public offering)", "(DRHP|draft red herring|UDRHP|RHP)",
+                "(S-1|F-1) (filing|registration)", "confidential(ly)? (files?|submits?|filing)",
+                "SEBI (nod|approval|clears|approves)", "(gets|receives) SEBI"]
+    priced:    ["(IPO|issue) (opens|to open|subscribed|subscription|price band|priced|prices)",
+                "sets (IPO )?price (range|band)", "anchor investors", "grey market premium", "IPO GMP"]
+    listed:    ["(shares|stock|scrip) (make |makes |made )?(a )?(debut|debuts|list|lists|listing|listed)",
+                "(market|trading|stock market|bourse) debut", "listing (day|gains|ceremony)", "lists? on (the )?(NSE|BSE|Nasdaq|NYSE|HKEX|SGX|LSE|TSE|Tadawul|ASX|TSX)",
+                "debuts? on (the )?(NSE|BSE|Nasdaq|NYSE|HKEX|SGX|LSE|TSE|Tadawul|ASX|TSX|stock exchange|bourse)"]
+  recently_listed_days: 365  # a listing younger than this is modelled with the peer proxy
+  min_history_days_own: 60   # own returns needed before they are blended into the proxy
+
+expansion:
+  # News about growing industries in markets the app does not cover yet.
+  min_items: 8
+  min_score: 0.10
+  growth_words: [boom, surge, record, expansion, growth, investment, capacity, new plant, factory, demand,
+                 orders, exports, IPO, listing]
+  markets:
+    DE: {names: [Germany, German, Frankfurt, DAX], exchange: XETRA}
+    CH: {names: [Switzerland, Swiss, Zurich, SMI], exchange: SIX}
+    AU: {names: [Australia, Australian, ASX], exchange: ASX}
+    SG: {names: [Singapore, SGX], exchange: SGX}
+    BR: {names: [Brazil, Brazilian, B3, Bovespa], exchange: B3}
+    ID: {names: [Indonesia, Indonesian, Jakarta, IDX], exchange: IDX}
+    TH: {names: [Thailand, Thai, SET index], exchange: SET}
+    MY: {names: [Malaysia, Malaysian, Bursa Malaysia], exchange: BURSA}
+    MX: {names: [Mexico, Mexican, BMV], exchange: BMV}
+    ZA: {names: [South Africa, South African, JSE, Johannesburg], exchange: JSE}
+    IL: {names: [Israel, Israeli, Tel Aviv, TASE], exchange: TASE}
+    AE: {names: [UAE, Emirates, Abu Dhabi, Dubai, ADX, DFM], exchange: ADX}
+    QA: {names: [Qatar, Qatari, Doha], exchange: QSE}
+    VN: {names: [Vietnam, Vietnamese, Ho Chi Minh, HOSE], exchange: HOSE}
+    EG: {names: [Egypt, Egyptian, EGX], exchange: EGX}
+    NG: {names: [Nigeria, Nigerian, Lagos, NGX], exchange: NGX}
+    ES: {names: [Spain, Spanish, Madrid, IBEX], exchange: BME}
+    DK: {names: [Denmark, Danish, Copenhagen], exchange: OMX_CPH}
+    SE: {names: [Sweden, Swedish, Stockholm], exchange: OMX_STO}
+    FI: {names: [Finland, Finnish, Helsinki], exchange: OMX_HEL}
+    PL: {names: [Poland, Polish, Warsaw, WIG], exchange: GPW}
+    TR: {names: [Turkey, Turkish, Turkiye, Istanbul, Borsa Istanbul], exchange: BIST}
+    PH: {names: [Philippines, Philippine, Manila, PSE], exchange: PSE}

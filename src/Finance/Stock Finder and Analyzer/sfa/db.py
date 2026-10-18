@@ -121,10 +121,11 @@ def now() -> str:
 
 
 def connect(path: Path | str | None = None) -> sqlite3.Connection:
-    path = Path(path) if path else DB_DIR / "sfa.sqlite"
+    import os
+    path = Path(path) if path else Path(os.environ.get("SFA_DB") or DB_DIR / "sfa.sqlite")
     if str(path) != ":memory:":
         path.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(str(path))
+    con = sqlite3.connect(str(path), timeout=120)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA journal_mode=WAL")
     con.execute("PRAGMA foreign_keys=ON")

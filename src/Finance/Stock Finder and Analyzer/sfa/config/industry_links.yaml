@@ -1,0 +1,265 @@
+# Rules C and D need to know, for each industry, what it depends on upstream
+# (rule C: the manufacturing industry / supply chain) and who buys from it
+# (rule D: customers and end markets). Terms are matched as whole words in news
+# headlines and summaries: capitalised terms are case-sensitive, lowercase terms
+# match any case. Industries use Yahoo's names with " - " instead of dashes.
+# An industry not listed falls back to its sector's entry under `sectors`.
+
+sectors:
+  Technology:
+    manufacturing: [semiconductor supply, chip shortage, foundry, wafer, memory prices, component shortage, supply chain]
+    customers: [enterprise spending, IT spending, data center, smartphone demand, PC demand, cloud spending]
+  Communication Services:
+    manufacturing: [network equipment, spectrum auction, data center, content costs]
+    customers: [subscribers, advertising market, ad spending, consumer spending, broadband demand]
+  Financial Services:
+    manufacturing: [interest rates, central bank, rate cut, rate hike, bond yields, liquidity, credit spreads]
+    customers: [loan growth, credit demand, deposits, consumer credit, mortgage demand, defaults, bad loans]
+  Healthcare:
+    manufacturing: [drug pricing, FDA approval, clinical trial, API supply, generic competition, patent expiry]
+    customers: [hospital admissions, insurers, Medicare, health spending, patients, prescriptions]
+  Consumer Cyclical:
+    manufacturing: [raw material costs, supply chain, freight rates, input costs, factory output]
+    customers: [consumer spending, consumer confidence, retail sales, discretionary spending, household income]
+  Consumer Defensive:
+    manufacturing: [commodity prices, crop, input costs, packaging costs, food inflation, monsoon]
+    customers: [consumer spending, retail sales, rural demand, volume growth, food prices]
+  Energy:
+    manufacturing: [rig count, drilling, oilfield services, refinery, crude supply, OPEC]
+    customers: [oil demand, fuel demand, gasoline demand, jet fuel, energy demand, power demand]
+  Basic Materials:
+    manufacturing: [mining output, ore, energy costs, smelter, raw material costs]
+    customers: [construction activity, infrastructure spending, manufacturing PMI, industrial demand, China demand]
+  Utilities:
+    manufacturing: [gas prices, coal prices, power plant, grid investment, renewable capacity]
+    customers: [power demand, electricity demand, data center power, tariff, peak demand]
+  Industrials:
+    manufacturing: [steel prices, supply chain, component shortage, factory output, manufacturing PMI]
+    customers: [capital spending, order book, infrastructure spending, defence budget, industrial demand]
+  Real Estate:
+    manufacturing: [construction costs, building materials, interest rates, mortgage rates]
+    customers: [housing demand, home sales, office demand, rental demand, occupancy, leasing]
+
+industries:
+  Semiconductors:
+    manufacturing: [foundry, wafer, lithography, chip equipment, HBM, packaging capacity, CoWoS, silicon]
+    customers: [data center, AI servers, smartphone demand, PC demand, automotive chips, hyperscalers, cloud capex]
+  Semiconductor Equipment & Materials:
+    manufacturing: [lithography, photoresist, wafer, specialty gases, rare earths, export controls]
+    customers: [foundry capex, chipmakers, fab construction, memory capex, chip capex]
+  Electronic Components:
+    manufacturing: [semiconductor supply, chip shortage, copper prices, rare earths, component shortage]
+    customers: [smartphone demand, automotive production, EV production, data center, consumer electronics]
+  Computer Hardware:
+    manufacturing: [memory prices, chip supply, GPU supply, component shortage, contract manufacturers]
+    customers: [PC demand, server demand, AI servers, enterprise spending, data center]
+  Consumer Electronics:
+    manufacturing: [chip supply, display panels, memory prices, contract manufacturers, component costs]
+    customers: [smartphone demand, consumer spending, holiday sales, upgrade cycle]
+  Communication Equipment:
+    manufacturing: [chip supply, optical components, component shortage]
+    customers: [telecom capex, 5G rollout, network upgrades, data center networking]
+  Information Technology Services:
+    manufacturing: [wage inflation, attrition, hiring, visa rules, H-1B]
+    customers: [IT spending, enterprise spending, deal wins, BFSI clients, digital transformation, discretionary spending]
+  Software - Application:
+    manufacturing: [cloud costs, AI models, data center capacity]
+    customers: [enterprise spending, IT budgets, software spending, seat growth, renewals]
+  Software - Infrastructure:
+    manufacturing: [cloud capacity, data center, GPU supply, AI chips]
+    customers: [enterprise spending, cloud spending, IT budgets, cybersecurity spending]
+  Solar:
+    manufacturing: [polysilicon, solar wafers, module prices, tariffs on solar]
+    customers: [solar installations, utility-scale solar, renewable auctions, rooftop solar]
+  Telecom Services:
+    manufacturing: [spectrum auction, network equipment, tower costs, 5G rollout]
+    customers: [subscribers, ARPU, tariff hike, mobile data demand, broadband demand]
+  Internet Content & Information:
+    manufacturing: [AI chips, data center capacity, cloud costs, content moderation]
+    customers: [advertising market, ad spending, digital advertising, user growth, engagement]
+  Entertainment:
+    manufacturing: [content costs, production costs, strikes, licensing]
+    customers: [subscribers, box office, streaming demand, advertising market]
+  Electronic Gaming & Multimedia:
+    manufacturing: [game development, console supply, chip supply]
+    customers: [gamers, player spending, console sales, in-game spending]
+  Auto Manufacturers:
+    manufacturing: [battery supply, lithium prices, chip shortage, steel prices, auto parts, rare earths]
+    customers: [car sales, vehicle sales, EV demand, auto loans, dealer inventory, passenger vehicle sales]
+  Auto Parts:
+    manufacturing: [steel prices, aluminium prices, chip shortage, rubber prices]
+    customers: [automakers, vehicle production, car sales, EV production, replacement demand]
+  Luxury Goods:
+    manufacturing: [gold prices, leather, input costs]
+    customers: [luxury demand, Chinese consumers, wealthy shoppers, tourism, duty free]
+  Internet Retail:
+    manufacturing: [logistics costs, freight rates, warehouse, delivery network]
+    customers: [online shopping, consumer spending, e-commerce sales, holiday sales]
+  Lodging:
+    manufacturing: [construction costs, labour costs]
+    customers: [travel demand, tourism, occupancy, business travel, RevPAR]
+  Packaged Foods:
+    manufacturing: [wheat prices, sugar prices, palm oil, cocoa prices, commodity prices, packaging costs]
+    customers: [consumer spending, rural demand, volume growth, retail sales, food inflation]
+  Grocery Stores:
+    manufacturing: [food inflation, supplier costs, wage costs]
+    customers: [consumer spending, shopper traffic, basket size, retail sales]
+  Household & Personal Products:
+    manufacturing: [palm oil, crude derivatives, packaging costs, input costs]
+    customers: [rural demand, consumer spending, volume growth, premiumisation]
+  Tobacco:
+    manufacturing: [leaf tobacco, excise duty, regulation]
+    customers: [smokers, cigarette volumes, vaping demand, nicotine pouches]
+  Beverages - Brewers:
+    manufacturing: [barley prices, aluminium cans, glass bottles, energy costs]
+    customers: [beer demand, consumer spending, premiumisation, on-trade]
+  Beverages - Wineries & Distilleries:
+    manufacturing: [grain prices, agave, glass bottles, tariffs]
+    customers: [spirits demand, consumer spending, premiumisation, duty free]
+  Beverages - Non-Alcoholic:
+    manufacturing: [sugar prices, aluminium cans, PET, juice concentrate]
+    customers: [consumer spending, volume growth, emerging markets demand]
+  Oil & Gas Integrated:
+    manufacturing: [crude oil, OPEC, oilfield services, rig count, LNG supply]
+    customers: [oil demand, fuel demand, refining margins, LNG demand, China demand]
+  Oil & Gas E&P:
+    manufacturing: [rig count, drilling costs, oilfield services, shale]
+    customers: [oil demand, crude prices, natural gas demand, LNG demand]
+  Oil & Gas Refining & Marketing:
+    manufacturing: [crude oil, crude supply, OPEC, refinery outages]
+    customers: [fuel demand, gasoline demand, diesel demand, jet fuel, refining margins]
+  Oil & Gas Midstream:
+    manufacturing: [pipeline capacity, gas production, shale output]
+    customers: [LNG exports, gas demand, power generation, throughput]
+  Thermal Coal:
+    manufacturing: [coal production, mining output, rail freight]
+    customers: [power demand, electricity demand, coal imports, power plants]
+  Uranium:
+    manufacturing: [uranium supply, enrichment, mine output]
+    customers: [nuclear power, reactor restarts, nuclear plants, utilities contracting]
+  Banks - Regional:
+    manufacturing: [interest rates, central bank, rate cut, rate hike, deposit costs, liquidity]
+    customers: [loan growth, credit growth, deposits, mortgage demand, bad loans, NPA, defaults]
+  Banks - Diversified:
+    manufacturing: [interest rates, central bank, bond yields, capital rules, Basel]
+    customers: [loan growth, credit demand, investment banking, deal activity, trading revenue]
+  Insurance - Life:
+    manufacturing: [interest rates, bond yields, mortality, regulation]
+    customers: [premium growth, policy sales, annuity demand, insurance penetration]
+  Insurance - Property & Casualty:
+    manufacturing: [catastrophe losses, reinsurance rates, claims inflation, hurricane, wildfire]
+    customers: [premium growth, pricing, policy renewals, motor insurance]
+  Insurance - Diversified:
+    manufacturing: [interest rates, catastrophe losses, reinsurance rates]
+    customers: [premium growth, policy sales, pricing]
+  Capital Markets:
+    manufacturing: [interest rates, regulation, market volatility]
+    customers: [deal activity, IPO market, trading volumes, M&A, retail investors]
+  Asset Management:
+    manufacturing: [market volatility, fee pressure, regulation]
+    customers: [fund inflows, fund outflows, SIP flows, assets under management, retail investors]
+  Credit Services:
+    manufacturing: [interest rates, funding costs, regulation]
+    customers: [consumer spending, card spending, payment volumes, cross-border travel]
+  Financial Data & Stock Exchanges:
+    manufacturing: [regulation, technology costs]
+    customers: [trading volumes, IPO market, data subscriptions, derivatives volumes]
+  Drug Manufacturers - General:
+    manufacturing: [API supply, clinical trial, FDA approval, drug pricing, patent expiry]
+    customers: [prescriptions, Medicare, insurers, hospitals, patients]
+  Drug Manufacturers - Specialty & Generic:
+    manufacturing: [API supply, USFDA, FDA warning letter, plant inspection, price erosion]
+    customers: [US generics, prescriptions, pharmacies, launches]
+  Biotechnology:
+    manufacturing: [clinical trial, FDA approval, trial data, drug pricing]
+    customers: [patients, prescriptions, partnerships, licensing deal]
+  Medical Devices:
+    manufacturing: [component shortage, chip supply, sterilisation, FDA clearance]
+    customers: [hospital spending, procedures, surgeries, elective procedures]
+  Medical Instruments & Supplies:
+    manufacturing: [resin prices, supply chain, FDA clearance]
+    customers: [hospital spending, procedures, surgeries]
+  Medical Care Facilities:
+    manufacturing: [nurse wages, staffing costs, medical supplies]
+    customers: [patient volumes, occupancy, insurance coverage, medical tourism]
+  Diagnostics & Research:
+    manufacturing: [reagents, lab equipment, supply chain]
+    customers: [test volumes, biotech funding, pharma R&D spending]
+  Aerospace & Defense:
+    manufacturing: [titanium, engine supply, supply chain, parts shortage, rare earths]
+    customers: [defence budget, defense spending, aircraft orders, airline demand, military orders]
+  Electrical Equipment & Parts:
+    manufacturing: [copper prices, transformer supply, steel prices, rare earths]
+    customers: [grid investment, data center power, power demand, renewable capacity, electrification]
+  Conglomerates:
+    manufacturing: [input costs, supply chain, commodity prices]
+    customers: [capital spending, consumer spending, infrastructure spending]
+  Specialty Industrial Machinery:
+    manufacturing: [steel prices, component shortage, supply chain]
+    customers: [capital spending, factory automation, order book, industrial demand]
+  Engineering & Construction:
+    manufacturing: [steel prices, cement prices, labour costs, building materials]
+    customers: [infrastructure spending, order book, government capex, project awards]
+  Marine Shipping:
+    manufacturing: [shipbuilding, bunker fuel, port congestion]
+    customers: [freight rates, container rates, trade volumes, Red Sea, tanker rates]
+  Integrated Freight & Logistics:
+    manufacturing: [fuel costs, labour costs, fleet]
+    customers: [parcel volumes, e-commerce sales, trade volumes, freight demand]
+  Railroads:
+    manufacturing: [fuel costs, labour costs, locomotive]
+    customers: [freight volumes, carloads, intermodal, coal shipments]
+  Airlines:
+    manufacturing: [jet fuel, aircraft deliveries, engine issues, Boeing, Airbus]
+    customers: [air travel demand, passenger traffic, bookings, fares, tourism]
+  Farm & Heavy Construction Machinery:
+    manufacturing: [steel prices, engine supply, component shortage]
+    customers: [farm income, crop prices, construction activity, mining capex]
+  Building Products & Equipment:
+    manufacturing: [steel prices, energy costs, raw material costs]
+    customers: [housing starts, construction activity, renovation demand]
+  Waste Management:
+    manufacturing: [fuel costs, landfill, regulation]
+    customers: [waste volumes, municipal contracts, recycling prices]
+  Specialty Chemicals:
+    manufacturing: [crude derivatives, natural gas prices, feedstock, China supply]
+    customers: [agrochemical demand, pharma demand, auto production, destocking, industrial demand]
+  Chemicals:
+    manufacturing: [natural gas prices, feedstock, naphtha, ethane]
+    customers: [industrial demand, construction activity, packaging demand, destocking]
+  Gold:
+    manufacturing: [mining costs, all-in sustaining costs, mine output]
+    customers: [gold prices, central bank buying, safe haven, jewellery demand, ETF inflows]
+  Steel:
+    manufacturing: [iron ore, coking coal, scrap prices, energy costs]
+    customers: [construction activity, infrastructure spending, automotive production, steel demand, China exports]
+  Copper:
+    manufacturing: [mine output, ore grades, smelter, energy costs]
+    customers: [copper demand, electrification, grid investment, EV production, China demand]
+  Aluminum:
+    manufacturing: [bauxite, alumina, power costs, energy costs]
+    customers: [aluminium demand, packaging demand, automotive production, construction activity]
+  Other Industrial Metals & Mining:
+    manufacturing: [mine output, energy costs, royalties]
+    customers: [iron ore prices, steel demand, China demand, battery metals, lithium demand]
+  Building Materials:
+    manufacturing: [energy costs, coal prices, fuel costs, limestone]
+    customers: [cement demand, housing demand, infrastructure spending, construction activity]
+  Agricultural Inputs:
+    manufacturing: [natural gas prices, potash, phosphate, ammonia]
+    customers: [crop prices, farm income, planting season, monsoon, fertiliser demand]
+  Utilities - Regulated Electric:
+    manufacturing: [gas prices, coal prices, grid investment, rate case]
+    customers: [power demand, electricity demand, data center power, tariff]
+  Utilities - Independent Power Producers:
+    manufacturing: [gas prices, coal prices, fuel costs, plant outages]
+    customers: [power prices, power demand, capacity auction, data center power]
+  Utilities - Renewable:
+    manufacturing: [solar module prices, wind turbines, interest rates, transmission]
+    customers: [renewable auctions, power purchase agreements, green power demand, data center power]
+  Real Estate - Development:
+    manufacturing: [construction costs, cement prices, steel prices, land prices]
+    customers: [housing demand, home sales, pre-sales, mortgage rates, property sales]
+  REIT - Industrial:
+    manufacturing: [construction costs, interest rates]
+    customers: [warehouse demand, logistics demand, e-commerce sales, occupancy, rents]

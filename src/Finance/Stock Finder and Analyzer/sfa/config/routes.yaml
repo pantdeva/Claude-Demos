@@ -1,0 +1,97 @@
+# How an Indian resident can invest in a lead. Rules change often: every rule carries
+# the date it was last checked. Review before acting; this is not advice.
+# Last reviewed: 2026-10-18.
+
+lrs:
+  limit_usd_per_fy: 250000
+  tcs: "TCS 20% on remittances for investment above ₹10 lakh a financial year (adjustable against income tax)"
+  tax: "Foreign shares: long-term after 24 months, taxed at 12.5%; short-term at slab rates. Report foreign assets in Schedule FA."
+  brokers: "a US/international broker account or a GIFT City (IFSC) Global Access provider through an Indian broker"
+  checked: 2026-10-18
+
+never:
+  - item: "NSE IFSC Receipts (unsponsored depositary receipts on NSE IX)"
+    why: "New buys stopped 30 Jul 2026; dealing ends 1 Feb 2027"
+    checked: 2026-10-18
+
+warnings:
+  unlisted_platforms: "SEBI warned (PR 32/2026) against buying unlisted/pre-IPO shares through online platforms that are not SEBI-regulated."
+  mutual_funds: "Most Indian international mutual funds and fund-of-funds are closed to new money because of the industry-wide overseas investment cap; check the scheme's current status."
+  etf_premium: "Indian-listed international ETFs can trade at large premiums to NAV when the overseas cap binds; check the premium before buying."
+  odi: "Buying shares of an unlisted foreign company counts as Overseas Direct Investment (ODI) under FEMA rules, with filings through an authorised dealer bank; portfolio investment in unlisted foreign shares is not allowed."
+  checked: 2026-10-18
+
+# Markets reachable directly under LRS through an international broker that offers
+# them. Where direct access for non-resident retail investors is restricted or
+# impractical, the route falls through to country ETFs.
+direct_markets:
+  US: {how: "US broker under LRS (or GIFT City Global Access)", ok: true}
+  GB: {how: "international broker offering the London Stock Exchange", ok: true}
+  FR: {how: "international broker offering Euronext", ok: true}
+  NL: {how: "international broker offering Euronext", ok: true}
+  BE: {how: "international broker offering Euronext", ok: true}
+  PT: {how: "international broker offering Euronext", ok: true}
+  IE: {how: "international broker offering Euronext", ok: true}
+  IT: {how: "international broker offering Euronext Milan", ok: true}
+  "NO": {how: "international broker offering Oslo Børs", ok: true}
+  DE: {how: "international broker offering Xetra", ok: true}
+  CH: {how: "international broker offering SIX", ok: true}
+  ES: {how: "international broker offering Bolsa de Madrid", ok: true}
+  DK: {how: "international broker offering Nasdaq Copenhagen", ok: true}
+  SE: {how: "international broker offering Nasdaq Stockholm", ok: true}
+  JP: {how: "international broker offering the Tokyo Stock Exchange", ok: true}
+  HK: {how: "Hong Kong or international broker offering HKEX", ok: true}
+  CA: {how: "international broker offering the TSX", ok: true}
+  AU: {how: "international broker offering the ASX", ok: true}
+  SG: {how: "international broker offering SGX", ok: true}
+  KR: {how: "Korea dropped mandatory foreign-investor registration in Dec 2023, but few international retail brokers offer KRX; check with your broker", ok: limited}
+  TW: {how: "Taiwan requires foreign-investor (FINI) registration; retail access from abroad is impractical", ok: limited}
+  SA: {how: "Saudi rules for non-resident foreign individuals were being relaxed in 2026; confirm whether your broker offers Tadawul", ok: limited}
+  CN: {how: "A-shares through Northbound Stock Connect with a Hong Kong broker (Main Board stocks; STAR and ChiNext need professional status)", ok: limited}
+
+# Country ETFs listed in the US (bought under LRS). Check the fund is still trading.
+country_etfs:
+  US: [SPY, VOO]
+  GB: [EWU]
+  FR: [EWQ]
+  NL: [EWN]
+  BE: [EWK]
+  IE: [EIRL]
+  IT: [EWI]
+  "NO": [NORW]
+  DE: [EWG]
+  CH: [EWL]
+  ES: [EWP]
+  DK: [EDEN]
+  SE: [EWD]
+  JP: [EWJ, DXJ]
+  HK: [EWH]
+  CA: [EWC]
+  AU: [EWA]
+  SG: [EWS]
+  KR: [EWY]
+  TW: [EWT]
+  SA: [KSA]
+  CN: [MCHI, KWEB, ASHR]
+  BR: [EWZ]
+  MX: [EWW]
+  ID: [EIDO]
+  TH: [THD]
+  MY: [EWM]
+  ZA: [EZA]
+  IL: [EIS]
+  AE: [UAE]
+  QA: [QAT]
+  VN: [VNM]
+  PL: [EPOL]
+  TR: [TUR]
+  PH: [EPHE]
+
+# Sector ETFs (US-listed) used as a fallback or a lower-risk way into a theme.
+sector_etfs:
+  "IT & Software": [XLK, SOXX]
+  "Financials & Banking": [XLF]
+  "Healthcare & Biotech": [XLV, XBI]
+  "Consumer Discretionary & Staples": [XLY, XLP]
+  "Energy, Materials & Utilities": [XLE, XLB, XLU]
+  "Industrials & Real Estate": [XLI, XLRE]

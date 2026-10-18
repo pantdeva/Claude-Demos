@@ -25,9 +25,16 @@ JOBS = {
     "prices": lambda con, log: pipeline.refresh_prices(con, refresh=True, log=log),
     "fundamentals": lambda con, log: pipeline.refresh_fundamentals(con, refresh=True, log=log),
     "classify": lambda con, log: {**pipeline.classify_all(con, log=log), **export.export(con)},
-    "news": lambda con, log: rss.poll(con),
+    "news": lambda con, log: _finder("run_news", con, log),
+    "ipo_pipeline": lambda con, log: _finder("run_ipo", con, log),
+    "finder": lambda con, log: _finder("run_finder", con, log),
     "leaderboard": lambda con, log: _models(con, log),
 }
+
+
+def _finder(fn, con, log):
+    from . import finder
+    return getattr(finder, fn)(con, log=log)
 
 
 def _models(con, log):
@@ -84,7 +91,7 @@ def run(once: bool = False, log=print):
     con = connect()
     signal.signal(signal.SIGINT, lambda *_: _stop.__setitem__(0, True))
     signal.signal(signal.SIGTERM, lambda *_: _stop.__setitem__(0, True))
-    order = ["universe", "prices", "fundamentals", "classify", "leaderboard", "news"]
+    order = ["universe", "prices", "fundamentals", "classify", "leaderboard", "news", "ipo_pipeline", "finder"]
     log(f"sfa service started {now()}")
     while not _stop[0]:
         for name in sorted(due_jobs(con), key=lambda n: order.index(n) if n in order else 99):

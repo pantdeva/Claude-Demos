@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
+import re
+
 from ..config import load
+
+
+def norm_industry(industry: str | None) -> str | None:
+    """Yahoo writes "Banks—Regional"; config files use "Banks - Regional"."""
+    return re.sub(r"\s*[—–]\s*|\s+-\s+", " - ", industry).strip() if industry else industry
 
 
 def map_sector(yahoo_sector: str | None, industry: str | None) -> dict:
@@ -11,7 +18,7 @@ def map_sector(yahoo_sector: str | None, industry: str | None) -> dict:
     if not base:
         return {"gics": None, "group": None, "group_name": "Unclassified", "super": None, "basis": "no sector"}
     out = {**base, "basis": "yahoo sector"}
-    ov = (cfg.get("industry_override") or {}).get(industry or "")
+    ov = (cfg.get("industry_override") or {}).get(norm_industry(industry) or "")
     if ov:
         out.update(ov)
         out["basis"] = "industry override"
@@ -27,6 +34,7 @@ def behaviour(super_sector: str | None, industry: str | None, beta: float | None
     when it disagrees strongly (beta < 0.6 → defensive, beta > 1.3 → cyclical).
     """
     beh = load("sectors").get("industry_behaviour") or {}
+    industry = norm_industry(industry)
     if industry in beh.get("defensive", []):
         label, basis = "Defensive", "industry"
     elif industry in beh.get("cyclical", []):

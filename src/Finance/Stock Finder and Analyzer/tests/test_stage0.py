@@ -167,6 +167,9 @@ def test_behaviour():
     assert S.behaviour("Cyclical", "Banks - Diversified", 0.4)[0] == "Defensive"   # beta overrides
     assert S.behaviour("Defensive", "Medical Devices", 1.5)[0] == "Cyclical"
     assert S.behaviour(None, None, None)[0] == "Unclassified"
+    assert S.behaviour("Defensive", "Utilities—Regulated Electric", 1.2) == ("Defensive", "industry")
+    assert S.norm_industry("Banks—Regional") == "Banks - Regional"
+    assert S.norm_industry("Beverages—Non-Alcoholic") == "Beverages - Non-Alcoholic"
 
 
 # ---------------------------------------------------------------- stock level

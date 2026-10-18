@@ -119,6 +119,11 @@ def _store(con, source: dict, topic: str, items: list[dict], seen: set) -> int:
     return n
 
 
+def _hours_ago(h: float) -> str:
+    from datetime import timedelta
+    return (datetime.now(timezone.utc) - timedelta(hours=h)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def poll(con, sources: list[str] | None = None, session: requests.Session | None = None) -> dict:
     """Fetch every enabled feed once. Returns {source_id: new_items}."""
     cfg = load("news_sources")
@@ -129,15 +134,24 @@ def poll(con, sources: list[str] | None = None, session: requests.Session | None
     seen = {title_key(r["title"]) for r in con.execute(
         "SELECT title FROM news_items WHERE fetched > datetime('now','-3 day')")}
     result = {}
+    import os
     for src in cfg["sources"]:
         if sources and src["id"] not in sources:
             continue
+        ua_env = src.get("user_agent_env")
+        if ua_env:
+            if not os.environ.get(ua_env):
+                result[src["id"]] = f"skipped ({ua_env} not set)"
+                continue
+            s.headers["User-Agent"] = os.environ[ua_env]
+        else:
+            s.headers["User-Agent"] = d["user_agent"]
         new, broken = 0, 0
         urls = feed_urls(src)
         for url, f in urls:
-            h = con.execute("SELECT fails FROM feed_health WHERE url=?", (url,)).fetchone()
-            if h and h["fails"] >= 3:
-                broken += 1
+            h = con.execute("SELECT fails, checked FROM feed_health WHERE url=?", (url,)).fetchone()
+            if h and h["fails"] >= 3 and (h["checked"] or "") > _hours_ago(24):
+                broken += 1                                         # broken: retried once a day
                 continue
             try:
                 r = s.get(url, timeout=d["timeout_s"])
@@ -151,7 +165,7 @@ def poll(con, sources: list[str] | None = None, session: requests.Session | None
                 con.execute("INSERT OR REPLACE INTO feed_health VALUES (?,?,0,?,NULL,?,0,?)",
                             (url, src["id"], fails, str(e)[:200], now()))
                 broken += fails >= 3
-        if urls and broken == len(urls):                           # whole site broken → Google News
+        if urls and broken == len(urls) and not src.get("no_fallback"):   # whole site broken → Google News
             url = fallback_url(src)
             try:
                 r = s.get(url, timeout=d["timeout_s"])

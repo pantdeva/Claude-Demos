@@ -125,6 +125,35 @@ sources:
       - {kind: rss, url: "https://in.investing.com/rss/news_25.rss", topic: stocks}
       - {kind: rss, url: "https://in.investing.com/rss/news_1062.rss", topic: ipo}
 
+  # ---------------------------------------------------------------- filings and exchanges (IPO pipeline)
+  - id: sec_edgar
+    name: SEC EDGAR new registrations (S-1, F-1)
+    region: US
+    domain: sec.gov
+    paywall: false
+    user_agent_env: SFA_SEC_USER_AGENT      # SEC requires "Name email"; the feed is skipped without it
+    no_fallback: true
+    feeds:
+      - {kind: rss, url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=S-1&count=40&output=atom", topic: ipo_filings}
+      - {kind: rss, url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=F-1&count=40&output=atom", topic: ipo_filings}
+  - id: sebi
+    name: SEBI (filings, orders, press releases)
+    region: IN
+    domain: sebi.gov.in
+    paywall: false
+    no_fallback: true
+    feeds:
+      - {kind: rss, url: "https://www.sebi.gov.in/sebirss.xml", topic: ipo_filings}
+  - id: ipo_news
+    name: IPO news (Google News search)
+    region: global
+    domain: news.google.com
+    paywall: false
+    no_fallback: true
+    feeds:
+      - {kind: rss, url: "https://news.google.com/rss/search?q=IPO+files+OR+DRHP+OR+%22plans+IPO%22&hl=en-IN&gl=IN&ceid=IN:en", topic: ipo}
+      - {kind: rss, url: "https://news.google.com/rss/search?q=IPO+listing+debut&hl=en-US&gl=US&ceid=US:en", topic: ipo}
+
 # Deep-dive search for individual leads (100 requests/day on the free plan).
 # The key is read from the NEWSAPI_KEY environment variable, never from this file.
 newsapi:
