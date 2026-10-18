@@ -1,6 +1,6 @@
 # Stage 0 model leaderboard
 
-Built 2026-10-18T18:59:45Z. 196,164 scored forecasts for 383 companies on 86 forecast dates (2010-01-03 to 2026-07-02). Each model is fitted on the previous 1260 trading days only; forecast dates every ~126 trading days.
+Built 2026-10-18T19:00:14Z. 196,164 scored forecasts for 383 companies on 34 forecast dates (2010-01-03 to 2026-07-02). Each model is fitted on the previous 1260 trading days only; forecast dates every ~126 trading days.
 
 Loss: CRPS of the forecast distribution of the log return (lower is better). *Skill* = 1 − CRPS ÷ CRPS of the group's baseline. A model replaces the baseline only with positive skill and a Diebold–Mariano t at least the Bonferroni-corrected 5% level for the number of candidates (≈ 2.73 for 8; Newey–West, small-sample corrected).
 

@@ -142,7 +142,36 @@ Location: `src/Finance/Stock Finder and Analyzer/` (design in `PLAN.md`, usage i
   - The SEBI cap band is ranked within this universe only.
   - The news feeds could not be reached from the cloud workspace; they run on the user's computer.
 
-**Next:** Milestone 2, the model leaderboard per market class × sector group × horizon.
+**Milestone 2 (done; results cover 383 of 826 companies):**
+- Nine models compared with walk-forward forecasts:
+  - the six earlier quant models;
+  - a zero-drift random walk;
+  - EWMA volatility with a drift shrunk towards the cash rate plus an equity risk premium;
+  - GJR-GARCH-t.
+- Method: every ~6 months since 2010, each model is fitted on the previous 5 years only. Forecasts are scored by CRPS.
+- Promotion: a model replaces a group's baseline only on a Diebold–Mariano win at the Bonferroni-corrected 5% level (t ≥ 2.73 for 8 candidates).
+- Groups: company, exchange, sector group, market class and cell (market class × sector group).
+- MPT is tested against 1/N inside each cell.
+- The run stopped at the workspace's 2-hour limit after 383 companies (313 developed, 70 emerging). Running `python -m sfa models` on the user's computer resumes the remaining 443.
+- Findings:
+  - EWMA with shrunk drift has the lowest CRPS at both horizons. Bootstrap Monte Carlo, GBM, ARIMA and Merton follow closely; GARCH, GJR-GARCH, BSM and the random walk do worst.
+  - For 3-month forecasts in emerging markets, EWMA beats the GJR-GARCH-t default (skill +8%, DM t 4.9).
+  - Only 12 companies (3 months) and 1 (1 year) keep a model of their own after the multiple-testing correction.
+  - MPT never beats 1/N by a clear margin in any of the 12 cells.
+- Growth predictions (3 months and 1 year) for 822 companies, from each company's chosen model. Cash rates come from FRED for each currency; Python's requests needed the default User-Agent for FRED.
+
+**Milestone 3 (done):**
+- Stage 1 company finder:
+  - news from the 12 requested sites plus SEC, SEBI and Google News IPO feeds (these need the user's computer; the workspace blocks them), Yahoo Finance news (3,906 stories from 119 publishers) and NewsAPI deep dives (needs `NEWSAPI_KEY`);
+  - FinBERT scoring and linking to companies and industries;
+  - rules A–D;
+  - IPO pipeline with peer-proxy forecasts for new listings;
+  - leads scored as ½ news + ½ model signal;
+  - Indian-resident investment routes;
+  - exchange-expansion suggestions.
+- Results in `exports/leads.md`: 774 listed leads; one IPO-pipeline lead (the NSE IPO). The top leads include COSCO Shipping (H-shares route), Eli Lilly (US shares under LRS) and Tata Consumer (NSE directly).
+
+**Next:** Milestone 4, the Module 13 company analyzer.
 
 ---
 

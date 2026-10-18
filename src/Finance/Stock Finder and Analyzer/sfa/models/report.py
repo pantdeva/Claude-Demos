@@ -75,7 +75,7 @@ def export(con, out_dir=EXPORT_DIR) -> dict:
 def summary(con, ch, lb, pt) -> str:
     cfg = load("models")
     wf = cfg["walk_forward"]
-    n = con.execute("SELECT COUNT(*), COUNT(DISTINCT company_id), COUNT(DISTINCT origin), MIN(origin), MAX(origin) "
+    n = con.execute("SELECT COUNT(*), COUNT(DISTINCT company_id), COUNT(DISTINCT substr(origin, 1, 7)), MIN(origin), MAX(origin) "
                     "FROM forecast_scores WHERE crps IS NOT NULL").fetchone()
     out = [f"# Stage 0 model leaderboard\n\nBuilt {now()}. {n[0]:,} scored forecasts for {n[1]} companies on "
            f"{n[2]} forecast dates ({n[3]} to {n[4]}). Each model is fitted on the previous "
