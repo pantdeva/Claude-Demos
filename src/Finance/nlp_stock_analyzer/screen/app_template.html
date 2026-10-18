@@ -1,0 +1,280 @@
+<title>Global Index Model Screen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: screener app. Index rail on top, index summary + strategy league, company table, company detail drawer. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --raised:#f7f9fb; --ink:#14202c; --muted:#5b6777; --line:#dce2e9;
+  --accent:#2c56c9; --accent-soft:#e3eafb; --good:#1d7f55; --bad:#b8352a; --warn:#b9720b;
+  --font-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --s1:#2c56c9; --s2:#b9720b;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1218; --surface:#151c24; --raised:#1a222c; --ink:#e4e9ef; --muted:#93a0af; --line:#27313c;
+  --accent:#7fa2ff; --accent-soft:#1c2a47; --good:#4cc28f; --bad:#f07264; --warn:#e3a33c;
+  --s1:#7fa2ff; --s2:#e3a33c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --surface:#151c24; --raised:#1a222c; --ink:#e4e9ef; --muted:#93a0af; --line:#27313c;
+  --accent:#7fa2ff; --accent-soft:#1c2a47; --good:#4cc28f; --bad:#f07264; --warn:#e3a33c;
+  --s1:#7fa2ff; --s2:#e3a33c; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14.5px/1.5 var(--font-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{margin:0;font-family:var(--font-display);font-weight:600;text-wrap:balance}
+h1{font-size:clamp(26px,4.4vw,36px);line-height:1.1}
+h2{font-size:21px} h3{font-size:15px;font-family:var(--font-body)}
+p{margin:0;max-width:72ch}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+.eyebrow{font:500 11px/1 var(--font-data);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--raised);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile .v{font:500 19px/1.2 var(--font-data);font-variant-numeric:tabular-nums}
+.tile .k{font-size:12px;color:var(--muted)}
+.rail{display:flex;flex-direction:column;gap:8px}
+.rail .grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.rail .lab{font:500 11px var(--font-data);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:96px}
+.chip{font:13px var(--font-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 11px;cursor:pointer;display:inline-flex;gap:6px;align-items:baseline}
+.chip .d{font:11.5px var(--font-data)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:500 13px var(--font-body);background:var(--surface);color:var(--muted);border:0;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.up{color:var(--good)} .down{color:var(--bad)}
+.scroll{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:middle}
+th{font:500 10.5px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface)}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+td.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover,tbody tr.sel{background:var(--accent-soft)}
+.co{font-weight:600;white-space:normal;min-width:150px}
+.tk{font:11.5px var(--font-data);color:var(--muted)}
+.pill{display:inline-block;font:500 11px/1 var(--font-data);padding:4px 7px;border-radius:999px;white-space:nowrap}
+.pill.good{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.pill.neutral{background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.score{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.score .b{width:54px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.score .b i{display:block;height:100%;background:var(--accent)}
+.detail{border-color:var(--accent)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+svg text{fill:var(--muted);font:10.5px var(--font-data)}
+.legend{display:flex;gap:14px;font-size:12.5px;flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+details summary{cursor:pointer;font-weight:600}
+ul.notes{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.wrapcell{white-space:normal;min-width:140px}
+@media (max-width:620px){ .hide-sm{display:none} th,td{padding:6px 5px} .rail .lab{min-width:auto;width:100%} }
+</style>
+
+<div class="wrap">
+<header style="display:flex;flex-direction:column;gap:8px">
+  <span class="eyebrow" id="eyebrow"></span>
+  <h1>Global index model screen</h1>
+  <p class="muted">For each of 14 stock indexes: the 25 strongest members on market value, revenue, revenue growth and net margin, run through seven quant models over the last 10 years. Pick an index, then tap a company for its forecasts and backtest.</p>
+</header>
+
+<nav class="panel rail" id="rail" aria-label="Indexes"></nav>
+
+<section class="panel" id="overview-panel">
+  <div class="row" style="justify-content:space-between">
+    <h2>All indexes at a glance</h2>
+    <div class="seg" id="seg-o" role="group" aria-label="Horizon"></div>
+  </div>
+  <p class="small muted">Best strategy = lowest average rank on Sharpe ratio across that index's backtested stocks. "Beat holding" counts the stocks where that strategy beat simply holding the stock.</p>
+  <div class="scroll"><table id="overview"></table></div>
+</section>
+
+<section class="panel" id="index-panel">
+  <div class="row" style="justify-content:space-between;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+      <span class="eyebrow" id="ix-region"></span>
+      <h2 id="ix-name"></h2>
+      <span class="small muted" id="ix-pool"></span>
+    </div>
+    <div class="seg" id="seg-i" role="group" aria-label="Horizon"></div>
+  </div>
+  <div class="grid" id="ix-tiles"></div>
+  <div class="two">
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <h3>Strategy league in this index</h3>
+      <div class="scroll"><table id="league"></table></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <h3>Forecast accuracy in this index</h3>
+      <div class="scroll"><table id="ixskill"></table></div>
+      <p class="small muted">Average CRPS rank across the index's stocks (1 = most accurate forecast distribution) and how often each model's 90% range contained the outcome.</p>
+    </div>
+  </div>
+  <h3>Top 25 companies</h3>
+  <div class="scroll"><table id="companies"></table></div>
+  <p class="small muted">Score: average of the four percentile ranks within the index. Upside and odds: median across the six forecasting models (Black-Scholes-Merton excluded, as it assumes cash-like returns).</p>
+</section>
+
+<section class="panel detail" id="detail" hidden></section>
+
+<section class="panel">
+  <details>
+    <summary>Method and limits</summary>
+    <ul class="notes small" style="margin-top:10px" id="method"></ul>
+  </details>
+</section>
+</div>
+
+<script>
+const D = __DATA__;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = (v,d=1) => v==null ? "—" : (v*100).toFixed(d)+"%";
+const spct = (v,d=1) => v==null ? "—" : (v>0?"+":"")+(v*100).toFixed(d)+"%";
+const f2 = v => v==null ? "—" : v.toFixed(2);
+const usd = v => v==null ? "—" : v>=1e12 ? "$"+(v/1e12).toFixed(2)+"T" : v>=1e9 ? "$"+(v/1e9).toFixed(v>=1e11?0:1)+"B" : "$"+(v/1e6).toFixed(0)+"M";
+const lvl = v => v==null ? "—" : v.toLocaleString(undefined,{maximumFractionDigits:2});
+const cls = v => v==null ? "" : v>0 ? "up" : v<0 ? "down" : "";
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const H = ["3 months","1 year"];
+let state = {ix: 0, h: "1 year", stock: null};
+try { const s = localStorage.getItem("gims-h"); if (H.includes(s)) state.h = s; } catch(e) {}
+const key = s => s.replace(/[^A-Za-z0-9]/g,"");
+const fromHash = () => { const k = location.hash.slice(1); const i = D.indexes.findIndex(x=>key(x.sym)===k); if (i>=0) state.ix = i; };
+fromHash();
+
+// ---------- header + rail
+const nStocks = new Set(D.indexes.flatMap(i=>i.stocks.map(s=>s.t))).size;
+const nBt = new Set(D.indexes.flatMap(i=>i.stocks.filter(s=>s.model&&s.model.horizons).map(s=>s.t))).size;
+$("eyebrow").textContent = `${D.indexes.length} indexes · ${nStocks} companies · ${nBt} backtested · built ${D.built}`;
+const regions = [...new Set(D.indexes.map(i=>i.region))];
+function drawRail(){
+  $("rail").innerHTML = regions.map(rg=>`<div class="grp"><span class="lab">${esc(rg)}</span>${
+    D.indexes.map((ix,i)=>ix.region!==rg?"":`<button class="chip" aria-pressed="${i===state.ix}" data-i="${i}">${esc(ix.name)}<span class="d ${cls(ix.quote&&ix.quote.change)}">${ix.quote?spct(ix.quote.change,2):""}</span></button>`).join("")
+  }</div>`).join("");
+  $("rail").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{ state.ix=+b.dataset.i; state.stock=null; history.replaceState(null,"","#"+key(D.indexes[state.ix].sym)); render(); $("index-panel").scrollIntoView({behavior:"smooth",block:"start"}); }));
+}
+function seg(id){
+  $(id).innerHTML = H.map(h=>`<button aria-pressed="${h===state.h}" data-h="${h}">${h}</button>`).join("");
+  $(id).querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{ state.h=b.dataset.h; try{localStorage.setItem("gims-h",state.h)}catch(e){} render(); }));
+}
+
+// ---------- overview
+function drawOverview(){
+  const h = state.h;
+  $("overview").innerHTML = `<thead><tr><th>Index</th><th>Level</th><th class="hide-sm">1-yr return</th><th class="l">Top-scored company</th><th class="l">Best strategy (${esc(h)})</th><th>Beat holding</th><th class="hide-sm">Median model upside</th></tr></thead><tbody>` +
+    D.indexes.map((ix,i)=>{
+      const lg = ix.league[h], top = lg.rows[0];
+      const ups = ix.stocks.map(s=>s.model&&s.model.current&&s.model.current.consensus[h]&&s.model.current.consensus[h].median_ret).filter(v=>v!=null).sort((a,b)=>a-b);
+      const med = ups.length ? ups[Math.floor(ups.length/2)] : null;
+      return `<tr class="click" data-i="${i}"><td><b>${esc(ix.name)}</b></td><td class="num">${ix.quote?lvl(ix.quote.level):"—"} <span class="${cls(ix.quote&&ix.quote.change)}">${ix.quote?spct(ix.quote.change,2):""}</span></td><td class="num hide-sm ${cls(ix.quote&&ix.quote.ret_1y)}">${ix.quote?spct(ix.quote.ret_1y):"—"}</td><td class="l wrapcell">${esc(ix.stocks[0]?ix.stocks[0].name:"—")}</td><td class="l wrapcell">${top?esc(top.k):"—"}</td><td>${top?`<span class="pill ${top.beat/top.stocks>=0.5?"good":(top.beat===0?"bad":"neutral")} num">${top.beat}/${top.stocks}</span>`:"—"}</td><td class="num hide-sm ${cls(med)}">${spct(med)}</td></tr>`;
+    }).join("") + "</tbody>";
+  $("overview").querySelectorAll("tr.click").forEach(tr=>tr.addEventListener("click",()=>{ state.ix=+tr.dataset.i; state.stock=null; history.replaceState(null,"","#"+key(D.indexes[state.ix].sym)); render(); $("index-panel").scrollIntoView({behavior:"smooth",block:"start"}); }));
+}
+
+// ---------- index view
+function med(a){ const v=a.filter(x=>x!=null).sort((x,y)=>x-y); return v.length? v[Math.floor(v.length/2)] : null; }
+function drawIndex(){
+  const ix = D.indexes[state.ix], h = state.h;
+  $("ix-region").textContent = ix.region + " · " + ix.sym;
+  $("ix-name").textContent = ix.name;
+  $("ix-pool").textContent = `Scored ${ix.pool} ${ix.pool_complete?"members (full index)":"of the largest members"}; top 25 shown.`;
+  const q = ix.quote || {};
+  const nb = ix.stocks.filter(s=>s.model&&s.model.horizons).length;
+  $("ix-tiles").innerHTML = [
+    [lvl(q.level), `Index level · ${q.date||""}`, ""],
+    [spct(q.change,2), "Last day", cls(q.change)],
+    [spct(q.ret_1y), "Past year", cls(q.ret_1y)],
+    [spct(med(ix.stocks.map(s=>s.growth))), "Median revenue growth", ""],
+    [pct(med(ix.stocks.map(s=>s.margin))), "Median net margin", ""],
+    [`${nb}/25`, "Backtested (10+ yrs data)", ""],
+  ].map(([v,k,c])=>`<div class="tile"><span class="v ${c}">${esc(v)}</span><span class="k">${esc(k)}</span></div>`).join("");
+  const lg = ix.league[h];
+  $("league").innerHTML = `<thead><tr><th>Strategy</th><th>Avg. rank</th><th>Beat holding</th></tr></thead><tbody>` +
+    (lg.rows.length ? lg.rows.map((r,i)=>`<tr${i===0?' style="font-weight:600"':""}><td class="wrapcell">${esc(r.k)}</td><td class="num">${f2(r.avg_rank)}</td><td><span class="pill ${r.beat/r.stocks>=0.5?"good":(r.beat===0?"bad":"neutral")} num">${r.beat}/${r.stocks}</span></td></tr>`).join("")
+     : `<tr><td colspan="3" class="muted">No stocks in this index have enough history to backtest.</td></tr>`) + "</tbody>";
+  // skill
+  const agg = {};
+  ix.stocks.forEach(s=>{ const hz=s.model&&s.model.horizons&&s.model.horizons[h]; if(!hz) return;
+    [...hz.skill].sort((a,b)=>a.crps-b.crps).forEach((k,i)=>{ (agg[k.m] ||= {r:[],cov:[],hit:[]}); agg[k.m].r.push(i+1); agg[k.m].cov.push(k.cov); agg[k.m].hit.push(k.hit); }); });
+  const sk = Object.entries(agg).map(([m,v])=>({m, r:v.r.reduce((a,b)=>a+b,0)/v.r.length, wins:v.r.filter(x=>x===1).length, cov:v.cov.reduce((a,b)=>a+b,0)/v.cov.length, hit:v.hit.reduce((a,b)=>a+b,0)/v.hit.length})).sort((a,b)=>a.r-b.r);
+  $("ixskill").innerHTML = `<thead><tr><th>Model</th><th>Avg. rank</th><th>Best on</th><th>Hit rate</th><th>90% cover</th></tr></thead><tbody>` +
+    (sk.length ? sk.map((s,i)=>`<tr${i===0?' style="font-weight:600"':""}><td class="wrapcell">${esc(s.m)}</td><td class="num">${s.r.toFixed(1)}</td><td class="num">${s.wins}</td><td class="num">${pct(s.hit,0)}</td><td class="num">${pct(s.cov,0)}</td></tr>`).join("") : `<tr><td colspan="5" class="muted">No backtests in this index.</td></tr>`) + "</tbody>";
+  // companies
+  $("companies").innerHTML = `<thead><tr><th>#</th><th class="l">Company</th><th>Market value</th><th class="hide-sm">Revenue</th><th>Growth</th><th>Net margin</th><th class="hide-sm">P/E</th><th>Score</th><th class="l">Best strategy</th><th>Model upside</th><th class="hide-sm">Beats cash</th></tr></thead><tbody>` +
+    ix.stocks.map((s,i)=>{
+      const m = s.model||{}, hz = m.horizons&&m.horizons[h], c = m.current&&m.current.consensus&&m.current.consensus[h];
+      const best = hz&&hz.best ? `<span class="${hz.best.sharpe>(hz.bh.sharpe??-9)?"up":""}">${esc(hz.best.k)}</span>` : `<span class="pill warn">${m.current?"too new to backtest":"no model data"}</span>`;
+      return `<tr class="click ${state.stock===s.t?"sel":""}" data-i="${i}"><td class="num">${s.rank}</td><td class="l co">${esc(s.name)}<div class="tk">${esc(s.t)}</div></td><td class="num">${usd(s.mcap)}</td><td class="num hide-sm">${usd(s.rev)}</td><td class="num ${cls(s.growth)}">${spct(s.growth)}</td><td class="num ${cls(s.margin)}">${pct(s.margin)}</td><td class="num hide-sm">${s.pe==null?"—":s.pe.toFixed(1)}</td><td><div class="score"><span class="num">${s.score==null?"—":(s.score*100).toFixed(0)}</span><span class="b"><i style="width:${((s.score||0)*100).toFixed(0)}%"></i></span></div></td><td class="l wrapcell small">${best}</td><td class="num ${cls(c&&c.median_ret)}">${c?spct(c.median_ret):"—"}</td><td class="num hide-sm">${c?pct(c.p_beat_cash,0):"—"}</td></tr>`;
+    }).join("") + "</tbody>";
+  $("companies").querySelectorAll("tr.click").forEach(tr=>tr.addEventListener("click",()=>{ state.stock = ix.stocks[+tr.dataset.i].t; render(); $("detail").scrollIntoView({behavior:"smooth",block:"start"}); }));
+}
+
+// ---------- company detail
+function curveSvg(curves){
+  const names = Object.keys(curves); if(!names.length) return "";
+  const W=640,Hh=230,L=52,R=12,T=10,B=26;
+  const dates = curves[names[0]].d;
+  let lo=Infinity,hi=-Infinity; names.forEach(n=>curves[n].v.forEach(v=>{ if(v>0){lo=Math.min(lo,v);hi=Math.max(hi,v);} }));
+  if(!isFinite(lo)) return "";
+  const l0=Math.log10(lo), l1=Math.log10(hi)===l0?l0+1:Math.log10(hi);
+  const x=i=>L+(W-L-R)*i/Math.max(1,dates.length-1), y=v=>T+(Hh-T-B)*(1-(Math.log10(v)-l0)/(l1-l0));
+  let g="";
+  const ticks=[]; for(let e=Math.floor(l0);e<=Math.ceil(l1);e++) [1,2,5].forEach(m=>{const v=m*10**e; if(v>=lo*0.98&&v<=hi*1.02) ticks.push(v);});
+  ticks.forEach(v=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${css('--line')}"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">$${v>=10?v.toFixed(0):v}</text>`; });
+  const step=Math.max(1,Math.round(dates.length/7)); for(let i=0;i<dates.length;i+=step) g+=`<text x="${x(i)}" y="${Hh-8}" text-anchor="middle">${dates[i].slice(0,4)}</text>`;
+  const cols=[css('--s2'),css('--s1')];
+  names.forEach((n,k)=>{ const v=curves[n].v; let d=""; v.forEach((p,i)=>{ if(p>0) d+=(d?"L":"M")+x(i).toFixed(1)+","+y(p).toFixed(1); });
+    g+=`<path d="${d}" fill="none" stroke="${cols[k%2]}" stroke-width="2" ${n==="Buy & hold"?'stroke-dasharray="5 4"':""}/>`; });
+  return `<div class="legend">${names.map((n,k)=>`<span><i style="background:${cols[k%2]}"></i>${esc(n)}</span>`).join("")}</div><div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="width:100%;min-width:420px;height:auto" role="img" aria-label="Growth of $1">${g}</svg></div>`;
+}
+function drawDetail(){
+  const ix = D.indexes[state.ix], s = ix.stocks.find(x=>x.t===state.stock);
+  if(!s){ $("detail").hidden = true; return; }
+  $("detail").hidden = false;
+  const m = s.model||{}, h = state.h, hz = m.horizons&&m.horizons[h], cur = m.current;
+  let html = `<div class="row" style="justify-content:space-between;align-items:flex-start"><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span class="eyebrow">${esc(ix.name)} · rank ${s.rank} of 25</span><h2>${esc(s.name)} <span class="tk">${esc(s.t)}</span></h2></div><button class="chip" id="close">Close</button></div>`;
+  html += `<div class="grid">${[
+    [usd(s.mcap),"Market value",""],[usd(s.rev),"Revenue, last 12 months",""],[spct(s.growth),`Revenue growth (${esc(s.growth_basis||"")})`,cls(s.growth)],
+    [pct(s.margin),"Net margin",cls(s.margin)],[s.pe==null?"—":s.pe.toFixed(1),"P/E",""],[s.score==null?"—":(s.score*100).toFixed(0)+"/100","Composite score",""]
+  ].map(([v,k,c])=>`<div class="tile"><span class="v ${c}">${v}</span><span class="k">${k}</span></div>`).join("")}</div>`;
+  if (m.note) html += `<p class="small"><span class="pill warn">note</span> ${esc(m.note)}</p>`;
+  if (cur){
+    html += `<h3>Forecasts from ${esc(cur.as_of)} (last close ${lvl(cur.price)} ${esc(s.ccy||"")}, cash ${pct(cur.rf,2)} a year)</h3>
+    <div class="scroll"><table><thead><tr><th>Model</th>${H.map(x=>`<th>${x}: median</th><th>5–95% range</th><th>Beats cash</th>`).join("")}</tr></thead><tbody>` +
+    cur.models.map(md=>`<tr><td class="wrapcell">${esc(md.m)}</td>${H.map(x=>{const r=md.h[x]; return `<td class="num ${cls(r.median_price/cur.price-1)}">${lvl(r.median_price)} <span class="small">(${spct(r.median_price/cur.price-1,0)})</span></td><td class="num">${lvl(r.p05_price)} – ${lvl(r.p95_price)}</td><td class="num">${pct(r.p_beat_cash,0)}</td>`;}).join("")}</tr>`).join("") + `</tbody></table></div>`;
+    if (cur.options && cur.options.length) html += `<p class="small muted">Black-Scholes-Merton at-the-money options (GARCH volatility): ${cur.options.map(o=>`${esc(o.horizon)} call ${lvl(o.call)} / put ${lvl(o.put)} at ${pct(o.vol_used,0)} volatility`).join("; ")}. Mean-variance mix today: ${Object.entries(cur.mpt||{}).map(([k,v])=>`${esc(k)} ${pct(v,0)}`).join(", ")}.</p>`;
+  }
+  if (hz){
+    html += `<h3>Backtest, ${esc(h)} horizon (${esc((m.period||[])[0])} → ${esc((m.period||[])[1])})</h3><div class="two"><div style="min-width:0">${curveSvg(hz.curves)}</div><div class="scroll"><table><thead><tr><th>Strategy</th><th>Sharpe</th><th>Growth/yr</th><th>Worst drop</th><th>In stock</th></tr></thead><tbody>` +
+      `<tr style="color:var(--muted)"><td>Buy &amp; hold</td><td class="num">${f2(hz.bh.sharpe)}</td><td class="num">${pct(hz.bh.cagr)}</td><td class="num">${pct(hz.bh.dd,0)}</td><td class="num">100%</td></tr>` +
+      [...hz.strategies].filter(x=>!x.k.startsWith("Black-Scholes")).sort((a,b)=>(b.sharpe??-9)-(a.sharpe??-9)).map(x=>`<tr${hz.best&&x.k===hz.best.k?' style="font-weight:600"':""}><td class="wrapcell">${esc(x.k)}</td><td class="num ${x.sharpe>(hz.bh.sharpe??-9)?"up":""}">${f2(x.sharpe)}</td><td class="num">${pct(x.cagr)}</td><td class="num">${pct(x.dd,0)}</td><td class="num">${pct(x.exp,0)}</td></tr>`).join("") +
+      `</tbody></table></div></div>`;
+  }
+  $("detail").innerHTML = html;
+  $("close").addEventListener("click",()=>{ state.stock=null; render(); $("index-panel").scrollIntoView({behavior:"smooth",block:"start"}); });
+}
+
+function render(){ drawRail(); seg("seg-o"); seg("seg-i"); drawOverview(); drawIndex(); drawDetail(); }
+window.addEventListener("hashchange",()=>{ fromHash(); render(); });
+render();
+
+$("method").innerHTML = [
+  "Members: full constituent lists for the Dow, FTSE 100 (investment trusts removed), DAX, CAC 40, Euro Stoxx 50, Hang Seng, Sensex and Nifty 50. For the S&P 500, NASDAQ Composite, NYSE Composite, Nikkei 225, KOSPI and ASX 200, the largest members by market value (50–120 per index) were scored. NASDAQ and NYSE membership comes from each stock's listing exchange and includes foreign listings (ADRs).",
+  "Fundamentals from Yahoo Finance: market value rolled forward to the latest close and converted to US dollars; revenue and net income over the last 12 months; growth compares the last 12 months with the 12 months a year earlier (or the latest fiscal year when that is missing). Banks and insurers report revenue differently, which affects their margins.",
+  "Score: the average of each company's percentile rank within its index on market value, revenue, revenue growth and net margin. Companies missing more than one metric were left out.",
+  "Models: GBM, Black-Scholes-Merton, GARCH(1,1), ARIMA, Merton jump-diffusion, Monte Carlo bootstrap and mean-variance (MPT). Each stock is backtested from 2016 on prices since 2011: every quarter each model is fitted on the previous 5 years only and sets a stock-versus-cash position for the next 3 months or year. MPT can also hold the stock's index. US stocks use the S&P 500 as their index.",
+  "Cash earns the local short-term rate: US T-bills (also used for Hong Kong's pegged dollar), and OECD 3-month interbank or call-money rates for the UK, euro area, Japan, Korea, Australia and India. Monthly rates are carried forward to the latest date.",
+  "Stocks with less than about 6½ years of prices are not backtested; with at least a year of prices, today's forecasts are still shown.",
+  "Quarterly forecast dates over 10 years give about 40 tests per stock, and 1-year results only about 10 independent years, so small differences between models are noise. Costs, taxes and currency effects are ignored. For research only, not investment advice.",
+].map(x=>`<li>${esc(x)}</li>`).join("");
+</script>
