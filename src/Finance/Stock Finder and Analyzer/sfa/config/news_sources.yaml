@@ -1,0 +1,133 @@
+# News sources for the NLP engine (Stage 0 growth signals, Stage 1 rules A–D).
+#
+# kind:  rss          the site's own RSS/Atom feed
+#        google_news  Google News RSS search limited to the site (for sites without a
+#                     public feed, e.g. Reuters); {q} is replaced by the search terms
+#        per_ticker   feed with {ticker} replaced by a Yahoo symbol
+# paywall: true → only headline + summary are available (enough for FinBERT scoring).
+# Feed URLs change without notice: the reader marks a feed "broken" after repeated
+# failures and falls back to the google_news route for that site.
+
+defaults:
+  fallback: "https://news.google.com/rss/search?q=site:{domain}+{q}&hl=en-IN&gl=IN&ceid=IN:en"
+  fallback_q: "stocks OR markets OR shares"
+  user_agent: "Mozilla/5.0 (sfa personal research tool)"
+  timeout_s: 20
+  min_minutes_between_polls: 15
+
+sources:
+  # ---------------------------------------------------------------- global
+  - id: bloomberg
+    name: Bloomberg
+    region: global
+    domain: bloomberg.com
+    paywall: true
+    feeds:
+      - {kind: rss, url: "https://feeds.bloomberg.com/markets/news.rss", topic: markets}
+      - {kind: rss, url: "https://feeds.bloomberg.com/technology/news.rss", topic: technology}
+      - {kind: rss, url: "https://feeds.bloomberg.com/economics/news.rss", topic: economy}
+  - id: ft
+    name: Financial Times
+    region: global
+    domain: ft.com
+    paywall: true
+    feeds:
+      - {kind: rss, url: "https://www.ft.com/markets?format=rss", topic: markets}
+      - {kind: rss, url: "https://www.ft.com/companies?format=rss", topic: companies}
+      - {kind: rss, url: "https://www.ft.com/global-economy?format=rss", topic: economy}
+  - id: wsj
+    name: The Wall Street Journal
+    region: global
+    domain: wsj.com
+    paywall: true
+    feeds:
+      - {kind: rss, url: "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain", topic: markets}
+      - {kind: rss, url: "https://feeds.content.dowjones.io/public/rss/WSJcomUSBusiness", topic: companies}
+      - {kind: rss, url: "https://feeds.content.dowjones.io/public/rss/RSSWorldNews", topic: economy}
+  - id: reuters
+    name: Reuters (Finance)
+    region: global
+    domain: reuters.com
+    paywall: false
+    feeds:                         # no public RSS since 2020
+      - {kind: google_news, q: "markets OR stocks", topic: markets}
+      - {kind: google_news, q: "IPO OR listing", topic: ipo}
+      - {kind: google_news, q: "commodities OR oil OR metals", topic: commodities}
+  - id: yahoo_finance
+    name: Yahoo Finance
+    region: global
+    domain: finance.yahoo.com
+    paywall: false
+    feeds:
+      - {kind: rss, url: "https://finance.yahoo.com/news/rssindex", topic: markets}
+      - {kind: per_ticker, url: "https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US", topic: company}
+  - id: marketwatch
+    name: MarketWatch
+    region: global
+    domain: marketwatch.com
+    paywall: false
+    feeds:
+      - {kind: rss, url: "https://feeds.content.dowjones.io/public/rss/mw_topstories", topic: markets}
+      - {kind: rss, url: "https://feeds.content.dowjones.io/public/rss/mw_marketpulse", topic: markets}
+  - id: economist
+    name: The Economist
+    region: global
+    domain: economist.com
+    paywall: true
+    feeds:
+      - {kind: rss, url: "https://www.economist.com/finance-and-economics/rss.xml", topic: economy}
+      - {kind: rss, url: "https://www.economist.com/business/rss.xml", topic: companies}
+
+  # ---------------------------------------------------------------- India
+  - id: economic_times
+    name: The Economic Times
+    region: IN
+    domain: economictimes.indiatimes.com
+    paywall: false
+    feeds:
+      - {kind: rss, url: "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms", topic: markets}
+      - {kind: rss, url: "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms", topic: stocks}
+      - {kind: rss, url: "https://economictimes.indiatimes.com/markets/ipos/fpos/rssfeeds/14655708.cms", topic: ipo}
+      - {kind: rss, url: "https://economictimes.indiatimes.com/industry/rssfeeds/13352306.cms", topic: industry}
+  - id: mint
+    name: Mint
+    region: IN
+    domain: livemint.com
+    paywall: false
+    feeds:
+      - {kind: rss, url: "https://www.livemint.com/rss/markets", topic: markets}
+      - {kind: rss, url: "https://www.livemint.com/rss/companies", topic: companies}
+      - {kind: rss, url: "https://www.livemint.com/rss/industry", topic: industry}
+  - id: moneycontrol
+    name: Moneycontrol
+    region: IN
+    domain: moneycontrol.com
+    paywall: false
+    feeds:
+      - {kind: rss, url: "https://www.moneycontrol.com/rss/marketreports.xml", topic: markets}
+      - {kind: rss, url: "https://www.moneycontrol.com/rss/business.xml", topic: companies}
+      - {kind: rss, url: "https://www.moneycontrol.com/rss/iponews.xml", topic: ipo}
+  - id: pulse_zerodha
+    name: Pulse by Zerodha
+    region: IN
+    domain: pulse.zerodha.com
+    paywall: false
+    aggregator: true               # re-publishes items from other Indian outlets; dedupe by title
+    feeds:
+      - {kind: rss, url: "https://pulse.zerodha.com/feed.php", topic: markets}
+  - id: investing_in
+    name: Investing.com India
+    region: IN
+    domain: in.investing.com
+    paywall: false
+    feeds:
+      - {kind: rss, url: "https://in.investing.com/rss/news.rss", topic: markets}
+      - {kind: rss, url: "https://in.investing.com/rss/news_25.rss", topic: stocks}
+      - {kind: rss, url: "https://in.investing.com/rss/news_1062.rss", topic: ipo}
+
+# Deep-dive search for individual leads (100 requests/day on the free plan).
+# The key is read from the NEWSAPI_KEY environment variable, never from this file.
+newsapi:
+  enabled: true
+  env_key: NEWSAPI_KEY
+  daily_budget: 90

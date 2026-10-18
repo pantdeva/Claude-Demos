@@ -1,0 +1,14 @@
+# Background jobs run by `python -m sfa service`. Interval is in hours; `at` (local
+# HH:MM) pins a daily job to a time of day instead. Jobs whose module is not built yet
+# are skipped with a note, so later milestones only need to switch them on.
+
+jobs:
+  universe:      {every_hours: 168, enabled: true,  desc: "Re-resolve seeds, find new listings and cross-listings"}
+  prices:        {at: "06:30",       enabled: true,  desc: "Refresh daily prices for every listing and benchmark"}
+  fundamentals:  {every_hours: 168, enabled: true,  desc: "Refresh market value, revenue, earnings, book value"}
+  classify:      {at: "07:00",       enabled: true,  desc: "Recompute all Stage 0 classifications and export"}
+  leaderboard:   {every_hours: 168, enabled: false, desc: "Milestone 2: model leaderboard per class x sector x horizon"}
+  news:          {every_hours: 1,   enabled: false, desc: "Milestone 3: RSS ingestion and FinBERT scoring"}
+  ipo_pipeline:  {every_hours: 6,   enabled: false, desc: "Milestone 3: SEC EDGAR, Nasdaq, SEBI, HKEX, JPX new listings"}
+  finder:        {every_hours: 6,   enabled: false, desc: "Milestone 3: lead scoring and investment routes"}
+  analyzer:      {at: "08:00",       enabled: false, desc: "Milestone 4: Module 13 valuation for active leads"}

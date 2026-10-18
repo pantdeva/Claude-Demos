@@ -1,0 +1,42 @@
+# Yahoo sector → GICS sector → the six groups used by the app, plus the Morningstar
+# super-sector used as the starting point for cyclical vs defensive.
+
+groups:
+  IT: "IT & Software"
+  FIN: "Financials & Banking"
+  HC: "Healthcare & Biotech"
+  CONS: "Consumer Discretionary & Staples"
+  EMU: "Energy, Materials & Utilities"
+  IRE: "Industrials & Real Estate"
+
+yahoo_sector:
+  Technology:             {gics: Information Technology, group: IT, super: Sensitive}
+  Communication Services: {gics: Communication Services, group: IT, super: Sensitive}
+  Financial Services:     {gics: Financials, group: FIN, super: Cyclical}
+  Healthcare:             {gics: Health Care, group: HC, super: Defensive}
+  Consumer Cyclical:      {gics: Consumer Discretionary, group: CONS, super: Cyclical}
+  Consumer Defensive:     {gics: Consumer Staples, group: CONS, super: Defensive}
+  Energy:                 {gics: Energy, group: EMU, super: Sensitive}
+  Basic Materials:        {gics: Materials, group: EMU, super: Cyclical}
+  Utilities:              {gics: Utilities, group: EMU, super: Defensive}
+  Industrials:            {gics: Industrials, group: IRE, super: Sensitive}
+  Real Estate:            {gics: Real Estate, group: IRE, super: Cyclical}
+
+# Yahoo industries whose GICS sector differs from Yahoo's sector.
+industry_override:
+  Internet Retail:              {gics: Consumer Discretionary, group: CONS}
+  Specialty Retail:             {gics: Consumer Discretionary, group: CONS}
+  Credit Services:              {gics: Financials, group: FIN}          # Visa/Mastercard: GICS Financials since 2023
+  Waste Management:             {gics: Industrials, group: IRE}
+  Conglomerates:                {gics: Industrials, group: IRE}
+  Electronic Gaming & Multimedia: {gics: Communication Services, group: IT}
+
+# Industries treated as defensive / cyclical regardless of super-sector.
+industry_behaviour:
+  defensive: [Telecom Services, Waste Management, Discount Stores, Grocery Stores, Tobacco,
+              Household & Personal Products, Utilities - Regulated Electric, Utilities - Regulated Gas,
+              Utilities - Regulated Water, Packaged Foods, Beverages - Non-Alcoholic, Drug Manufacturers - General]
+  cyclical:  [Semiconductors, Semiconductor Equipment & Materials, Auto Manufacturers, Auto Parts,
+              Steel, Copper, Aluminum, Oil & Gas E&P, Airlines, Marine Shipping, Building Materials,
+              Residential Construction, Capital Markets, Luxury Goods, Travel Services, Resorts & Casinos,
+              Specialty Chemicals, Chemicals, Gold, Other Industrial Metals & Mining]

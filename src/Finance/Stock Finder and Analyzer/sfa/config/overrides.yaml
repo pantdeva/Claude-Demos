@@ -1,0 +1,53 @@
+# Manual corrections for cases the automatic rules get wrong. Keys may be any of the
+# company's listing symbols.
+
+# Home (primary) listing, where the statement-currency rule misleads: mostly companies
+# that report in US dollars but whose primary market is elsewhere.
+home_listing:
+  SHEL: SHEL.L
+  HSBC: HSBA.L
+  BHP: BHP.AX
+  RIO: RIO.L
+  NVS: NOVN.SW
+  UL: ULVR.L
+  AZN: AZN.L
+  BP: BP.L
+  GSK: GSK.L
+  BTI: BATS.L
+  BABA: 9988.HK        # dual primary (NYSE and HKEX since 2022)
+  MT.AS: MT.AS         # ArcelorMittal: Luxembourg-incorporated, Amsterdam primary
+  AIR.PA: AIR.PA
+
+# Companies that are dual-primary listed (both listings are primary).
+dual_primary: [BABA, 9988.HK]
+
+# Country of incorporation where it differs from the home exchange's country.
+# Only used for display and the investment-routes engine; market class follows
+# the home exchange.
+domicile:
+  ARM: GB
+  NXPI: NL
+  NBIS: NL
+  ACN: IE
+  MDT: IE
+  LIN: IE
+  CB: CH
+  SPOT: LU
+  MT.AS: LU
+  AIR.PA: NL
+  STLAM.MI: NL
+  EXO.AS: NL
+  9988.HK: KY
+  0700.HK: KY
+  3690.HK: KY
+  1810.HK: KY
+  9618.HK: KY
+  9999.HK: KY
+
+# US listings that are ordinary shares, not depositary receipts (the 1:1 price
+# ratio cannot tell these apart from 1:1 ADRs).
+us_ordinary: [UBS, CB, SHOP, RY, TD, BMO, BNS, CM, ENB, CNQ, CP, CNI, SU, MFC, TRP, BN, BAM, TRI,
+              QSR, NTR, WPM, FNV, AEM, CCJ, CLS, SLF, CVE, IMO, B, KGC, PBA, MGA, FTS, BCE, PAAS, TECK]
+
+# Listings whose share type the symbol rules misread.
+share_type: {}

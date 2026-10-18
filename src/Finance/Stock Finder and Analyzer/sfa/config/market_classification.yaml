@@ -1,0 +1,42 @@
+# Market-development classification, stored as dated events so the label in force on
+# any date can be looked up (needed for backtests: a stock is modelled with the class
+# it had at the time). MSCI is the primary scheme; FTSE Russell and S&P DJI are shown
+# alongside because they disagree for some markets (Korea most notably).
+#
+# Classes: DM (developed), EM (emerging), FM (frontier), SA (standalone).
+# FTSE's own tiers are kept in `detail` (Advanced / Secondary Emerging).
+#
+# Review after each provider's annual review (MSCI: June; FTSE Russell: September/March;
+# S&P DJI: annual consultation). Last reviewed: 2026-10-18.
+
+current:          # in force on the review date
+  MSCI:
+    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, JP, HK, AU, SG, IL]
+    EM: [CN, TW, KR, IN, SA, BR, MX, ZA, ID, TH, MY, AE, QA, EG]
+    FM: [VN, NG]
+  FTSE:
+    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, JP, HK, AU, SG, IL, KR]
+    EM: [CN, TW, IN, SA, BR, MX, ZA, ID, TH, MY, AE, QA, EG]
+    FM: [VN, NG]
+    detail:
+      Advanced Emerging: [TW, BR, MX, ZA, TH, MY]
+      Secondary Emerging: [CN, IN, SA, ID, AE, QA, EG]
+  SPDJI:
+    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, JP, HK, AU, SG, IL, KR]
+    EM: [CN, TW, IN, SA, BR, MX, ZA, ID, TH, MY, AE, QA, EG]
+    FM: [VN, NG]
+
+# Changes with an effective date. Before the earliest event for a country, the
+# `current` label is assumed (flagged as "assumed" in exports).
+events:
+  - {provider: MSCI, country: CN, date: 2018-06-01, from: SA, to: EM, note: "China A shares partially included in MSCI EM (H shares were already EM)"}
+  - {provider: MSCI, country: SA, date: 2019-05-29, from: SA, to: EM, note: "Saudi Arabia joined MSCI EM in two tranches (May and Aug 2019)"}
+  - {provider: FTSE, country: SA, date: 2019-03-18, from: SA, to: EM, note: "FTSE Secondary Emerging, phased Mar 2019 – Mar 2020"}
+  - {provider: FTSE, country: KR, date: 2009-09-21, from: EM, to: DM, note: "FTSE promoted Korea to Developed"}
+  - {provider: FTSE, country: CN, date: 2019-06-24, from: SA, to: EM, note: "China A shares phased into FTSE GEIS"}
+  - {provider: MSCI, country: KR, date: 2008-06-01, from: EM, to: EM, note: "MSCI DM watch list 2008–2014; removed. Still EM"}
+
+# Pending reviews that could change a class. Shown as warnings on affected stocks.
+watch:
+  - {provider: MSCI, country: KR, item: "MSCI EM but FTSE/S&P DM: check each June MSCI review for a DM watch-list decision"}
+  - {provider: MSCI, country: ID, item: "Consultation (15 Oct 2026) on reclassifying Indonesia from EM to Standalone"}

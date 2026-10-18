@@ -1,0 +1,26 @@
+# Market-data providers in fallback order. Yahoo is the main source for prices and
+# fundamentals; the others confirm or fill gaps. A provider that fails is skipped for
+# the rest of the run and recorded in job_runs.
+
+prices:
+  - {id: yahoo, note: "chart endpoint, all exchanges"}
+  - {id: nse, markets: [IN], note: "NSE historical equity data (needs a browser-like session cookie)"}
+
+fx:
+  - {id: yahoo, note: "<CCY>USD=X closes"}
+  - {id: ecb, url: "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.zip", note: "ECB reference rates (EUR crosses)"}
+  - {id: fred, note: "DEXINUS, DEXJPUS, DEXCHUS, DEXUSUK, DEXUSEU … daily H.10 rates"}
+
+company_facts:
+  - {id: yahoo_search, note: "sector, industry, other listings"}
+  - {id: sec_edgar, markets: [US], url: "https://data.sec.gov/submissions/CIK{cik}.json",
+     tickers_url: "https://www.sec.gov/files/company_tickers_exchange.json",
+     note: "state/country of incorporation, SIC code, filer category; foreign private issuers file 20-F/40-F",
+     user_agent_env: SFA_SEC_USER_AGENT, max_rps: 8}
+
+rates:
+  - {id: fred, note: "T-bills, OECD 3-month and 10-year yields, India call money"}
+
+risk_premiums:
+  - {id: damodaran, url: "https://pages.stern.nyu.edu/~adamodar/pc/datasets/ctryprem.xlsx",
+     note: "country risk premiums and equity risk premium, updated each January and July"}

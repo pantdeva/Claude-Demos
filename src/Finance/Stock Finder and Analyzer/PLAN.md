@@ -42,7 +42,7 @@ Starting exchanges: Nasdaq, NYSE, Shanghai, Euronext, Japan Exchange Group, Shen
 |---|---|---|
 | 1 | Stage 0 foundation and classification | Package, database, exchange config, company universe (largest companies per exchange), dated market-classification events, listing-structure detection (domestic / cross-listing / ADR / GDR), sector mapping, cap band, growth/value, cyclical/defensive, common/preferred; scheduler skeleton; tests; classification export |
 | 2 | Stage 0 model leaderboard | Seven models run per market class × sector group × horizon (3 months, 1 year); research-based baselines (GJR-GARCH-t short-term in EM, EWMA / random walk for 1-year volatility, shrunk drift, 1/N benchmark); a model replaces a baseline only on a clear out-of-sample win (Diebold–Mariano); growth predictions per stock |
-| 3 | Stage 1 company finder | RSS ingestion (exchanges, regulators, ET, Mint, Business Standard, CNBC, MarketWatch, HKEX, SEBI, RBI, SEC) scored with FinBERT on rules A–D; NewsAPI for deep dives; IPO pipeline (SEC EDGAR S-1/F-1, Nasdaq calendar, SEBI DRHPs, HKEX, JPX; news NLP elsewhere); lead scoring; peer-proxy modelling for new listings; Indian-resident investment-routes engine |
+| 3 | Stage 1 company finder | RSS ingestion (Bloomberg, FT, WSJ, Reuters, Yahoo Finance, MarketWatch, The Economist, ET, Mint, Moneycontrol, Pulse by Zerodha, Investing.com India, plus SEC, SEBI, RBI and HKEX) scored with FinBERT on rules A–D; NewsAPI for deep dives; IPO pipeline (SEC EDGAR S-1/F-1, Nasdaq calendar, SEBI DRHPs, HKEX, JPX; news NLP elsewhere); lead scoring; peer-proxy modelling for new listings; Indian-resident investment-routes engine |
 | 4 | Stage 2 company analyzer | Module 13 integrated model from Yahoo annual statements; live 10-year yields; Damodaran country risk premiums; beta vs local index; WACC; terminal value capped by long-run inflation; fair price and sensitivity table; peer multiples; option-style flag for event-driven companies |
 | 5 | Dashboard and service packaging | Local web dashboard (leads, company page, model leaderboard, classification maps); start-on-boot instructions for Windows, macOS and Linux; config for adding exchanges |
 
@@ -61,7 +61,8 @@ Never route new money into NSE IFSC Receipts (new buys stopped 30 Jul 2026; deal
 - Prices, fundamentals, sector/industry, cross-listings: Yahoo Finance chart, fundamentals-timeseries and search endpoints.
 - Rates: FRED (US T-bills, OECD 3-month and 10-year yields; India call-money rate).
 - Equity risk premiums: Damodaran country risk premium dataset.
-- News: free RSS feeds; NewsAPI (100 requests/day) for leads.
+- News (config/news_sources.yaml): Bloomberg, Financial Times, The Wall Street Journal, Reuters (through Google News, since Reuters has no public RSS), Yahoo Finance, MarketWatch and The Economist; in India, The Economic Times, Mint, Moneycontrol, Pulse by Zerodha and Investing.com India; plus regulator and exchange feeds (SEC, SEBI, RBI, HKEX). Paywalled sites give headlines and summaries only. A feed that fails three times in a row is replaced by a Google News search of its site. NewsAPI (100 requests/day) is used for deep dives on leads.
+- Second sources for market data (config/data_sources.yaml): SEC EDGAR (US company facts and domicile), NSE (Indian prices), ECB and FRED (exchange rates), Damodaran (risk premiums). Yahoo stays the main source; when a source fails, the next one or the last cached data is used.
 - IPOs: SEC EDGAR Atom feeds (declared User-Agent, ≤10 requests/second), Nasdaq IPO calendar (undocumented), SEBI draft offer documents, HKEX and JPX new-listing pages.
 
 ## Caveats

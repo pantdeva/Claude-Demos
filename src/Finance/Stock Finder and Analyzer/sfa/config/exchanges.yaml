@@ -1,0 +1,68 @@
+# Exchanges the backend covers. Add a new exchange by appending an entry and seeds
+# in universe_seeds.yaml; nothing else needs changing.
+#
+# id:          short id used everywhere in the database
+# yahoo_codes: values of Yahoo's "exchange" field for listings on this exchange
+# suffix:      Yahoo ticker suffix ("" for US)
+# country:     ISO-3166 alpha-2 of the market (drives market classification)
+# benchmark:   index symbol used for beta and, later, model benchmarks
+# rate:        local cash-rate series key (see data/rates.py)
+
+exchanges:
+  - {id: NASDAQ, name: Nasdaq, country: US, currency: USD, suffix: "", yahoo_codes: [NMS, NGM, NCM, NAS], benchmark: "^IXIC", rate: USD}
+  - {id: NYSE, name: New York Stock Exchange, country: US, currency: USD, suffix: "", yahoo_codes: [NYQ, ASE, PCX], benchmark: "^NYA", rate: USD}
+  - {id: SSE, name: Shanghai Stock Exchange, country: CN, currency: CNY, suffix: .SS, yahoo_codes: [SHH], benchmark: "000001.SS", rate: CNY,
+     boards: {"688": STAR Market}}
+  - {id: SZSE, name: Shenzhen Stock Exchange, country: CN, currency: CNY, suffix: .SZ, yahoo_codes: [SHZ], benchmark: "399001.SZ", rate: CNY,
+     boards: {"300": ChiNext, "301": ChiNext}}
+  - {id: EURONEXT_PA, name: Euronext Paris, country: FR, currency: EUR, suffix: .PA, yahoo_codes: [PAR], benchmark: "^FCHI", rate: EUR, group: Euronext}
+  - {id: EURONEXT_AS, name: Euronext Amsterdam, country: NL, currency: EUR, suffix: .AS, yahoo_codes: [AMS], benchmark: "^AEX", rate: EUR, group: Euronext}
+  - {id: EURONEXT_BR, name: Euronext Brussels, country: BE, currency: EUR, suffix: .BR, yahoo_codes: [BRU], benchmark: "^BFX", rate: EUR, group: Euronext}
+  - {id: EURONEXT_LS, name: Euronext Lisbon, country: PT, currency: EUR, suffix: .LS, yahoo_codes: [LIS], benchmark: "PSI20.LS", rate: EUR, group: Euronext}
+  - {id: EURONEXT_IR, name: Euronext Dublin, country: IE, currency: EUR, suffix: .IR, yahoo_codes: [ISE], benchmark: "^ISEQ", rate: EUR, group: Euronext}
+  - {id: EURONEXT_OL, name: Euronext Oslo (Oslo Børs), country: "NO", currency: NOK, suffix: .OL, yahoo_codes: [OSL], benchmark: "OSEBX.OL", rate: NOK, group: Euronext}
+  - {id: EURONEXT_MI, name: Euronext Milan (Borsa Italiana), country: IT, currency: EUR, suffix: .MI, yahoo_codes: [MIL], benchmark: "FTSEMIB.MI", rate: EUR, group: Euronext}
+  - {id: JPX, name: Japan Exchange Group (Tokyo), country: JP, currency: JPY, suffix: .T, yahoo_codes: [JPX], benchmark: "^N225", rate: JPY}
+  - {id: HKEX, name: Hong Kong Exchanges, country: HK, currency: HKD, suffix: .HK, yahoo_codes: [HKG], benchmark: "^HSI", rate: HKD}
+  - {id: TSX, name: Toronto Stock Exchange (TMX), country: CA, currency: CAD, suffix: .TO, yahoo_codes: [TOR], benchmark: "^GSPTSE", rate: CAD}
+  - {id: TSXV, name: TSX Venture Exchange (TMX), country: CA, currency: CAD, suffix: .V, yahoo_codes: [VAN], benchmark: "^GSPTSE", rate: CAD}
+  - {id: NSE, name: National Stock Exchange of India, country: IN, currency: INR, suffix: .NS, yahoo_codes: [NSI], benchmark: "^NSEI", rate: INR}
+  - {id: BSE, name: BSE (Bombay Stock Exchange), country: IN, currency: INR, suffix: .BO, yahoo_codes: [BSE], benchmark: "^BSESN", rate: INR}
+  - {id: LSE, name: London Stock Exchange, country: GB, currency: GBP, suffix: .L, yahoo_codes: [LSE], benchmark: "^FTSE", rate: GBP,
+     note: "Yahoo quotes most .L prices in pence (GBp)"}
+  - {id: TWSE, name: Taiwan Stock Exchange, country: TW, currency: TWD, suffix: .TW, yahoo_codes: [TAI], benchmark: "^TWII", rate: TWD}
+  - {id: TPEX, name: Taipei Exchange (TPEx), country: TW, currency: TWD, suffix: .TWO, yahoo_codes: [TWO], benchmark: "^TWII", rate: TWD}
+  - {id: KRX, name: Korea Exchange (KOSPI), country: KR, currency: KRW, suffix: .KS, yahoo_codes: [KSC], benchmark: "^KS11", rate: KRW}
+  - {id: KOSDAQ, name: Korea Exchange (KOSDAQ), country: KR, currency: KRW, suffix: .KQ, yahoo_codes: [KOE], benchmark: "^KQ11", rate: KRW}
+  - {id: TADAWUL, name: Saudi Exchange (Tadawul), country: SA, currency: SAR, suffix: .SR, yahoo_codes: [SAU], benchmark: "^TASI.SR", rate: SAR}
+
+# Venues that are not home markets but carry depositary receipts or secondary
+# lines of the companies above. Listings here are recorded, not modelled.
+secondary_venues:
+  - {id: US_OTC, name: US over-the-counter, country: US, currency: USD, suffix: "", yahoo_codes: [PNK, OQB, OQX]}
+  - {id: LSE_IOB, name: London International Order Book, country: GB, currency: USD, suffix: .IL, yahoo_codes: [IOB]}
+  - {id: B3, name: B3 São Paulo (BDRs), country: BR, currency: BRL, suffix: .SA, yahoo_codes: [SAO]}
+  - {id: XETRA, name: Deutsche Börse Xetra, country: DE, currency: EUR, suffix: .DE, yahoo_codes: [GER]}
+  - {id: SIX, name: SIX Swiss Exchange, country: CH, currency: CHF, suffix: .SW, yahoo_codes: [EBS]}
+  - {id: ASX, name: ASX, country: AU, currency: AUD, suffix: .AX, yahoo_codes: [ASX]}
+  - {id: SGX, name: Singapore Exchange, country: SG, currency: SGD, suffix: .SI, yahoo_codes: [SES]}
+
+# Exchanges that later milestones may add when news shows a growing industry there.
+expansion_candidates:
+  - {id: XETRA, country: DE, suffix: .DE, benchmark: "^GDAXI"}
+  - {id: SIX, country: CH, suffix: .SW, benchmark: "^SSMI"}
+  - {id: ASX, country: AU, suffix: .AX, benchmark: "^AXJO"}
+  - {id: SGX, country: SG, suffix: .SI, benchmark: "^STI"}
+  - {id: B3, country: BR, suffix: .SA, benchmark: "^BVSP"}
+  - {id: IDX, country: ID, suffix: .JK, benchmark: "^JKSE"}
+  - {id: SET, country: TH, suffix: .BK, benchmark: "^SET.BK"}
+  - {id: BURSA, country: MY, suffix: .KL, benchmark: "^KLSE"}
+  - {id: BMV, country: MX, suffix: .MX, benchmark: "^MXX"}
+  - {id: JSE, country: ZA, suffix: .JO, benchmark: "^J203.JO"}
+  - {id: TASE, country: IL, suffix: .TA, benchmark: "^TA125.TA"}
+  - {id: ADX, country: AE, suffix: .AD, benchmark: null}
+  - {id: DFM, country: AE, suffix: .DU, benchmark: null}
+  - {id: QSE, country: QA, suffix: .QA, benchmark: null}
+  - {id: HOSE, country: VN, suffix: .VN, benchmark: null}
+  - {id: EGX, country: EG, suffix: .CA, benchmark: null}
+  - {id: NGX, country: NG, suffix: .LG, benchmark: null}
