@@ -68,7 +68,7 @@ Nine forecasting models are compared on every company's home listing:
 | Walk-forward | Every ~6 months since 2010, each model is fitted on the previous 5 years only and forecasts the 3-month and 1-year return distribution. Settings are in `sfa/config/models.yaml`; set `step_days: 63` for quarterly dates. |
 | Scoring | CRPS of the whole forecast distribution (main loss), direction hit rate, 90% interval coverage and bias |
 | Baselines | 3 months: GJR-GARCH-t in emerging markets, EWMA with shrunk drift elsewhere. 1 year: EWMA with shrunk drift. |
-| Promotion | A model replaces the baseline only with lower CRPS and a Diebold–Mariano t ≥ 1.96 (Newey–West variance for overlapping horizons, Harvey–Leybourne–Newbold small-sample correction) |
+| Promotion | A model replaces the baseline only with lower CRPS and a Diebold–Mariano t at or above the Bonferroni-corrected 5% level for the number of candidates (≈ 2.73 for 8). The test uses Newey–West variance for overlapping horizons and the Harvey–Leybourne–Newbold small-sample correction. |
 | Groups | Every company, exchange, sector group, market class and cell (market class × sector group), and all companies together |
 | MPT | Mean-variance portfolios of each cell's largest stocks against the 1/N equal-weight benchmark, rebalanced quarterly in US dollars, with Memmel's test of the Sharpe-ratio difference |
 | Predictions | 3-month and 1-year expected return, median, 5–95% range and chance of beating cash. The model comes from the company's own record if it shows a clear win, otherwise from its cell, then its market class. Stored as `growth_3m` / `growth_1y`. |

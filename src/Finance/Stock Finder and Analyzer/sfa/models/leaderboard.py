@@ -64,6 +64,16 @@ def dm_stat(d: np.ndarray, lag: int) -> float:
     return float(t * math.sqrt(corr)) if corr > 0 else float(t)
 
 
+def threshold(n_candidates: int) -> float:
+    """DM t needed for promotion: Bonferroni-corrected 5% two-sided, floored at dm_t."""
+    from scipy.stats import norm
+    cfg = load("models")["promotion"]
+    t = cfg["dm_t"]
+    if cfg.get("multiple_testing") == "bonferroni" and n_candidates > 1:
+        t = max(t, float(norm.ppf(1 - 0.025 / n_candidates)))
+    return t
+
+
 def _overlap_lag(h_days: int) -> int:
     step = load("models")["walk_forward"]["step_days"]
     return max(0, math.ceil(h_days / step) - 1)
@@ -114,11 +124,14 @@ def evaluate(rows: list[dict], baseline: str, h_days: int) -> tuple[list[dict], 
     elif n_orig < cfg["min_origins"]:
         choice["basis"] = f"baseline (only {n_orig} forecast dates)"
     else:
-        wins = [x for x in out if x["model"] != baseline and x["skill"] > 0 and x["dm_t"] >= cfg["dm_t"]]
+        thr = threshold(len([x for x in out if x["model"] != baseline]))
+        wins = [x for x in out if x["model"] != baseline and x["skill"] > 0 and x["dm_t"] >= thr]
         if wins:
             w = max(wins, key=lambda x: x["skill"])
             choice["selected"] = w["model"]
-            choice["basis"] = f"beats baseline: skill {w['skill']:+.1%}, DM t = {w['dm_t']:.2f}"
+            choice["basis"] = f"beats baseline: skill {w['skill']:+.1%}, DM t = {w['dm_t']:.2f} (needs {thr:.2f})"
+        else:
+            choice["basis"] = f"baseline (no candidate reached DM t {thr:.2f})"
     for x in out:
         x["selected"] = int(x["model"] == choice["selected"])
     return out, choice

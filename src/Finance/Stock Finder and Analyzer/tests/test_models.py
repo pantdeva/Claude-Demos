@@ -123,6 +123,11 @@ def test_promotion_requires_clear_win():
     assert choice["selected"] == "ewma" and "only" in choice["basis"]
 
 
+def test_bonferroni_threshold():
+    assert abs(LB.threshold(8) - 2.734) < 0.01
+    assert LB.threshold(1) == 1.96
+
+
 def test_dates_matched_across_exchange_holidays():
     rows = _rows(adv=0.01)
     assert len({r["origin"] for r in rows}) > 20                  # day differs by exchange

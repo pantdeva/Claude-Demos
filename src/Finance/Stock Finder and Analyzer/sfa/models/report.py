@@ -82,7 +82,8 @@ def summary(con, ch, lb, pt) -> str:
            f"{wf['window_days']} trading days only; forecast dates every ~{wf['step_days']} trading days.\n",
            "Loss: CRPS of the forecast distribution of the log return (lower is better). *Skill* = "
            "1 − CRPS ÷ CRPS of the group's baseline. A model replaces the baseline only with positive skill and "
-           f"a Diebold–Mariano t ≥ {cfg['promotion']['dm_t']} (Newey–West, small-sample corrected).\n"]
+           f"a Diebold–Mariano t at least the Bonferroni-corrected 5% level for the number of candidates "
+           f"(≈ 2.73 for 8; Newey–West, small-sample corrected).\n"]
     for gt, title in (("all", "All companies"), ("market_class", "By market class"), ("cell", "By cell (market class × sector group)"),
                       ("sector_group", "By sector group"), ("exchange", "By exchange")):
         out.append(f"## {title}\n")

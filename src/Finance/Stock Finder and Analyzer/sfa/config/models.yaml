@@ -30,9 +30,12 @@ baseline_rule:
   "1 year":   {default: ewma}
 
 # A candidate replaces the baseline only on a clear out-of-sample win: lower mean
-# CRPS and a Diebold–Mariano statistic (Newey–West variance) at or above this value.
+# CRPS and a Diebold–Mariano statistic (Newey–West variance) at or above the
+# threshold. Several candidates are tested against the baseline, so the 5% two-sided
+# level is Bonferroni-corrected: t ≥ z(1 − 0.025 / number of candidates) (≈ 2.73 for 8).
 promotion:
-  dm_t: 1.96
+  dm_t: 1.96               # floor; the corrected threshold is used when it is higher
+  multiple_testing: bonferroni
   min_origins: 8           # forecast dates needed in a group before it can be judged
   min_stocks_cell: 5
 
