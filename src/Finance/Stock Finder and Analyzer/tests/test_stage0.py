@@ -35,6 +35,13 @@ def test_same_company_rejects_subsidiaries():
     assert not L.same_company("Enel SpA", "Enel Chile S.A.")
     assert not L.same_company("Saudi Arabian Oil Company", "Saudi Aramco Base Oil Company")
     assert not L.same_company("Toyota Motor Corporation", "Toyota Industries Corporation")
+    assert not L.same_company("Reliance Industries Limited", "Reliance, Inc.")
+    assert not L.same_company("Compass Group PLC", "Compass, Inc.")
+    assert not L.same_company("First Financial Holding Co., Ltd.", "First Financial Bancorp.")
+    assert not L.same_company("First Financial Holding Co., Ltd.", "First Financial Corporation")
+    assert not L.same_company("NN Group N.V.", "NN, Inc.")
+    assert not L.same_company("Acme Ltd", "Acme Inc", "Technology", "Energy")
+    assert L.same_company("Alibaba Group Holding Limited", "Alibaba Group Holding Ltd", "Consumer Cyclical", "Consumer Cyclical")
 
 
 # ---------------------------------------------------------------- share type
@@ -70,6 +77,13 @@ def _l(sym, venue, role="covered", ccy="USD", country=None, rank=0, st="common")
 def test_choose_home_foreign_company():
     ls = [_l("TSM", "NYSE"), _l("2330.TW", "TWSE", ccy="TWD", rank=2)]
     assert L.choose_home(ls, "TWD", "TSM")[0]["symbol"] == "2330.TW"
+
+
+def test_choose_home_german_company_on_xetra():
+    ls = [_l("SAP", "NYSE"), _l("SAP.DE", "XETRA", role="secondary", ccy="EUR", rank=1)]
+    assert L.choose_home(ls, "EUR", "SAP")[0]["symbol"] == "SAP.DE"
+    ls = [_l("NVDA", "NASDAQ"), _l("NVD.DE", "XETRA", role="secondary", ccy="EUR", rank=1)]
+    assert L.choose_home(ls, "USD", "NVDA")[0]["symbol"] == "NVDA"
 
 
 def test_choose_home_us_company_with_cdr():
@@ -110,6 +124,7 @@ def test_company_structure_priority():
     assert L.company_structure(["primary", "foreign ordinary", "ADR"]).startswith("Depositary")
     assert L.company_structure(["primary", "foreign ordinary"]).startswith("Cross-listed")
     assert L.company_structure(["primary", "domestic secondary", "OTC ordinary"]) == "Domestic"
+    assert L.company_structure(["primary", "foreign ordinary"], ["covered", "secondary"]) == "Domestic"
 
 
 def test_nice_ratio():

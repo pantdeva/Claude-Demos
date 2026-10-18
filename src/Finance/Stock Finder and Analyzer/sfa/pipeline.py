@@ -171,7 +171,7 @@ def classify_all(con, log=print) -> dict:
             con.execute("UPDATE listings SET structure=?, dr_ratio=?, structure_basis=? WHERE symbol=?",
                         (stc, ratio, basis, l["symbol"]))
             structs.append(stc)
-        label = L.company_structure(structs)
+        label = L.company_structure(structs, [l["venue_role"] for l in lst])
         set_tag(con, cid, "listing", "listing_structure", label,
                 {"listings": {l["symbol"]: s for l, s in zip(lst, structs)}}, today)
         set_tag(con, cid, "listing", "domicile", c["domicile"], {"basis": c["domicile_basis"]}, today)

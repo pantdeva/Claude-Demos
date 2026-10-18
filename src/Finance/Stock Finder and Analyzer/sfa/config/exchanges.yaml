@@ -49,6 +49,10 @@ secondary_venues:
 
 # Exchanges that later milestones may add when news shows a growing industry there.
 expansion_candidates:
+  - {id: BME, name: Bolsa de Madrid, country: ES, currency: EUR, suffix: .MC, yahoo_codes: [MCE], benchmark: "^IBEX"}
+  - {id: OMX_CPH, name: Nasdaq Copenhagen, country: DK, currency: DKK, suffix: .CO, yahoo_codes: [CPH], benchmark: "^OMXC25"}
+  - {id: OMX_STO, name: Nasdaq Stockholm, country: SE, currency: SEK, suffix: .ST, yahoo_codes: [STO], benchmark: "^OMX"}
+  - {id: OMX_HEL, name: Nasdaq Helsinki, country: FI, currency: EUR, suffix: .HE, yahoo_codes: [HEL], benchmark: "^OMXH25"}
   - {id: XETRA, country: DE, suffix: .DE, benchmark: "^GDAXI"}
   - {id: SIX, country: CH, suffix: .SW, benchmark: "^SSMI"}
   - {id: ASX, country: AU, suffix: .AX, benchmark: "^AXJO"}

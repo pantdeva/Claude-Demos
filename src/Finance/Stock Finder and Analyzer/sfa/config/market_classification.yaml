@@ -11,18 +11,18 @@
 
 current:          # in force on the review date
   MSCI:
-    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, JP, HK, AU, SG, IL]
+    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, ES, DK, SE, FI, JP, HK, AU, SG, IL]
     EM: [CN, TW, KR, IN, SA, BR, MX, ZA, ID, TH, MY, AE, QA, EG]
     FM: [VN, NG]
   FTSE:
-    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, JP, HK, AU, SG, IL, KR]
+    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, ES, DK, SE, FI, JP, HK, AU, SG, IL, KR]
     EM: [CN, TW, IN, SA, BR, MX, ZA, ID, TH, MY, AE, QA, EG]
     FM: [VN, NG]
     detail:
       Advanced Emerging: [TW, BR, MX, ZA, TH, MY]
       Secondary Emerging: [CN, IN, SA, ID, AE, QA, EG]
   SPDJI:
-    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, JP, HK, AU, SG, IL, KR]
+    DM: [US, CA, GB, FR, NL, BE, "NO", PT, IE, IT, DE, CH, ES, DK, SE, FI, JP, HK, AU, SG, IL, KR]
     EM: [CN, TW, IN, SA, BR, MX, ZA, ID, TH, MY, AE, QA, EG]
     FM: [VN, NG]
 

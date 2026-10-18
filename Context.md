@@ -15,6 +15,7 @@ Record of the working sessions with Claude that built this repository: GitHub se
 | `main` | Folder skeleton: `src/Finance`, `src/ML`, `src/Electronics` (commit `6c5fd86`) |
 | `STA` | `4654680` "First Stage STA repo bringup": two STA decks |
 | `ML` | Everything in sections 3–7 (finance tools live in `src/Finance/nlp_stock_analyzer/`) |
+| `stock-finder` | Section 8: Stock Finder and Analyzer (branched from `ML`) |
 
 Key ML-branch commits: `f2463ea` "Financial Prediction Tool Phase 1", `d8ca5f0` move to `src/Finance`, then the quant, basket, top-100 and 14-index work.
 
@@ -120,14 +121,39 @@ The same pages are saved as HTML under `src/Finance/nlp_stock_analyzer/reports/`
 
 ---
 
-## 8. Environment notes
+## 8. Stock Finder and Analyzer (branch `stock-finder`)
+
+Location: `src/Finance/Stock Finder and Analyzer/` (design in `PLAN.md`, usage in `README.md`). Three stages: Stage 0 company backend (classification and growth prediction), Stage 1 company finder (news-driven leads using the seven quant models, with investment routes for an Indian resident), Stage 2 company analyzer (Module 13 integrated financial model). It runs as a service on the user's computer, with RSS feeds plus NewsAPI for news.
+
+**Milestone 1 (done):**
+- Python package `sfa` with a SQLite database and a Yahoo data layer, plus SEC EDGAR look-ups of where US-listed companies are incorporated.
+- RSS reader for the 12 news sites the user named: Bloomberg, FT, WSJ, Reuters (via Google News), Yahoo Finance, MarketWatch, The Economist, Economic Times, Mint, Moneycontrol, Pulse by Zerodha and Investing.com India. A feed that fails three times in a row is replaced by a Google News search of its site.
+- Scheduler service, command line and 26 offline tests.
+- Classification run on 18 Oct 2026: 858 seeds became 826 companies with 2,221 listings. Results are in `exports/`.
+  - MSCI market class: 511 Developed, 315 Emerging. FTSE Russell and S&P differ for Korea.
+  - Listing structure: 592 Domestic, 133 Cross-listed, 101 with depositary receipts (ADR, GDR, CDR, SDR).
+- Fixes made during the run:
+  - Name matching is strict: Reliance Industries ≠ Reliance Inc, and Compass Group ≠ Compass Inc.
+  - Canadian CDRs of US stocks are labelled as depositary receipts, not home listings.
+  - A Xetra, Madrid or Copenhagen listing becomes the home when the company reports in that currency (SAP, Santander, Novo Nordisk).
+  - Saudi beta is measured against an equal-weight index built from the Saudi stocks in the universe, because Yahoo has almost no history for ^TASI.SR.
+- Known limits:
+  - ADR ratios measured from prices include the ADR's premium (TSMC shows 6 although one ADR is 5 shares).
+  - The SEBI cap band is ranked within this universe only.
+  - The news feeds could not be reached from the cloud workspace; they run on the user's computer.
+
+**Next:** Milestone 2, the model leaderboard per market class × sector group × horizon.
+
+---
+
+## 9. Environment notes
 
 - Network allowlist (claude.ai Settings → Capabilities) was extended to newsapi.org, huggingface.co, *.hf.co, fred.stlouisfed.org and Yahoo Finance; stooq.com stayed blocked. Package installs from PyPI were blocked, so PyTorch, transformers and Streamlit could not run in the session.
 - An earlier version of this file was emailed to mitul.sharma160696@gmail.com on 16 Oct 2026.
 
 ---
 
-## 9. Open items
+## 10. Open items
 
 1. Create tag `V2.0.0` on GitHub.
 2. Optional: per-company "competitor news as sector signal" option (helps Micron).

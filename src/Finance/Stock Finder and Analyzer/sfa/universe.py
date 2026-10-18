@@ -42,11 +42,13 @@ def resolve_seed(seed: str) -> dict | None:
     if not any(r["symbol"] == seed for r in found):
         found = found + yahoo.search(seed, n=5)
     listings, info = {}, {}
+    seed_sector = next((r.get("sector") for r in found if r["symbol"] == seed), None)
     for rank, r in enumerate(found):
         sym = r["symbol"]
         if r.get("quoteType") != "EQUITY":
             continue
-        if sym != seed and not same_company(name, r.get("longname") or r.get("shortname")):
+        if sym != seed and not same_company(name, r.get("longname") or r.get("shortname"),
+                                            seed_sector, r.get("sector")):
             continue
         v = V.resolve(sym, r.get("exchange"))
         if sym == seed and v is None:

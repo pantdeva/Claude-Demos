@@ -23,9 +23,9 @@ LEGAL = {"inc", "incorporated", "corp", "corporation", "co", "company", "compani
          "plc", "sa", "nv", "ag", "se", "spa", "asa", "ab", "oyj", "kk", "tbk", "bhd", "berhad", "pcl",
          "the", "cv", "sab", "lp", "llc", "ord", "adr", "ads", "sponsored", "class", "shares",
          "share", "common", "stock", "new", "kgaa", "co.,", "sociedad", "anonima", "societe",
-         "anonyme", "aktiengesellschaft", "pjsc", "jsc", "group", "holdings", "holding",
+         "anonyme", "aktiengesellschaft", "pjsc", "jsc",
          "bhd.", "tbk.", "n", "v", "s", "a", "b", "h", "de", "del", "y", "et", "cie", "sca",
-         "reit", "trust", "units", "unit", "industries", "industry", "international", "intl"}
+         "units", "unit"}
 US_EXCH = {"NASDAQ", "NYSE"}
 
 
@@ -39,24 +39,19 @@ def name_key(name: str | None) -> str:
     return " ".join(toks)
 
 
-def same_company(a: str | None, b: str | None) -> bool:
+def same_company(a: str | None, b: str | None, sector_a: str | None = None,
+                 sector_b: str | None = None) -> bool:
     """True when two listing names describe the same company.
 
-    Equal keys match. A key that is a subset of the other matches only when they share
-    at least two words and start with the same word ("enel" ≠ "enel chile"; "taiwan
-    semiconductor manufacturing" = "taiwan semiconductor manufacturing co").
+    Names must be equal once legal forms (Inc, Ltd, plc, N.V. …) are removed; words such
+    as Group, Holding or Industries are kept because they separate unrelated companies
+    (Compass Group ≠ Compass Inc, Reliance Industries ≠ Reliance Inc). When both
+    listings carry a Yahoo sector, the sectors must agree too.
     """
     ka, kb = name_key(a), name_key(b)
-    if not ka or not kb:
+    if not ka or ka != kb:
         return False
-    if ka == kb:
-        return True
-    ta, tb = ka.split(), kb.split()
-    if ta[0] != tb[0]:
-        return False
-    sa, sb = set(ta), set(tb)
-    small, big = (sa, sb) if len(sa) <= len(sb) else (sb, sa)
-    return len(small) >= 2 and small <= big and len(big - small) <= 1
+    return not (sector_a and sector_b and sector_a != sector_b)
 
 
 # ---------------------------------------------------------------- share type
@@ -106,8 +101,14 @@ def choose_home(listings: list[dict], statement_ccy: str | None, seed: str) -> t
     for s in syms:
         if s in ov and ov[s] in syms:
             return next(l for l in listings if l["symbol"] == ov[s]), "override"
-    cand = [l for l in listings if l.get("venue") and l["venue_role"] != "secondary"
-            and l.get("share_type") != "preferred"
+    st0 = normalise_ccy(statement_ccy)[0]
+    # Major exchanges outside the covered set (Xetra, SIX, ASX, SGX) can be the home
+    # only when the company reports in that line's currency (SAP on Xetra, not
+    # NVIDIA's euro quote line).
+    major = {"XETRA", "SIX", "ASX", "SGX"}
+    cand = [l for l in listings if l.get("venue") and l.get("share_type") != "preferred"
+            and (l["venue_role"] != "secondary"
+                 or (l["venue"] in major and st0 and st0 != "USD" and normalise_ccy(l.get("currency"))[0] == st0))
             and not (l["venue"] == "LSE" and l["symbol"][:1].isdigit())]
     if not cand:
         cand = [l for l in listings if l["symbol"] == seed] or listings
@@ -122,7 +123,7 @@ def choose_home(listings: list[dict], statement_ccy: str | None, seed: str) -> t
         # (Canadian companies reporting in USD). Otherwise foreign lines of a US company
         # (Canadian CDRs, Xetra quotes) would win.
         interlisted = any(l["symbol"] in set(load("overrides").get("us_ordinary") or []) for l in us)
-        strong = [l for l in non_us if (st and normalise_ccy(l.get("currency"))[0] == st)
+        strong = [l for l in non_us if (st and st != "USD" and normalise_ccy(l.get("currency"))[0] == st)
                   or l["symbol"] == seed or (interlisted and l["country"] == "CA")]
         if strong:
             cand, basis = strong, "foreign company with US line"
@@ -198,10 +199,14 @@ def listing_structure(l: dict, home: dict, home_price_usd: float | None,
     return "foreign ordinary", None, "listed on a foreign exchange"
 
 
-def company_structure(structures: list[str]) -> str:
+def company_structure(structures: list[str], roles: list[str] | None = None) -> str:
+    """Company-level label. Foreign ordinary lines count as a cross-listing only on a
+    covered exchange: Xetra and London order-book quote lines exist for most large
+    companies and would make almost everything "cross-listed"."""
+    roles = roles or ["covered"] * len(structures)
     s = set(structures)
     if s & {"ADR", "GDR", "SDR", "CDR"}:
         return "Depositary receipts (ADR/GDR/other DR)"
-    if "foreign ordinary" in s:
+    if any(st == "foreign ordinary" and r == "covered" for st, r in zip(structures, roles)):
         return "Cross-listed (foreign ordinary)"
     return "Domestic"
