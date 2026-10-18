@@ -221,6 +221,9 @@ class ARIMA:
         params = np.concatenate([[res.x[0]], np.tanh(res.x[1:]) * 0.99])
         n = len(r) - max(p, q)
         sigma2 = res.fun / n
+        if not math.isfinite(sigma2) or sigma2 <= 1e-14:
+            # degenerate fit (e.g. a near-cancelling AR/MA pair on flat prices): never pick it
+            return params, max(float(np.var(r)), 1e-12), float("inf")
         aic = n * math.log(sigma2) + 2 * (k + 1)
         return params, sigma2, aic
 
