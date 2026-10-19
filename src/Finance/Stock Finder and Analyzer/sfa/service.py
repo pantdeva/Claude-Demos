@@ -90,6 +90,8 @@ def due_jobs(con) -> list[str]:
 
 def run(once: bool = False, log=print):
     con = connect()
+    con.execute("UPDATE job_runs SET status='interrupted', finished=? WHERE status='running'", (now(),))
+    con.commit()
     signal.signal(signal.SIGINT, lambda *_: _stop.__setitem__(0, True))
     signal.signal(signal.SIGTERM, lambda *_: _stop.__setitem__(0, True))
     order = ["universe", "prices", "fundamentals", "classify", "leaderboard", "news", "ipo_pipeline", "finder", "analyzer"]

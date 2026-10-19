@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock Finder and Analyzer</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#18202b; --muted:#5f6b7a; --line:#e2e6eb; --accent:#2457c5;
+  --accent-soft:#e7eefc; --good:#127a4a; --good-soft:#e3f4ea; --bad:#b4372f; --bad-soft:#fbe7e5; --warn:#8a5a00;
+  --warn-soft:#fdf1d8; --chip:#eef1f5; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0f141b; --panel:#161d26; --ink:#e7ecf2; --muted:#93a0b0; --line:#273141; --accent:#7aa2ff;
+    --accent-soft:#1c2a47; --good:#5fd09a; --good-soft:#143326; --bad:#ff8a80; --bad-soft:#3a1c1a; --warn:#f2c46b;
+    --warn-soft:#3a2f14; --chip:#202a37; --shadow:none;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar{max-width:1280px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:700;letter-spacing:.2px;white-space:nowrap}
+.brand span{color:var(--muted);font-weight:500}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px}
+nav a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.search{margin-left:auto;position:relative;min-width:220px;flex:1;max-width:320px}
+.search input{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.drop{position:absolute;top:36px;left:0;right:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  box-shadow:var(--shadow);max-height:320px;overflow:auto;display:none}
+.drop a{display:block;padding:7px 10px;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+.drop a:hover{background:var(--accent-soft)}
+main{max-width:1280px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 12px} h2{font-size:15px;margin:22px 0 8px} h3{font-size:13px;margin:12px 0 6px;color:var(--muted)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi .v{font-size:22px;font-weight:700} .kpi .l{color:var(--muted);font-size:12px}
+.wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
+th{position:sticky;top:0;background:var(--panel);color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.wrapcell{white-space:normal;min-width:240px}
+tr:hover td{background:var(--accent-soft)}
+a{color:var(--accent)}
+.pos{color:var(--good)} .neg{color:var(--bad)} .mut{color:var(--muted)}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--chip);font-size:12px;margin:1px 2px 1px 0}
+.chip.good{background:var(--good-soft);color:var(--good)} .chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.tabs{display:flex;gap:6px;margin:6px 0 10px;flex-wrap:wrap}
+.tabs button,.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.two{display:grid;gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)} @media(max-width:900px){.two{grid-template-columns:minmax(0,1fr)}}
+.two>*,.grid>*{min-width:0}
+.note{color:var(--muted);font-size:12px;margin:6px 0}
+.flag{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:6px 10px;margin:4px 0;font-size:13px}
+.err{background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:10px;margin:8px 0}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0} dt{color:var(--muted)} dd{margin:0}
+svg.spark{width:100%;height:160px}
+.loading{color:var(--muted);padding:20px}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="brand">Stock Finder and Analyzer <span>· local</span></div>
+  <nav id="nav">
+    <a href="#overview">Overview</a><a href="#leads">Leads</a><a href="#company">Company</a>
+    <a href="#models">Models</a><a href="#markets">Markets</a><a href="#service">Service</a>
+  </nav>
+  <div class="search"><input id="q" placeholder="Search company or symbol…" autocomplete="off"><div class="drop" id="drop"></div></div>
+</div></header>
+<main id="main"><div class="loading">Loading…</div></main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => (s ?? "").toString().replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num = (v, d=2) => v == null || v === "" || isNaN(v) ? "—" : Number(v).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d});
+const pct = (v, d=1) => v == null || v === "" || isNaN(v) ? "—" : (v>0?"+":"") + (v*100).toFixed(d) + "%";
+const sgn = v => v == null || isNaN(v) ? "" : (v > 0 ? "pos" : v < 0 ? "neg" : "");
+const sc = v => v == null || v === "None" || isNaN(v) ? "—" : (v>0?"+":"") + Number(v).toFixed(2);
+const big = v => v == null ? "—" : Math.abs(v) >= 1e12 ? (v/1e12).toFixed(2)+"T" : Math.abs(v) >= 1e9 ? (v/1e9).toFixed(1)+"B" : Math.abs(v) >= 1e6 ? (v/1e6).toFixed(0)+"M" : num(v,0);
+const api = p => fetch(p).then(r => r.json());
+const verdictChip = v => !v ? "" : `<span class="chip ${v==="Undervalued"?"good":v==="Overvalued"?"bad":""}">${esc(v)}</span>`;
+const route = rs => { const r = (rs||[]).find(x => x.ok); return r ? `${esc(r.route)}${r.symbol?` <span class="mut">(${esc(r.symbol)})</span>`:""}` : '<span class="mut">no practical route</span>'; };
+const go = h => { location.hash = h; };
+
+function table(cols, rows, opts={}) {
+  const id = "t" + Math.random().toString(36).slice(2,8);
+  const head = cols.map((c,i) => `<th class="${c.n?"n":""}" data-i="${i}">${esc(c.h)}</th>`).join("");
+  const body = rows.map(r => `<tr ${opts.link?`style="cursor:pointer" onclick="go('${opts.link(r)}')"`:""}>${cols.map(c =>
+      `<td class="${c.n?"n":""} ${c.w?"wrapcell":""} ${c.cls?c.cls(r):""}">${c.f(r)}</td>`).join("")}</tr>`).join("");
+  setTimeout(() => { const t = document.getElementById(id); if (!t) return;
+    t.querySelectorAll("th").forEach(th => th.onclick = () => {
+      const i = +th.dataset.i, c = cols[i]; if (!c.s) return;
+      const dir = th.dataset.dir === "a" ? "d" : "a"; th.dataset.dir = dir;
+      rows.sort((a,b) => { const x = c.s(a), y = c.s(b); return (x==null)-(y==null) || (x<y?-1:x>y?1:0) * (dir==="a"?1:-1); });
+      document.getElementById(id).outerHTML = table(cols, rows, opts).replace(/id="t[a-z0-9]+"/, `id="${id}"`);
+    }); }, 0);
+  return `<div class="wrap"><table id="${id}"><thead><tr>${head}</tr></thead><tbody>${body || `<tr><td colspan="${cols.length}" class="mut">Nothing yet.</td></tr>`}</tbody></table></div>`;
+}
+
+// ---------------------------------------------------------------- pages
+async function overview() {
+  const d = await api("/api/overview");
+  const k = (v,l) => `<div class="card kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  const leads = d.leads || {};
+  const ver = d.verdicts || {};
+  return `<h1>Overview</h1>
+  <div class="grid">${k(d.companies,"companies")}${k(d.exchanges,"home exchanges")}${k(d.listings,"listings")}
+  ${k(num(d.news_items,0),"news items ("+num(d.news_scored,0)+" scored)")}${k(leads.listed||0,"listed leads")}
+  ${k((leads.new_listing||0)+" / "+(leads.ipo_pipeline||0),"new listings / IPO pipeline")}${k(d.modelled,"companies backtested")}
+  ${k(d.valued,"companies valued")}</div>
+  <h2>Top leads</h2>
+  ${table([{h:"Company",f:r=>`<b>${esc(r.name)}</b> <span class="mut">${esc(r.symbol)}</span>`},
+           {h:"Score",n:1,f:r=>`<b class="${sgn(r.score)}">${sc(r.score)}</b>`},
+           {h:"News",n:1,f:r=>sc(r.news_score),cls:r=>sgn(r.news_score)},{h:"Model",n:1,f:r=>sc(r.model_score),cls:r=>sgn(r.model_score)},
+           {h:"Valuation",f:r=>verdictChip(r.verdict)},{h:"Best route",f:r=>route(r.routes)}], d.top_leads||[], {link:r=>"#company/"+encodeURIComponent(r.symbol)})}
+  <div class="two"><div><h2>Model chosen (Milestone 2)</h2>
+  ${table([{h:"Group",f:r=>esc(r.group_key)},{h:"Horizon",f:r=>esc(r.horizon)},{h:"Model",f:r=>`<b>${esc(r.selected)}</b>`},
+           {h:"Basis",w:1,f:r=>`<span class="mut">${esc(r.basis)}</span>`}], d.model_choice||[])}</div>
+  <div><h2>Valuation verdicts (Milestone 4)</h2>
+  ${table([{h:"Verdict",f:r=>verdictChip(r[0])},{h:"Companies",n:1,f:r=>r[1]}], Object.entries(ver))}
+  <h2>Last job runs</h2>
+  ${table([{h:"Job",f:r=>esc(r.job)},{h:"Started (UTC)",f:r=>esc(r.started)},{h:"Status",f:r=>`<span class="chip ${r.status==="ok"?"good":r.status==="error"?"bad":"warn"}">${esc(r.status)}</span>`}], d.jobs||[])}</div></div>
+  <p class="note">Built ${esc(d.now)} from the local database. Research output, not investment advice.</p>`;
+}
+
+let leadKind = "listed";
+async function leads() {
+  const d = await api("/api/leads?kind=" + leadKind + "&limit=500");
+  const tabs = [["listed","Listed"],["new_listing","New listings"],["ipo_pipeline","IPO pipeline"]]
+    .map(([k,l]) => `<button class="${k===leadKind?"on":""}" onclick="leadKind='${k}';render()">${l}</button>`).join("");
+  let cols;
+  if (leadKind === "listed") cols = [
+    {h:"#",n:1,f:(r)=>d.leads.indexOf(r)+1},
+    {h:"Company",f:r=>`<b>${esc(r.name)}</b><br><span class="mut">${esc(r.symbol)} · ${esc(r.exchange)}</span>`,s:r=>r.name},
+    {h:"Score",n:1,f:r=>`<b class="${sgn(r.score)}">${sc(r.score)}</b>`,s:r=>r.score},
+    {h:"News",n:1,f:r=>sc(r.news_score),cls:r=>sgn(r.news_score),s:r=>r.news_score},
+    {h:"Model",n:1,f:r=>sc(r.model_score),cls:r=>sgn(r.model_score),s:r=>r.model_score},
+    ...["A","B","C","D"].map(x=>({h:x,n:1,f:r=>sc((r.rules||{})[x]),cls:r=>sgn((r.rules||{})[x]),s:r=>(r.rules||{})[x]})),
+    {h:"Items",n:1,f:r=>r.n_news,s:r=>r.n_news},
+    {h:"1y expected",n:1,f:r=>pct((r.model||{}).expected_1y),s:r=>(r.model||{}).expected_1y},
+    {h:"Valuation",f:r=>verdictChip(r.verdict),s:r=>r.verdict},
+    {h:"Market",f:r=>`${esc(r.market_class)}<br><span class="mut">${esc(r.sector_group)}</span>`,s:r=>r.sector_group},
+    {h:"Best route (Indian resident)",w:1,f:r=>route(r.routes)}];
+  else cols = [
+    {h:"Company",f:r=>`<b>${esc(r.name)}</b> <span class="mut">${esc(r.symbol||"")}</span>`,s:r=>r.name},
+    {h:"Stage",f:r=>`<span class="chip">${esc(r.stage)}</span>`,s:r=>r.stage},
+    {h:"Country",f:r=>esc(r.country||"—")},{h:"Score",n:1,f:r=>sc(r.score),cls:r=>sgn(r.score),s:r=>r.score},
+    {h:"Stories",n:1,f:r=>r.n_news},{h:"Model",f:r=>esc((r.model||{}).model||"—")},
+    {h:"Route",w:1,f:r=>route(r.routes)}];
+  return `<h1>Leads</h1><div class="tabs">${tabs}</div>
+  <p class="note">Rules: A market sentiment · B competition & news releases (rivals' news flipped) · C manufacturing industry · D customers.
+  Score = ½ news composite + ½ quant-model signal. Click a row for the company page. Click a heading to sort.</p>
+  ${table(cols, d.leads, leadKind==="listed"?{link:r=>"#company/"+encodeURIComponent(r.symbol)}:{})}`;
+}
+
+function spark(prices) {
+  if (!prices || prices.length < 2) return "";
+  const v = prices.map(p => p[1]), lo = Math.min(...v), hi = Math.max(...v), W = 600, H = 150;
+  const pts = v.map((y,i) => `${(i/(v.length-1)*W).toFixed(1)},${(H-(y-lo)/(hi-lo||1)*(H-10)-5).toFixed(1)}`).join(" ");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline fill="none" stroke="var(--accent)" stroke-width="1.6" points="${pts}"/></svg>
+  <div class="note">${esc(prices[0][0])} → ${esc(prices[prices.length-1][0])} · low ${num(lo)} · high ${num(hi)} (adjusted closes)</div>`;
+}
+
+async function company(sym) {
+  if (!sym) return `<h1>Company</h1><p class="note">Search for a company above, or open one from the Leads page.</p>`;
+  const d = await api("/api/company?symbol=" + encodeURIComponent(sym));
+  if (d.error) return `<div class="err">${esc(d.error)}</div>`;
+  const c = d.company, T = d.tags, tv = (h,t) => ((T[h]||{})[t]||{}).value, td = (h,t) => ((T[h]||{})[t]||{}).detail||{};
+  const g3 = td("growth","growth_3m"), g1 = td("growth","growth_1y");
+  const val = Object.fromEntries((d.valuations||[]).map(v => [v.method, v]));
+  const comb = val.combined;
+  const lead = d.lead;
+  const status = (window._an||{})[sym];
+  const flags = ((comb||{}).detail||{}).flags || [];
+  let h = `<h1>${esc(c.name)} <span class="mut">${esc(c.home_symbol)}</span></h1>
+  <div class="grid">
+    <div class="card kpi"><div class="v">${num((d.listings.find(l=>l.is_home)||{}).last_price)}</div><div class="l">price (${esc((d.listings.find(l=>l.is_home)||{}).currency)})</div></div>
+    <div class="card kpi"><div class="v">${comb?num(comb.fair_value):"—"}</div><div class="l">fair value ${comb?verdictChip(comb.detail.verdict):""}</div></div>
+    <div class="card kpi"><div class="v ${sgn(comb&&comb.detail.upside)}">${comb?pct(comb.detail.upside):"—"}</div><div class="l">upside vs price</div></div>
+    <div class="card kpi"><div class="v ${sgn(tv("growth","growth_1y"))}">${pct(tv("growth","growth_1y"))}</div><div class="l">1-year expected (${esc(g1.model||"—")})</div></div>
+    <div class="card kpi"><div class="v ${sgn(tv("news","news_composite"))}">${sc(tv("news","news_composite"))}</div><div class="l">news ${esc(tv("news","news_verdict")||"")}</div></div>
+  </div>
+  <p><button class="btn primary" onclick="analyze('${esc(c.home_symbol)}')">${status==="running"?"Analysing…":"Analyze now (Module 13)"}</button>
+  ${d.files.md?` <a class="btn" href="${d.files.md}" target="_blank">Report (.md)</a>`:""}${d.files.xlsx?` <a class="btn" href="${d.files.xlsx}">Model workbook (.xlsx)</a>`:""}
+  <span id="anst" class="note"></span></p>
+  ${flags.map(f=>`<div class="flag">${esc(f)}</div>`).join("")}
+  <div class="two"><div class="card"><h3>Stage 0 categories</h3><dl>
+    <dt>Market (MSCI / FTSE / S&P)</dt><dd>${esc(tv("market","market_class"))} / ${esc(tv("market","market_class_ftse"))} / ${esc(tv("market","market_class_spdji"))}</dd>
+    <dt>Home exchange</dt><dd>${esc(tv("market","home_exchange"))} ${tv("market","covered")==="no"?'<span class="chip warn">not a covered exchange</span>':""}</dd>
+    <dt>Listing structure</dt><dd>${esc(tv("listing","listing_structure"))}</dd>
+    <dt>Domicile</dt><dd>${esc(tv("listing","domicile"))}</dd>
+    <dt>Sector</dt><dd>${esc(tv("sector","sector_group"))} <span class="mut">(${esc(tv("sector","gics_sector"))}; ${esc(c.industry)})</span></dd>
+    <dt>Size</dt><dd>${esc(tv("stock","cap_band"))} ${tv("stock","cap_band_sebi")?`<span class="mut">SEBI ${esc(tv("stock","cap_band_sebi"))}</span>`:""} · ${big(+tv("stock","market_cap_usd"))} USD</dd>
+    <dt>Style / behaviour</dt><dd>${esc(tv("stock","growth_value"))} · ${esc(tv("stock","cyclical_defensive"))} (beta ${esc(tv("stock","beta"))})</dd>
+  </dl></div>
+  <div class="card"><h3>Price, last 3 years</h3>${spark(d.prices)}</div></div>
+  <h2>Growth forecasts</h2>
+  ${table([{h:"Horizon",f:r=>r[0]},{h:"Expected",n:1,f:r=>pct(r[1].v),cls:r=>sgn(r[1].v)},{h:"5–95% range",n:1,f:r=>r[1].d.range_5_95?pct(r[1].d.range_5_95[0],0)+" to "+pct(r[1].d.range_5_95[1],0):"—"},
+           {h:"Beat cash",n:1,f:r=>r[1].d.p_beat_cash==null?"—":(r[1].d.p_beat_cash*100).toFixed(0)+"%"},{h:"Model and basis",w:1,f:r=>`${esc(r[1].d.model||"")} <span class="mut">${esc(r[1].d.basis||"")}</span>`}],
+          [["3 months",{v:tv("growth","growth_3m"),d:g3}],["1 year",{v:tv("growth","growth_1y"),d:g1}]])}`;
+  if (lead) {
+    const R = lead.rules||{};
+    h += `<h2>News rules (Stage 1)</h2><div class="grid">${["A","B","C","D"].map((x,i)=>`<div class="card kpi"><div class="v ${sgn(R[x])}">${sc(R[x])}</div><div class="l">${["A market sentiment","B competition & releases","C manufacturing industry","D customers"][i]}</div></div>`).join("")}</div>
+    <p class="note">Rivals used for rule B: ${esc((R.peers||[]).join(", ")||"—")}</p>
+    ${Object.entries(lead.evidence||{}).map(([r,items])=>items.length?`<h3>Evidence for ${esc(r)}</h3>`+table([{h:"Headline",w:1,f:x=>esc(x.title)},{h:"Source",f:x=>esc((x.source||"").replace("yahoo_finance:",""))},{h:"Date",f:x=>esc(x.date)},{h:"FinBERT",n:1,f:x=>sc(x.sentiment),cls:x=>sgn(x.sentiment)}],items):"").join("")}
+    <h2>Investment routes for an Indian resident</h2>
+    ${table([{h:"Route",f:r=>`${r.ok===true?'<span class="chip good">ok</span>':r.ok===false?'<span class="chip bad">avoid</span>':'<span class="chip warn">limited</span>'} ${esc(r.route)}`},{h:"Symbol",f:r=>esc(r.symbol||"")},{h:"How",w:1,f:r=>esc(r.how||"")},{h:"Notes",w:1,f:r=>`<span class="mut">${esc(r.notes||"")}</span>`}], lead.routes||[])}`;
+  }
+  if (d.valuations && d.valuations.length) {
+    h += `<h2>Valuation (Stage 2, Module 13)</h2>` + table([{h:"Method",f:r=>esc(r.method)},{h:"Fair value",n:1,f:r=>num(r.fair_value)},{h:"Price",n:1,f:r=>num(r.market_price)},
+      {h:"vs price",n:1,f:r=>r.fair_value&&r.market_price?pct(r.fair_value/r.market_price-1):"—",cls:r=>sgn(r.fair_value/r.market_price-1)},{h:"As of",f:r=>esc(r.as_of)}],
+      d.valuations.filter(v=>v.method!=="combined"));
+  }
+  if (d.models && d.models.length) {
+    h += `<h2>Model record for this company (walk-forward, Milestone 2)</h2>` + table([{h:"Horizon",f:r=>esc(r.horizon)},{h:"Model",f:r=>`${esc(r.model)}${r.is_baseline?' <span class="chip">baseline</span>':""}${r.selected?' <span class="chip good">used</span>':""}`},
+      {h:"CRPS",n:1,f:r=>num(r.crps,4)},{h:"Skill",n:1,f:r=>pct(r.skill),cls:r=>sgn(r.skill)},{h:"DM t",n:1,f:r=>num(r.dm_t)},{h:"Hit",n:1,f:r=>pct(r.hit,0).replace("+","")},{h:"90% cover",n:1,f:r=>pct(r.cover90,0).replace("+","")}], d.models);
+  }
+  h += `<h2>Listings</h2>` + table([{h:"Symbol",f:r=>`${esc(r.symbol)}${r.is_home?' <span class="chip good">home</span>':""}`},{h:"Venue",f:r=>esc(r.venue)},{h:"Structure",f:r=>esc(r.structure)},
+      {h:"DR ratio",n:1,f:r=>r.dr_ratio==null?"":num(r.dr_ratio,3)},{h:"Share type",f:r=>esc(r.share_type)},{h:"Currency",f:r=>esc(r.currency)},{h:"Last",n:1,f:r=>num(r.last_price)}], d.listings);
+  return h;
+}
+
+async function analyze(sym) {
+  window._an = window._an || {}; window._an[sym] = "running"; render();
+  await fetch("/api/analyze?symbol=" + encodeURIComponent(sym), {method:"POST"});
+  const poll = async () => {
+    const s = await api("/api/analyze_status?symbol=" + encodeURIComponent(sym));
+    if (s.state === "running") return setTimeout(poll, 2000);
+    window._an[sym] = s.state; render();
+    setTimeout(() => { const e = $("#anst"); if (e) e.textContent = s.state === "done" ? "Analysis updated." : "Analysis failed: " + (s.error||""); }, 300);
+  };
+  setTimeout(poll, 1500);
+}
+
+let lbType = "cell", lbKey = null;
+async function models() {
+  const d = await api(`/api/leaderboard?group_type=${lbType}${lbKey?"&group_key="+encodeURIComponent(lbKey):""}`);
+  const tabs = [["all","All"],["market_class","Market class"],["cell","Market × sector"],["sector_group","Sector group"],["exchange","Exchange"],["company","Companies with their own model"]]
+    .map(([k,l]) => `<button class="${k===lbType?"on":""}" onclick="lbType='${k}';lbKey=null;render()">${l}</button>`).join("");
+  let h = `<h1>Model leaderboard</h1><div class="tabs">${tabs}</div>
+  <p class="note">Walk-forward forecasts scored by CRPS. A model replaces the baseline only on a clear out-of-sample win (Diebold–Mariano, Bonferroni-corrected). Click a group for its full table.</p>
+  ${table([{h:"Group",f:r=>`<a href="javascript:void(0)" onclick="lbKey='${esc(r.group_key)}';render()">${esc(r.group_name||r.group_key)}</a>`,s:r=>r.group_key},
+           {h:"Horizon",f:r=>esc(r.horizon),s:r=>r.horizon},{h:"Baseline",f:r=>esc(d.models[r.baseline]||r.baseline)},{h:"Selected",f:r=>`<b>${esc(d.models[r.selected]||r.selected)}</b>`,s:r=>r.selected},
+           {h:"Lowest CRPS",f:r=>esc(d.models[r.best_raw]||r.best_raw)},{h:"Basis",w:1,f:r=>`<span class="mut">${esc(r.basis)}</span>`},
+           {h:"Dates",n:1,f:r=>r.n_origins},{h:"Stocks",n:1,f:r=>r.n_stocks,s:r=>r.n_stocks}], d.choices)}`;
+  if (lbKey && d.rows.length) h += `<h2>${esc(lbKey)}</h2>` + table([{h:"Horizon",f:r=>esc(r.horizon)},{h:"Model",f:r=>`${esc(d.models[r.model]||r.model)}${r.is_baseline?' <span class="chip">baseline</span>':""}${r.selected?' <span class="chip good">selected</span>':""}`},
+      {h:"Mean CRPS",n:1,f:r=>num(r.crps,4)},{h:"Skill",n:1,f:r=>pct(r.skill),cls:r=>sgn(r.skill)},{h:"DM t",n:1,f:r=>num(r.dm_t)},{h:"Direction hit",n:1,f:r=>pct(r.hit,0).replace("+","")},
+      {h:"90% coverage",n:1,f:r=>pct(r.cover90,0).replace("+","")},{h:"Bias",n:1,f:r=>num(r.bias,3)},{h:"Forecasts",n:1,f:r=>num(r.n_forecasts,0)}], d.rows);
+  if (d.portfolio && d.portfolio.length) h += `<h2>MPT vs 1/N inside each cell</h2>` + table([{h:"Cell",f:r=>esc(r.cell)},{h:"Strategy",f:r=>esc(r.strategy)},
+      {h:"Annual return",n:1,f:r=>pct(r.cagr),cls:r=>sgn(r.cagr)},{h:"Volatility",n:1,f:r=>pct(r.vol).replace("+","")},{h:"Sharpe",n:1,f:r=>num(r.sharpe)},
+      {h:"Worst quarter",n:1,f:r=>pct(r.worst_quarter)},{h:"Sharpe-diff z",n:1,f:r=>r.sharpe_diff_z==null?"":num(r.sharpe_diff_z)}], d.portfolio);
+  return h;
+}
+
+async function markets() {
+  const d = await api("/api/markets");
+  const classes = ["Developed","Emerging","Frontier","Standalone"], groups = [...new Set(d.pivot.map(r=>r.sector_group))].sort();
+  const cell = (m,g) => (d.pivot.find(r=>r.market_class===m&&r.sector_group===g)||{}).n||0;
+  const pivot = `<div class="wrap"><table><thead><tr><th>Sector group</th>${classes.map(c=>`<th class="n">${c}</th>`).join("")}</tr></thead><tbody>
+    ${groups.map(g=>`<tr><td>${esc(g)}</td>${classes.map(c=>`<td class="n">${cell(c,g)||'<span class="mut">0</span>'}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  const small = (t, rows) => `<div><h3>${t}</h3>${table([{h:"Value",f:r=>esc(r.value||"—")},{h:"Companies",n:1,f:r=>r.n}], rows)}</div>`;
+  return `<h1>Markets and classification</h1>
+  <h2>Market class (MSCI) × sector group</h2>${pivot}
+  <div class="grid" style="margin-top:12px">${small("Home exchange",d.exchanges)}${small("Listing structure",d.listing_structure)}${small("Cap band",d.cap_band)}
+  ${small("Growth vs value",d.growth_value)}${small("Cyclical vs defensive",d.cyclical_defensive)}${small("FTSE class",d.market_class_ftse)}${small("News verdict",d.news_verdict)}${small("Valuation verdict",d.valuation_verdict)}</div>
+  <h2>Markets to consider adding (news on growing industries)</h2>
+  ${table([{h:"Market",f:r=>esc(r.country)},{h:"Exchange",f:r=>esc(r.exchange)},{h:"Stories",n:1,f:r=>r.n_items},{h:"Growth stories",n:1,f:r=>r.growth_items},
+           {h:"Sentiment",n:1,f:r=>sc(r.sentiment),cls:r=>sgn(r.sentiment)},{h:"Sectors",f:r=>esc((r.top_groups||[]).map(x=>x[0]).join(" / "))},
+           {h:"Suggest",f:r=>r.suggest?'<span class="chip good">add</span>':'<span class="mut">no</span>'},{h:"Example headline",w:1,f:r=>`<span class="mut">${esc((r.headlines||[])[0]||"")}</span>`}], d.expansion)}
+  <h2>IPO events found in the news</h2>
+  ${table([{h:"Company",f:r=>esc(r.name)},{h:"Stage",f:r=>`<span class="chip">${esc(r.stage)}</span>`},{h:"Date",f:r=>esc(r.event_date)},{h:"Country",f:r=>esc(r.country_hint||"—")},
+           {h:"Symbol",f:r=>esc(r.symbol||"")},{h:"Headline",w:1,f:r=>`<span class="mut">${esc(r.title)}</span>`}], d.ipo)}`;
+}
+
+async function service() {
+  const d = await api("/api/service");
+  const env = Object.entries(d.env).map(([k,v]) => `<span class="chip ${v?"good":"warn"}">${esc(k)}: ${v?"set":"not set"}</span>`).join(" ");
+  const okFeeds = d.feeds.filter(f=>f.ok).length;
+  return `<h1>Service</h1><p>${env}</p>
+  <p class="note">Settings the running service can see. Set them before starting the service (see INSTALL.md).</p>
+  <h2>Jobs</h2>${table([{h:"Job",f:r=>esc(r.job)},{h:"Enabled",f:r=>r.enabled?'<span class="chip good">yes</span>':'<span class="chip">no</span>'},{h:"Schedule",f:r=>esc(r.schedule)},
+     {h:"Last run",f:r=>r.last?`${esc(r.last.started)} <span class="chip ${r.last.status==="ok"?"good":r.last.status==="error"?"bad":"warn"}">${esc(r.last.status)}</span>`:'<span class="mut">never</span>'},
+     {h:"What it does",w:1,f:r=>`<span class="mut">${esc(r.desc)}</span>`}], d.jobs)}
+  <h2>Recent runs</h2>${table([{h:"Job",f:r=>esc(r.job)},{h:"Started",f:r=>esc(r.started)},{h:"Finished",f:r=>esc(r.finished||"")},{h:"Status",f:r=>esc(r.status)},{h:"Message",w:1,f:r=>`<span class="mut">${esc(r.message||"")}</span>`}], d.runs)}
+  <h2>News feeds (${okFeeds} of ${d.feeds.length} working)</h2>${table([{h:"Source",f:r=>esc(r.source)},{h:"Status",f:r=>r.ok?'<span class="chip good">ok</span>':`<span class="chip bad">failing ×${r.fails}</span>`},
+     {h:"Items",n:1,f:r=>r.items_last||0},{h:"Checked",f:r=>esc(r.checked||"")},{h:"URL / error",w:1,f:r=>`<span class="mut">${esc(r.url)}${r.last_error?" — "+esc(r.last_error.slice(0,120)):""}</span>`}], d.feeds)}`;
+}
+
+// ---------------------------------------------------------------- router
+const PAGES = {overview, leads, company, models, markets, service};
+async function render() {
+  const [page, arg] = (location.hash.slice(1) || "overview").split("/");
+  document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + page));
+  const m = $("#main");
+  if (!PAGES[page]) { m.innerHTML = `<div class="err">Unknown page</div>`; return; }
+  try { m.innerHTML = await PAGES[page](arg ? decodeURIComponent(arg) : undefined); }
+  catch (e) { m.innerHTML = `<div class="err">Could not load this page: ${esc(e.message)}. Is the database built? See INSTALL.md.</div>`; }
+}
+window.addEventListener("hashchange", render);
+let st;
+$("#q").addEventListener("input", e => {
+  clearTimeout(st); const v = e.target.value.trim(); const dr = $("#drop");
+  if (!v) { dr.style.display = "none"; return; }
+  st = setTimeout(async () => {
+    const d = await api("/api/search?q=" + encodeURIComponent(v));
+    dr.innerHTML = d.results.map(r => `<a href="#company/${encodeURIComponent(r.home_symbol)}" onclick="document.getElementById('drop').style.display='none'">${esc(r.name)} <span class="mut">${esc(r.home_symbol)} · ${esc(r.home_venue)}</span></a>`).join("") || `<a class="mut">No match</a>`;
+    dr.style.display = "block";
+  }, 200);
+});
+document.addEventListener("click", e => { if (!e.target.closest(".search")) $("#drop").style.display = "none"; });
+render();
+</script>
+</body>
+</html>

@@ -185,7 +185,14 @@ Location: `src/Finance/Stock Finder and Analyzer/` (design in `PLAN.md`, usage i
 - Top 25 leads analysed: 15 undervalued (mostly Chinese, Hong Kong and Indian state-linked value stocks), 1 fairly valued, 9 overvalued (high-multiple names such as Eli Lilly, Tata Consumer and Indian Hotels, whose growth fades to inflation within the 5-year projection).
 - Flags in the reports: approximate risk-free rates (CN, TW), the ERP stand-in until Damodaran's file is reachable, debt-heavy capital structures, and terminal value above 85% of EV.
 
-**Next:** Milestone 5, the dashboard and service packaging.
+**Milestone 5 (done):**
+- Local dashboard (`python -m sfa web`, http://localhost:8000) with six pages: Overview, Leads, Company (with Analyze now), Models, Markets, Service. It is a JSON API over the SQLite database, works at phone width, and has no external dependencies.
+- `python -m sfa start` runs the dashboard and scheduler together.
+- `python -m sfa doctor` checks readiness.
+- `sfa.env` settings file (ignored by Git) holds the NewsAPI key and SEC contact.
+- Start-on-boot scripts for Windows Task Scheduler, macOS launchd and Linux systemd.
+- `INSTALL.md` covers every remaining prerequisite: Python ≥ 3.10, a new NewsAPI key, the SEC contact, network allowlist, the first full build (including the remaining 443 companies of the leaderboard), the service, sleep settings and troubleshooting.
+- 75 offline tests across five suites (26 Stage 0, 16 models, 13 finder, 11 analyzer, 9 web).
 
 ---
 

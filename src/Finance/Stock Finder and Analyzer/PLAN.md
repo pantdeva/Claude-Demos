@@ -44,7 +44,7 @@ Starting exchanges: Nasdaq, NYSE, Shanghai, Euronext, Japan Exchange Group, Shen
 | 2 ✓ | Stage 0 model leaderboard | Seven models run per market class × sector group × horizon (3 months, 1 year); research-based baselines (GJR-GARCH-t short-term in EM, EWMA / random walk for 1-year volatility, shrunk drift, 1/N benchmark); a model replaces a baseline only on a clear out-of-sample win (Diebold–Mariano); growth predictions per stock |
 | 3 ✓ | Stage 1 company finder | RSS ingestion (Bloomberg, FT, WSJ, Reuters, Yahoo Finance, MarketWatch, The Economist, ET, Mint, Moneycontrol, Pulse by Zerodha, Investing.com India, plus SEC, SEBI, RBI and HKEX) scored with FinBERT on rules A–D; NewsAPI for deep dives; IPO pipeline (SEC EDGAR S-1/F-1, Nasdaq calendar, SEBI DRHPs, HKEX, JPX; news NLP elsewhere); lead scoring; peer-proxy modelling for new listings; Indian-resident investment-routes engine |
 | 4 ✓ | Stage 2 company analyzer | Module 13 integrated model from Yahoo annual statements; live 10-year yields; Damodaran country risk premiums; beta vs local index; WACC; terminal value capped by long-run inflation; fair price and sensitivity table; peer multiples; option-style flag for event-driven companies |
-| 5 | Dashboard and service packaging | Local web dashboard (leads, company page, model leaderboard, classification maps); start-on-boot instructions for Windows, macOS and Linux; config for adding exchanges |
+| 5 ✓ | Dashboard and service packaging | Local web dashboard (leads, company page, model leaderboard, classification maps); start-on-boot instructions for Windows, macOS and Linux; config for adding exchanges |
 
 ## Investment-routes order (Indian resident, October 2026)
 

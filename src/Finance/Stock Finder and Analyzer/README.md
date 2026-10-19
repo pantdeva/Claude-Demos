@@ -2,13 +2,16 @@
 
 Local research service that classifies listed companies across world exchanges (Stage 0), finds new leads from news and IPO pipelines (Stage 1) and values them with a Module 13 integrated financial model (Stage 2). See [PLAN.md](PLAN.md) for the full design and milestones.
 
-**Status:** Milestones 1 (Stage 0 classification), 2 (model leaderboard and growth predictions), 3 (Stage 1 company finder) and 4 (Stage 2 company analyzer) are built. Milestone 5 (dashboard and service packaging) is planned.
+**Status:** All five milestones are built: Stage 0 classification, the model leaderboard and growth predictions, the Stage 1 company finder, the Stage 2 company analyzer, and the dashboard with service packaging.
+
+**To install on your computer, follow [INSTALL.md](INSTALL.md).**
 
 ## Quick start
 
 ```bash
 cd "src/Finance/Stock Finder and Analyzer"
-pip install requests pyyaml numpy          # the only dependencies so far
+pip install -r requirements.txt
+python -m sfa doctor                       # checks Python, packages, settings, network, data
 python -m sfa all                          # universe → prices → fundamentals → classify (≈1–2 h first time)
 python -m sfa show TSM                     # one company's classification
 python -m sfa models                       # Milestone 2: walk-forward forecasts, leaderboard, predictions (≈3–4 h first time)
@@ -16,12 +19,12 @@ python -m sfa finder                       # Milestone 3: news → rules A–D �
 python -m sfa leads -n 20                  # current top listed leads (also --kind new_listing / ipo_pipeline)
 python -m sfa analyze                      # Milestone 4: Module 13 model + valuation for the top leads
 python -m sfa analyze INFY.NS 7203.T       # …or for any symbols
-python -m sfa service                      # keep everything refreshed on schedule (Ctrl+C to stop)
+python -m sfa start                        # dashboard (http://localhost:8000) + background scheduler
 ```
 
 Results go to `exports/`: `companies.csv` (one row per company, every classification), `listings.csv` (every listing with its structure), `classification.json` (with the numbers behind each label) and `summary.md` (counts).
 
-Optional environment variables:
+Settings go in `sfa.env` (copy `sfa.env.example`; ignored by Git) or in environment variables:
 
 | Variable | Used for |
 |---|---|
@@ -42,6 +45,9 @@ Optional environment variables:
 | `python -m sfa news` / `feeds` | Poll the news feeds once / show feed health |
 | `python -m sfa service [--once]` | Background scheduler (jobs in `sfa/config/jobs.yaml`) |
 | `python -m sfa jobs` | Job schedule and last runs |
+| `python -m sfa web [--host H] [--port P]` | Dashboard only, at http://localhost:8000 |
+| `python -m sfa start [--host H] [--port P]` | Dashboard and scheduler together (what start-on-boot runs) |
+| `python -m sfa doctor` | Checks Python, packages, settings, reachable data sources, FinBERT weights, disk space and database |
 | `python -m sfa models [--jobs N] [--only SYM …]` | Walk-forward forecasts (new dates only), leaderboard, MPT vs 1/N, growth predictions, exports |
 | `python -m sfa leaderboard` | Rebuild the leaderboard and exports from stored forecasts (seconds) |
 | `python -m sfa finder [--step news\|ipo\|leads\|all]` | Stage 1: collect and score news, IPO pipeline, rules A–D, leads, routes, exports |
@@ -119,6 +125,21 @@ Each report also carries the company's Stage 0 categories, the Milestone 2 3-mon
 
 Outputs: `exports/analysis/<SYMBOL>.md` (readable report), `exports/analysis/<SYMBOL>.xlsx` (the model sheet by sheet: Summary, Assumptions, P&L, Balance sheet, Cash flow, DCF, Peers) and `exports/analysis_summary.csv`. Settings are in `sfa/config/analyzer.yaml`.
 
+## Dashboard and service (Milestone 5)
+
+`python -m sfa start` serves the dashboard at http://localhost:8000 and runs every job on its schedule (`sfa/config/jobs.yaml`).
+
+| Page | Shows |
+|---|---|
+| Overview | Counts, top leads, chosen models, verdicts, last job runs |
+| Leads | Listed / new listings / IPO pipeline with rules A–D, model signal, verdict and best Indian-resident route |
+| Company | Stage 0 categories, price chart, growth, news evidence, routes, Module 13 valuation with report and Excel model, model record; **Analyze now** |
+| Models | Leaderboards and MPT vs 1/N |
+| Markets | Classification maps, expansion suggestions, IPO events |
+| Service | Settings detected, schedule, runs, feed health |
+
+Start-on-boot scripts are in `deploy/`: Windows Task Scheduler (`install_task.ps1`), macOS launchd (`install_launchd.sh`) and Linux systemd user service (`install_systemd.sh`). Each restarts the app if it stops and logs to `logs/sfa.log`. See [INSTALL.md](INSTALL.md).
+
 ## Data sources
 
 **Market data** (`config/data_sources.yaml`): Yahoo Finance (prices, fundamentals, listings) is the main source. SEC EDGAR provides US company facts, FRED provides interest rates, the ECB provides exchange-rate checks and Damodaran provides country risk premiums. Any source that fails is skipped, and its last cached data is used.
@@ -138,7 +159,7 @@ Add the exchange to `sfa/config/exchanges.yaml` (Yahoo suffix, exchange codes, c
 ## Tests
 
 ```bash
-python tests/test_stage0.py        # or: python -m pytest tests -q
+python tests/test_stage0.py && python tests/test_models.py && python tests/test_finder.py && python tests/test_analyzer.py && python tests/test_web.py
 ```
 
 For research and education only. Not investment advice. Yahoo, MSCI and FTSE data carry licence limits: fine for personal use, not for redistribution.
