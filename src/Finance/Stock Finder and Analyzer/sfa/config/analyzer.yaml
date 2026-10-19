@@ -1,0 +1,119 @@
+# Milestone 4: Stage 2 company analyzer (Zerodha Varsity Module 13 integrated model).
+
+projection_years: 5            # Module 13 projects Y6–Y10 from Y1–Y5 history
+history_years: 5               # use up to this many reported years (Yahoo usually has 4)
+
+assumptions:
+  growth:
+    method: fade               # recent growth fades linearly to terminal growth by the last projected year
+    recent: cagr               # cagr of the history, or "rolling" (average of yearly growth)
+    cap: [-0.20, 0.40]         # bounds on the starting growth rate
+  margin_years: 3              # rolling average window for margins and ratios (Module 13 Ch 5)
+  tax_rate_bounds: [0.10, 0.35]
+  tax_rate_default: 0.25       # Module 13 example
+  payout_bounds: [0.0, 1.0]
+  debt: hold                   # debt schedule: hold borrowings at the last reported level (Module 13 Ch 9)
+
+wacc:
+  beta_adjustment: blume       # adjusted beta = 0.67 × raw + 0.33
+  beta_bounds: [0.3, 2.5]
+  capital_structure: market    # market weights (debt / (debt + market cap)); or "target"
+  target_debt_to_equity: 0.5   # Module 13 example, used when capital_structure is "target"
+  cost_of_debt_spread: 0.02    # used when interest ÷ debt is unusable: Kd = Rf + spread
+  cost_of_debt_bounds_over_rf: [0.0, 0.08]
+  min_wacc_minus_g: 0.02       # terminal value needs WACC − g of at least this
+
+terminal_growth:
+  # Module 13: terminal growth ≈ long-run inflation. Central-bank inflation targets
+  # (or the stated anchor) by country; g is also capped at the local 10-year yield.
+  default: 0.025
+  by_country:
+    US: 0.02
+    GB: 0.02
+    FR: 0.02
+    NL: 0.02
+    BE: 0.02
+    PT: 0.02
+    IE: 0.02
+    IT: 0.02
+    DE: 0.02
+    ES: 0.02
+    "NO": 0.02
+    SE: 0.02
+    DK: 0.02
+    CH: 0.01
+    JP: 0.02
+    KR: 0.02
+    TW: 0.02
+    HK: 0.025
+    CN: 0.02
+    CA: 0.02
+    AU: 0.025
+    SG: 0.02
+    IN: 0.04
+    SA: 0.02
+    BR: 0.03
+    MX: 0.03
+    ZA: 0.045
+    ID: 0.025
+  checked: 2026-10-19
+
+risk_free:
+  # 10-year government bond yields from FRED (monthly OECD series; daily for the US).
+  fred:
+    US: DGS10
+    GB: IRLTLT01GBM156N
+    JP: IRLTLT01JPM156N
+    KR: IRLTLT01KRM156N
+    CA: IRLTLT01CAM156N
+    FR: IRLTLT01FRM156N
+    NL: IRLTLT01NLM156N
+    BE: IRLTLT01BEM156N
+    PT: IRLTLT01PTM156N
+    IE: IRLTLT01IEM156N
+    IT: IRLTLT01ITM156N
+    "NO": IRLTLT01NOM156N
+    DE: IRLTLT01DEM156N
+    CH: IRLTLT01CHM156N
+    DK: IRLTLT01DKM156N
+    SE: IRLTLT01SEM156N
+    ES: IRLTLT01ESM156N
+    AU: IRLTLT01AUM156N
+    IN: INDIRLTLT01STM
+    ZA: IRLTLT01ZAM156N
+  # Markets FRED does not cover: currency-peg anchors use the US yield; others use an
+  # approximate level, flagged in every report. Override here when you have a better number.
+  peg_to_us: [HK, SA]
+  approximate: {CN: 0.018, TW: 0.016, SG: 0.025}
+
+equity_risk_premium:
+  # Damodaran's country risk premium file is downloaded when reachable
+  # (data_sources.yaml → risk_premiums). Until then: mature-market premium for
+  # developed markets, the research-table India figure for India, and a flagged
+  # emerging-market stand-in elsewhere.
+  mature: 0.0423
+  by_country: {IN: 0.0708}
+  emerging_default: 0.0708
+
+financials:
+  # Banks and insurers: debt is raw material, so FCFF does not apply. Equity is valued
+  # with the justified price-to-book model: P/B = (ROE − g) / (Ke − g).
+  roe_years: 3
+
+relative:
+  peers: 8
+  multiples: [pe, ev_ebitda, pb, ev_sales]
+
+option_check:
+  # Merton structural model: equity as a call option on the firm's assets with the
+  # debt as strike. Run when debt / market cap ≥ this or EBITDA is negative.
+  leverage_trigger: 0.5
+  horizon_years: 1.0
+
+verdict:
+  undervalued: 0.15            # fair value ≥ price × (1 + this)
+  overvalued: -0.15
+
+run:
+  top_leads: 25                # listed leads analysed by the daily job
+  include_new_listings: true

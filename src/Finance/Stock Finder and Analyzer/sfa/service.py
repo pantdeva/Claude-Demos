@@ -28,6 +28,7 @@ JOBS = {
     "news": lambda con, log: _finder("run_news", con, log),
     "ipo_pipeline": lambda con, log: _finder("run_ipo", con, log),
     "finder": lambda con, log: _finder("run_finder", con, log),
+    "analyzer": lambda con, log: __import__("sfa.analyzer", fromlist=["run"]).run(con, log=log),
     "leaderboard": lambda con, log: _models(con, log),
 }
 
@@ -91,7 +92,7 @@ def run(once: bool = False, log=print):
     con = connect()
     signal.signal(signal.SIGINT, lambda *_: _stop.__setitem__(0, True))
     signal.signal(signal.SIGTERM, lambda *_: _stop.__setitem__(0, True))
-    order = ["universe", "prices", "fundamentals", "classify", "leaderboard", "news", "ipo_pipeline", "finder"]
+    order = ["universe", "prices", "fundamentals", "classify", "leaderboard", "news", "ipo_pipeline", "finder", "analyzer"]
     log(f"sfa service started {now()}")
     while not _stop[0]:
         for name in sorted(due_jobs(con), key=lambda n: order.index(n) if n in order else 99):
