@@ -1,0 +1,37 @@
+# Push notifications to the Android app via Firebase Cloud Messaging (FCM).
+# Setup: see ANDROID.md. The service-account key file stays on this computer and its
+# path goes in sfa.env as SFA_FCM_SERVICE_ACCOUNT (never commit it).
+
+enabled: true
+transport: fcm                    # fcm | log (log = write to the notify_log table only; for testing)
+service_account_env: SFA_FCM_SERVICE_ACCOUNT
+# Messages go to an FCM topic. The topic name is created randomly on first use and acts
+# as the pairing code you enter in the app (python -m sfa notify pair). It can be
+# overridden here.
+topic: null
+dashboard_url_env: SFA_DASHBOARD_URL   # what the phone should open, e.g. http://my-pc.tailnet.ts.net:8000
+
+events:
+  leads:
+    enabled: true
+    top_n: 10                     # a company entering the top N leads is announced
+    score_jump: 0.20              # …or a lead whose score rises by at least this much
+    renotify_days: 7              # the same lead is not announced again within this many days
+  ipo:
+    enabled: true                 # new IPO name, or a move to filed / priced / listed
+    stages: [planning, filed, priced, listed]
+  valuation:
+    enabled: true                 # verdict changes (e.g. Fairly valued → Undervalued)
+    fair_value_move: 0.15         # …or the combined fair value moves at least this much
+  digest:
+    enabled: true
+    at: "08:45"                   # local time, after the 08:00 analyzer job
+    top_leads: 5
+  alerts:
+    enabled: true                 # a job that failed, or prices not refreshed for too long
+    stale_hours: 36
+
+delivery:
+  quiet_hours: ["22:00", "07:00"] # local; non-alert messages wait until the quiet hours end
+  max_per_run: 8                  # more than this are folded into one "and N more" message
+  heartbeat_hours: 6              # silent message so the app can warn when the computer goes quiet

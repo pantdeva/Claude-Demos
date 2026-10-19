@@ -12,3 +12,4 @@ jobs:
   ipo_pipeline:  {every_hours: 3,   enabled: true,  desc: "IPO events from news and filing feeds (SEC, SEBI), resolve new listings"}
   finder:        {every_hours: 6,   enabled: true,  desc: "Rules A-D, lead scoring with the quant models, routes, NewsAPI deep dives, exports"}
   analyzer:      {at: "08:00",       enabled: true,  desc: "Module 13 integrated model and valuation for the top leads and new listings"}
+  notify:        {every_hours: 0.5, enabled: true,  desc: "Push notifications to the Android app: leads, IPOs, valuations, digest, alerts"}

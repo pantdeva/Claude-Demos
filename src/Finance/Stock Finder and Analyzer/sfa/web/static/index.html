@@ -278,7 +278,17 @@ async function service() {
   const d = await api("/api/service");
   const env = Object.entries(d.env).map(([k,v]) => `<span class="chip ${v?"good":"warn"}">${esc(k)}: ${v?"set":"not set"}</span>`).join(" ");
   const okFeeds = d.feeds.filter(f=>f.ok).length;
-  return `<h1>Service</h1><p>${env}</p>
+  const ph = d.phone || {};
+  const phone = `<h2>Phone notifications (Android app)</h2>
+  <div class="card"><dl>
+    <dt>Firebase key</dt><dd>${ph.fcm_configured?'<span class="chip good">configured</span>':'<span class="chip warn">not set — messages are only logged (see ANDROID.md)</span>'}</dd>
+    <dt>Pairing code</dt><dd><b>${esc(ph.topic||"created on first run: python -m sfa notify pair")}</b></dd>
+    <dt>Dashboard URL for the phone</dt><dd>${esc(ph.dashboard_url)}</dd>
+    <dt>Pairing link</dt><dd>${ph.pair_link?`<a href="${esc(ph.pair_link)}">${esc(ph.pair_link)}</a> <span class="mut">(open it on the phone, or type the code in the app)</span>`:"—"}</dd>
+  </dl><p><button class="btn primary" onclick="notifyTest()">Send test notification</button> <span id="ntst" class="note"></span></p></div>
+  ${table([{h:"Created (UTC)",f:r=>esc(r.created)},{h:"Type",f:r=>esc(r.type)},{h:"Status",f:r=>`<span class="chip ${r.status==="sent"?"good":r.status==="failed"?"bad":"warn"}">${esc(r.status)}</span>`},
+           {h:"Title",w:1,f:r=>esc(r.title)},{h:"Error",w:1,f:r=>`<span class="mut">${esc(r.error||"")}</span>`}], ph.recent||[])}`;
+  return `<h1>Service</h1><p>${env}</p>${phone}
   <p class="note">Settings the running service can see. Set them before starting the service (see INSTALL.md).</p>
   <h2>Jobs</h2>${table([{h:"Job",f:r=>esc(r.job)},{h:"Enabled",f:r=>r.enabled?'<span class="chip good">yes</span>':'<span class="chip">no</span>'},{h:"Schedule",f:r=>esc(r.schedule)},
      {h:"Last run",f:r=>r.last?`${esc(r.last.started)} <span class="chip ${r.last.status==="ok"?"good":r.last.status==="error"?"bad":"warn"}">${esc(r.last.status)}</span>`:'<span class="mut">never</span>'},
@@ -286,6 +296,13 @@ async function service() {
   <h2>Recent runs</h2>${table([{h:"Job",f:r=>esc(r.job)},{h:"Started",f:r=>esc(r.started)},{h:"Finished",f:r=>esc(r.finished||"")},{h:"Status",f:r=>esc(r.status)},{h:"Message",w:1,f:r=>`<span class="mut">${esc(r.message||"")}</span>`}], d.runs)}
   <h2>News feeds (${okFeeds} of ${d.feeds.length} working)</h2>${table([{h:"Source",f:r=>esc(r.source)},{h:"Status",f:r=>r.ok?'<span class="chip good">ok</span>':`<span class="chip bad">failing ×${r.fails}</span>`},
      {h:"Items",n:1,f:r=>r.items_last||0},{h:"Checked",f:r=>esc(r.checked||"")},{h:"URL / error",w:1,f:r=>`<span class="mut">${esc(r.url)}${r.last_error?" — "+esc(r.last_error.slice(0,120)):""}</span>`}], d.feeds)}`;
+}
+
+async function notifyTest() {
+  const e = $("#ntst"); e.textContent = "Sending…";
+  const r = await fetch("/api/notify_test", {method:"POST"}).then(r => r.json());
+  e.textContent = r.sent ? "Sent — check your phone." : r.logged ? "Logged only: Firebase key not configured." : "Failed: see the table below.";
+  setTimeout(render, 1500);
 }
 
 // ---------------------------------------------------------------- router

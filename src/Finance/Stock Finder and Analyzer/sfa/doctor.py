@@ -32,6 +32,8 @@ SITES = [  # (label, url, essential?)
     ("SEC EDGAR", "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=S-1&count=1&output=atom", False),
     ("SEBI RSS", "https://www.sebi.gov.in/sebirss.xml", False),
     ("Damodaran country risk premiums", "https://pages.stern.nyu.edu/~adamodar/pc/datasets/ctryprem.xlsx", False),
+    ("Firebase Cloud Messaging (phone notifications)", "https://fcm.googleapis.com/", False),
+    ("Google sign-in for Firebase", "https://oauth2.googleapis.com/token", False),
 ]
 
 
@@ -62,11 +64,24 @@ def run() -> int:
     print()
     hints = {"NEWSAPI_KEY": "NewsAPI deep dives on leads (newsapi.org → account → API key)",
              "SFA_SEC_USER_AGENT": 'SEC IPO filings feed: "Your Name you@example.com"',
+             "SFA_FCM_SERVICE_ACCOUNT": "optional: Firebase key file for phone notifications (ANDROID.md)",
+             "SFA_DASHBOARD_URL": "optional: dashboard address the phone opens (e.g. Tailscale name)",
              "SFA_FINBERT_DIR": "optional: FinBERT weights folder (default db/models/finbert)",
              "SFA_DB": "optional: database file (default db/sfa.sqlite)"}
     for k, h in hints.items():
         st = OK if os.environ.get(k) else (WARN if k in ("NEWSAPI_KEY", "SFA_SEC_USER_AGENT") else "  - ")
         print(f"[{st}] {k} {'set' if os.environ.get(k) else 'not set'}  — {h}")
+    key = os.environ.get("SFA_FCM_SERVICE_ACCOUNT")
+    if key:
+        ok_file = os.path.exists(key)
+        try:
+            import google.auth  # noqa: F401
+            ga = True
+        except ImportError:
+            ga = False
+        st = OK if ok_file and ga else WARN
+        print(f"[{st}] Phone notifications: key file {'found' if ok_file else 'NOT FOUND at ' + key}, "
+              f"google-auth {'installed' if ga else 'missing → pip install google-auth'}")
     print()
     try:
         import requests

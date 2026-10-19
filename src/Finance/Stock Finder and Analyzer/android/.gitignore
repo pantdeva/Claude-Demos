@@ -1,0 +1,11 @@
+.gradle/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+# Firebase config for YOUR project: download from the Firebase console (ANDROID.md); never commit it
+app/google-services.json
+*.apk
+*.aab
+*.keystore

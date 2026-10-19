@@ -1,0 +1,6 @@
+<resources>
+    <!-- Window theme; the screens themselves are drawn with Compose Material 3. -->
+    <style name="Theme.Sfa" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#FF1F3F8F</item>
+    </style>
+</resources>

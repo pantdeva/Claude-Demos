@@ -18,6 +18,7 @@
     python -m sfa web [--host H] [--port P]     dashboard only (http://localhost:8000)
     python -m sfa start [--host H] [--port P]   dashboard + background scheduler (what start-on-boot runs)
     python -m sfa doctor               check Python, packages, settings, network and data
+    python -m sfa notify pair|test|run|log   push notifications to the Android app (see ANDROID.md)
 """
 
 from __future__ import annotations
@@ -43,9 +44,11 @@ def main(argv=None):
     le.add_argument("-n", type=int, default=20)
     for name in ("web", "start"):
         w = sub.add_parser(name)
-        w.add_argument("--host", default="127.0.0.1")
+        w.add_argument("--host", default=None, help="default: SFA_HOST setting, else 127.0.0.1 (this computer only)")
         w.add_argument("--port", type=int, default=8000)
     sub.add_parser("doctor")
+    nt = sub.add_parser("notify")
+    nt.add_argument("action", choices=["pair", "test", "run", "log"])
     an = sub.add_parser("analyze")
     an.add_argument("symbols", nargs="*")
     mo = sub.add_parser("models")
@@ -61,6 +64,9 @@ def main(argv=None):
     a = p.parse_args(argv)
     from .envfile import load_env
     load_env()
+    if getattr(a, "host", "unset") is None:
+        import os
+        a.host = os.environ.get("SFA_HOST") or "127.0.0.1"
 
     if a.cmd == "doctor":
         from .doctor import run as doctor
@@ -125,6 +131,20 @@ def main(argv=None):
         con.close()
         serve(a.host, a.port, block=False)
         service.run()
+    elif a.cmd == "notify":
+        from . import notify
+        if a.action == "pair":
+            print(f"Pairing code (FCM topic): {notify.topic(con)}")
+            print(f"Dashboard URL sent to the phone: {notify.dashboard_url()}")
+            print(f"Pairing link (open on the phone): {notify.pair_link(con)}")
+        elif a.action == "test":
+            print(notify.send_test(con))
+        elif a.action == "run":
+            print(notify.run(con))
+        else:
+            notify.init(con)
+            for r in con.execute("SELECT created, type, status, title, error FROM notify_log ORDER BY created DESC LIMIT 30"):
+                print(f"{r['created']} {r['type']:9} {r['status']:7} {r['title']}" + (f"  ({r['error']})" if r["error"] else ""))
     elif a.cmd == "service":
         service.run(once=a.once)
     elif a.cmd == "jobs":

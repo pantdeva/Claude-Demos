@@ -47,6 +47,7 @@ Settings go in `sfa.env` (copy `sfa.env.example`; ignored by Git) or in environm
 | `python -m sfa jobs` | Job schedule and last runs |
 | `python -m sfa web [--host H] [--port P]` | Dashboard only, at http://localhost:8000 |
 | `python -m sfa start [--host H] [--port P]` | Dashboard and scheduler together (what start-on-boot runs) |
+| `python -m sfa notify pair\|test\|run\|log` | Phone notifications: pairing code and link, test message, one pass, recent messages |
 | `python -m sfa doctor` | Checks Python, packages, settings, reachable data sources, FinBERT weights, disk space and database |
 | `python -m sfa models [--jobs N] [--only SYM …]` | Walk-forward forecasts (new dates only), leaderboard, MPT vs 1/N, growth predictions, exports |
 | `python -m sfa leaderboard` | Rebuild the leaderboard and exports from stored forecasts (seconds) |
@@ -138,6 +139,8 @@ Outputs: `exports/analysis/<SYMBOL>.md` (readable report), `exports/analysis/<SY
 | Markets | Classification maps, expansion suggestions, IPO events |
 | Service | Settings detected, schedule, runs, feed health |
 
+**Phone notifications:** the `notify` job (every 30 min) sends Firebase push messages to the **SFA Notifier** Android app in `android/`. The events are new or rising top leads, IPO pipeline changes, valuation verdict changes, a daily digest at 08:45, and failed jobs or stale data. Quiet hours run 22:00–07:00. The app keeps an alert history, opens the dashboard, and warns when the computer goes quiet. Setup is in [ANDROID.md](ANDROID.md); commands: `python -m sfa notify pair|test|run|log`.
+
 Start-on-boot scripts are in `deploy/`: Windows Task Scheduler (`install_task.ps1`), macOS launchd (`install_launchd.sh`) and Linux systemd user service (`install_systemd.sh`). Each restarts the app if it stops and logs to `logs/sfa.log`. See [INSTALL.md](INSTALL.md).
 
 ## Data sources
@@ -159,7 +162,7 @@ Add the exchange to `sfa/config/exchanges.yaml` (Yahoo suffix, exchange codes, c
 ## Tests
 
 ```bash
-python tests/test_stage0.py && python tests/test_models.py && python tests/test_finder.py && python tests/test_analyzer.py && python tests/test_web.py
+python tests/test_stage0.py && python tests/test_models.py && python tests/test_finder.py && python tests/test_analyzer.py && python tests/test_web.py && python tests/test_notify.py
 ```
 
 For research and education only. Not investment advice. Yahoo, MSCI and FTSE data carry licence limits: fine for personal use, not for redistribution.

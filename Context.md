@@ -194,6 +194,17 @@ Location: `src/Finance/Stock Finder and Analyzer/` (design in `PLAN.md`, usage i
 - `INSTALL.md` covers every remaining prerequisite: Python ≥ 3.10, a new NewsAPI key, the SEC contact, network allowlist, the first full build (including the remaining 443 companies of the leaderboard), the service, sleep settings and troubleshooting.
 - 75 offline tests across five suites (26 Stage 0, 16 models, 13 finder, 11 analyzer, 9 web).
 
+**Phone notifications (after Milestone 5):**
+- `sfa/notify` detects events: new or rising top leads, IPO pipeline new names and stage moves, valuation verdict changes or big fair-value moves, a daily digest at 08:45, failed jobs and stale prices.
+- Sent every 30 minutes as Firebase Cloud Messaging (HTTP v1) data messages to a private topic, which is the pairing code.
+- Delivery rules: quiet hours 22:00–07:00 (alerts still go through), at most 8 per pass (extras folded into one), and duplicates suppressed. Everything is logged in `notify_log`.
+- A silent heartbeat goes out every 6 hours.
+- `android/` holds the Android Studio project **SFA Notifier** (Kotlin, Jetpack Compose, Firebase Messaging, WorkManager): five notification channels, alert history, the dashboard in a WebView, pairing by code or an `sfa://pair` link, per-type mute, and a watchdog when the computer is quiet for 12 hours.
+- It wasn't compiled in the cloud session (Google's Android repositories are blocked there); the user builds it in Android Studio.
+- Setup guide in `ANDROID.md`: Firebase project, google-services.json, service-account key in `sfa.env`, build and install, pairing, Tailscale, battery settings.
+- New settings: `SFA_FCM_SERVICE_ACCOUNT`, `SFA_DASHBOARD_URL`, `SFA_HOST`.
+- 9 more tests (84 in total).
+
 ---
 
 ## 9. Environment notes

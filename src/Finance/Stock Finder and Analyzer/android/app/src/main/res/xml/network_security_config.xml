@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dashboard runs on your own computer over plain HTTP (home Wi-Fi or a private
+     Tailscale network), so cleartext traffic is allowed. Do not point the app at a
+     dashboard exposed on the public internet. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

@@ -20,7 +20,8 @@ Budget about 30 minutes of hands-on time. The first full data build then runs un
 | 6 | First full data build, including the remaining 443 companies of the model leaderboard | Only 383 of 826 companies were modelled in the cloud session | Step 6 |
 | 7 | Start-on-boot service | Keeps everything current | Step 7 |
 | 8 | Computer left on, and not sleeping, at the job times | Jobs run on a local clock | Step 7 |
-| 9 | Optional: tag `V2.0.0` on GitHub | Couldn't be pushed from the cloud session (HTTP 403) | Step 10 |
+| 9 | Optional: phone notifications (Android app, Firebase project, service-account key) | Push alerts for leads, IPOs, valuations, digest and failures | [ANDROID.md](ANDROID.md) |
+| 10 | Optional: tag `V2.0.0` on GitHub | Couldn't be pushed from the cloud session (HTTP 403) | Step 10 |
 
 ---
 
@@ -146,6 +147,7 @@ The app talks to these sites over HTTPS. If you are on a work network or use a f
 | News feeds | `feeds.bloomberg.com`, `www.ft.com`, `feeds.content.dowjones.io` (WSJ, MarketWatch), `news.google.com` (Reuters and IPO searches), `finance.yahoo.com`, `feeds.finance.yahoo.com`, `www.economist.com`, `economictimes.indiatimes.com`, `www.livemint.com`, `www.moneycontrol.com`, `pulse.zerodha.com`, `in.investing.com` |
 | IPO filings | `www.sec.gov`, `www.sebi.gov.in` |
 | Country risk premiums | `pages.stern.nyu.edu` (Damodaran) |
+| Phone notifications (optional) | `fcm.googleapis.com`, `oauth2.googleapis.com` |
 
 Two notes on the sources:
 - **Unconfirmed feed addresses.** The news-feed addresses couldn't be tested from the cloud session. After the first news run, `python -m sfa feeds` (or the dashboard's **Service** page) shows which feeds work. A feed that fails three times in a row is read through a Google News search of its site instead, and it is retried once a day.
@@ -215,6 +217,7 @@ To remove it: `bash deploy/linux/uninstall_systemd.sh`
 | ipo_pipeline | every 3 h | IPO events, resolution of new listings |
 | finder | every 6 h | Rules A–D, leads, NewsAPI deep dives, exports |
 | fundamentals, universe, leaderboard | weekly | Statements, new listings, new forecast dates |
+| notify | every 30 min | Push notifications to the Android app (see [ANDROID.md](ANDROID.md)); without a Firebase key they are only logged |
 
 In India (IST), 06:30 picks up the previous US close. Indian prices for the day arrive the next morning. Change the times in `jobs.yaml` if you prefer.
 
@@ -240,14 +243,16 @@ Open **http://localhost:8000**:
 | Markets | Market class × sector map, classification counts, exchange-expansion suggestions, IPO events |
 | Service | Settings detected, job schedule and runs, feed health |
 
-The dashboard listens only on this computer. To open it from a phone on the same Wi-Fi, start it with `python -m sfa web --host 0.0.0.0` and browse to `http://<your-computer's-IP>:8000`. It has no login, so do this only on a network you trust.
+The dashboard listens only on this computer. To open it from a phone, set `SFA_HOST=0.0.0.0` in `sfa.env` and restart. Then browse to `http://<your-computer's-IP>:8000` on the same Wi-Fi, or use the computer's Tailscale name from anywhere. It has no login, so do this only on a network you trust.
+
+For **push notifications on your phone** (leads, IPOs, valuation changes, daily digest, failures), follow [ANDROID.md](ANDROID.md). It covers the Firebase project, the SFA Notifier app and pairing.
 
 ---
 
 ## 9. Check it works
 
 ```
-python tests/test_stage0.py && python tests/test_models.py && python tests/test_finder.py && python tests/test_analyzer.py && python tests/test_web.py
+python tests/test_stage0.py && python tests/test_models.py && python tests/test_finder.py && python tests/test_analyzer.py && python tests/test_web.py && python tests/test_notify.py
 python -m sfa doctor
 python -m sfa jobs
 ```
