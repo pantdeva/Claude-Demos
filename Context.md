@@ -171,7 +171,21 @@ Location: `src/Finance/Stock Finder and Analyzer/` (design in `PLAN.md`, usage i
   - exchange-expansion suggestions.
 - Results in `exports/leads.md`: 774 listed leads; one IPO-pipeline lead (the NSE IPO). The top leads include COSCO Shipping (H-shares route), Eli Lilly (US shares under LRS) and Tata Consumer (NSE directly).
 
-**Next:** Milestone 4, the Module 13 company analyzer.
+**Milestone 4 (done):**
+- Stage 2 company analyzer following Zerodha Varsity Module 13 on Yahoo's annual statements:
+  - assumptions from rolling averages;
+  - revenue, capex/depreciation, working-capital, debt and reserves schedules;
+  - 5-year P&L, balance sheet and cash flow, balanced every year;
+  - FCFF DCF with CAPM on the local 10-year yield (FRED) and Blume beta (floored at 0.6), market-weight WACC, terminal growth at long-run inflation capped at Rf, and a WACC × g sensitivity table;
+  - justified P/B for banks and insurers;
+  - peer multiples;
+  - a Merton option check for levered firms.
+- Combined fair value (½ DCF or P/B + ½ peers) gives a verdict at ±15%.
+- Per-company markdown report and Excel model in `exports/analysis/`.
+- Top 25 leads analysed: 15 undervalued (mostly Chinese, Hong Kong and Indian state-linked value stocks), 1 fairly valued, 9 overvalued (high-multiple names such as Eli Lilly, Tata Consumer and Indian Hotels, whose growth fades to inflation within the 5-year projection).
+- Flags in the reports: approximate risk-free rates (CN, TW), the ERP stand-in until Damodaran's file is reachable, debt-heavy capital structures, and terminal value above 85% of EV.
+
+**Next:** Milestone 5, the dashboard and service packaging.
 
 ---
 

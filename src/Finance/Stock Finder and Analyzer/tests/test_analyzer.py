@@ -84,6 +84,8 @@ def test_capm_and_beta():
     b, _ = V.adjusted_beta(1.5)
     assert abs(b - (0.67 * 1.5 + 0.33)) < 1e-12
     assert V.adjusted_beta(None)[0] == 1.0
+    lo, note = V.adjusted_beta(0.09)
+    assert lo == 0.6 and "bounded" in note
 
 
 def test_justified_pb():

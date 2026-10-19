@@ -35,7 +35,10 @@ def adjusted_beta(raw: float | None) -> tuple[float, str]:
         return 1.0, "beta unavailable; 1.0 assumed"
     b = 0.67 * raw + 0.33 if cfg["beta_adjustment"] == "blume" else raw
     lo, hi = cfg["beta_bounds"]
-    return max(lo, min(hi, b)), f"raw {raw:.2f} → Blume-adjusted {b:.2f}"
+    note = f"raw {raw:.2f} → Blume-adjusted {b:.2f}"
+    if not lo <= b <= hi:
+        note += f" → bounded to {max(lo, min(hi, b)):.2f}"
+    return max(lo, min(hi, b)), note
 
 
 def wacc(ke: float, kd: float, tax: float, equity_value: float, debt: float) -> tuple[float, float]:

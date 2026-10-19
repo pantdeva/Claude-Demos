@@ -115,7 +115,10 @@ def analyze(con, symbol: str) -> dict:
     kd = a.interest_rate
     debt, cash, minority = st.last("debt") or 0.0, st.last("cash") or 0.0, st.last("minority") or 0.0
     w, wd = V.wacc(ke, kd, a.tax_rate, mcap, debt)
-    if wd > 0.5:
+    fin = st.is_financial_layout or out["classification"]["sector_group"] == "Financials & Banking"
+    if "bounded" in beta_src:
+        out["flags"].append(f"beta {beta_src}: the local-index beta looks too low or high for CAPM")
+    if wd > 0.5 and not fin:
         out["flags"].append(f"debt is {wd:.0%} of capital (captive finance, leasing or distress?): WACC and the DCF "
                             "are unreliable; lean on the relative value")
     gap = cfg["wacc"]["min_wacc_minus_g"]
@@ -129,7 +132,6 @@ def analyze(con, symbol: str) -> dict:
     out["cost_of_capital"] = {"rf": rf, "rf_source": rf_src, "erp": erp, "erp_source": erp_src, "beta": beta,
                               "beta_source": beta_src, "ke": ke, "kd_pre_tax": kd, "kd_after_tax": kd * (1 - a.tax_rate),
                               "tax_rate": a.tax_rate, "debt_weight": wd, "wacc": w, "g": g, "g_source": g_src}
-    fin = st.is_financial_layout or out["classification"]["sector_group"] == "Financials & Banking"
     p = project(st, a)
     out["assumptions"] = a.table()
     out["projection"] = {"years": p.years, "rows": p.rows, "n_hist": p.n_hist, "balance_diff": p.balance_diff}

@@ -2,7 +2,7 @@
 
 Local research service that classifies listed companies across world exchanges (Stage 0), finds new leads from news and IPO pipelines (Stage 1) and values them with a Module 13 integrated financial model (Stage 2). See [PLAN.md](PLAN.md) for the full design and milestones.
 
-**Status:** Milestones 1 (Stage 0 classification), 2 (model leaderboard and growth predictions) and 3 (Stage 1 company finder) are built. Milestones 4–5 are planned.
+**Status:** Milestones 1 (Stage 0 classification), 2 (model leaderboard and growth predictions), 3 (Stage 1 company finder) and 4 (Stage 2 company analyzer) are built. Milestone 5 (dashboard and service packaging) is planned.
 
 ## Quick start
 
@@ -14,6 +14,8 @@ python -m sfa show TSM                     # one company's classification
 python -m sfa models                       # Milestone 2: walk-forward forecasts, leaderboard, predictions (≈3–4 h first time)
 python -m sfa finder                       # Milestone 3: news → rules A–D → leads with routes
 python -m sfa leads -n 20                  # current top listed leads (also --kind new_listing / ipo_pipeline)
+python -m sfa analyze                      # Milestone 4: Module 13 model + valuation for the top leads
+python -m sfa analyze INFY.NS 7203.T       # …or for any symbols
 python -m sfa service                      # keep everything refreshed on schedule (Ctrl+C to stop)
 ```
 
@@ -44,6 +46,7 @@ Optional environment variables:
 | `python -m sfa leaderboard` | Rebuild the leaderboard and exports from stored forecasts (seconds) |
 | `python -m sfa finder [--step news\|ipo\|leads\|all]` | Stage 1: collect and score news, IPO pipeline, rules A–D, leads, routes, exports |
 | `python -m sfa leads [--kind …] [-n N]` | Show current leads |
+| `python -m sfa analyze [SYMBOL …]` | Stage 2: Module 13 integrated model and valuation (default: top 25 leads and new listings) |
 
 ## Stage 0 classification
 
@@ -89,6 +92,32 @@ Outputs in `exports/`: `leaderboard.md` (readable summary), `leaderboard.csv` (e
 | Expansion | Markets outside the covered exchanges that the news links to growing industries are suggested for `config/exchanges.yaml` |
 
 Outputs in `exports/`: `leads.md`, `leads.csv`, `ipo_pipeline.csv`, `news_signals.csv`, `expansion.csv`.
+
+## Stage 2 company analyzer (Milestone 4)
+
+Follows Zerodha Varsity Module 13 (Integrated Financial Modelling) on Yahoo's annual statements, kept in the statement currency and converted to the trading currency at the end. Infosys, for example, reports in USD and trades in INR.
+
+| Module 13 | Here |
+|---|---|
+| Ch 2–3 historical data | Up to 5 reported years: about 40 income-statement, balance-sheet and cash-flow lines, with derived lines noted when missing |
+| Ch 4–5 assumptions | Rolling 3-year averages: EBITDA margin; depreciation as % of opening net block; asset turnover; inventory, receivable and payable days (average balance ÷ annual flow × 365); tax rate; payout; interest ÷ average debt. Revenue growth starts at the historical CAGR and fades to terminal growth. |
+| Ch 6–11 schedules | Revenue model, capex and depreciation (net block from asset turnover), working capital, debt held flat, reserves (equity + profit − dividends) |
+| Ch 12–13 projections | 5-year P&L, balance sheet and indirect cash flow. The balance sheet must balance every year: other assets and liabilities are held, and cash comes from the cash flow. |
+| Ch 15 free cash flow | FCFF = EBIT(1 − t) + D&A − capex − ΔNWC |
+| Ch 16 cost of equity | CAPM: Ke = Rf + β·ERP, with Rf the local 10-year government yield (FRED), β the 3-year weekly beta to the home index (Blume-adjusted), and ERP from Damodaran's country file when reachable, otherwise config (flagged) |
+| Ch 17 WACC and terminal value | Market-value weights, after-tax cost of debt (tax shield); TV = FCFF₅(1 + g)/(WACC − g), with g = the inflation target capped at Rf |
+| Ch 18 fair value | EV = Σ PV(FCFF) + PV(TV); equity = EV − debt + cash − minority; ÷ shares; compared with the market price; WACC × g sensitivity table |
+| Ch 14 other methods | Relative valuation (median peer P/E, EV/EBITDA, P/B, EV/Sales; P/E and P/B only for financials); option-based check (Merton model) for levered or loss-making companies |
+
+Banks and insurers use the justified price-to-book model, P/B = (ROE − g)/(Ke − g), instead of FCFF. The verdict compares the combined fair value (½ DCF or P/B model + ½ peer multiples) with the price: Undervalued above +15%, Overvalued below −15%.
+
+Each report also carries the company's Stage 0 categories, the Milestone 2 3-month and 1-year growth forecasts, and the 5-year revenue and EPS growth from the projection. It flags weak spots, for example:
+- debt over half of capital (captive finance arms);
+- terminal value above 85% of EV;
+- approximate risk-free rates (CN, TW);
+- negative projected FCFF.
+
+Outputs: `exports/analysis/<SYMBOL>.md` (readable report), `exports/analysis/<SYMBOL>.xlsx` (the model sheet by sheet: Summary, Assumptions, P&L, Balance sheet, Cash flow, DCF, Peers) and `exports/analysis_summary.csv`. Settings are in `sfa/config/analyzer.yaml`.
 
 ## Data sources
 

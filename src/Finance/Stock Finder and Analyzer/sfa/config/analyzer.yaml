@@ -16,7 +16,8 @@ assumptions:
 
 wacc:
   beta_adjustment: blume       # adjusted beta = 0.67 × raw + 0.33
-  beta_bounds: [0.3, 2.5]
+  beta_bounds: [0.6, 2.5]      # floor: betas to concentrated local indexes can be near 0 (Chinese banks ~0.1),
+                               # which would make CAPM's cost of equity barely above the risk-free rate
   capital_structure: market    # market weights (debt / (debt + market cap)); or "target"
   target_debt_to_equity: 0.5   # Module 13 example, used when capital_structure is "target"
   cost_of_debt_spread: 0.02    # used when interest ÷ debt is unusable: Kd = Rf + spread
