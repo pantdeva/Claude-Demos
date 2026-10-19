@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Stock Finder device registry. Paste into Firebase console → Firestore Database → Rules
+// and press Publish (ANDROID.md, step 5).
+//
+// A signed-in phone may read and write only its own user's documents:
+//   users/{uid}                 { email, updatedAt }
+//   users/{uid}/devices/{id}    { token, model, app, updatedAt }
+// Everything else is closed. The computer reads the registry with its service-account
+// key, which is not subject to these rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /devices/{deviceId} {
+        allow read, delete: if request.auth != null && request.auth.uid == uid;
+        allow create, update: if request.auth != null && request.auth.uid == uid
+                              && request.resource.data.token is string
+                              && request.resource.data.token.size() < 4096;
+      }
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

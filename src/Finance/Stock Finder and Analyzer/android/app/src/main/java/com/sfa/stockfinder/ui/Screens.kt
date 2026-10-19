@@ -61,11 +61,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.runtime.rememberCoroutineScope
+import com.sfa.stockfinder.Account
 import com.sfa.stockfinder.Alert
 import com.sfa.stockfinder.MainActivity
 import com.sfa.stockfinder.Notifier
 import com.sfa.stockfinder.Store
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 @Composable
@@ -116,7 +119,7 @@ fun AppScreen(activity: MainActivity) {
             when (tab) {
                 0 -> AlertsScreen(store) { a -> dashboardTarget = store.link(a.path, a.url); tab = 1 }
                 1 -> DashboardScreen(dashboardTarget)
-                else -> SettingsScreen(store) { activity.message.value = it }
+                else -> SettingsScreen(activity, store) { activity.message.value = it }
             }
         }
     }
@@ -140,26 +143,27 @@ fun AlertsScreen(store: Store, open: (Alert) -> Unit) {
         }
     }
     val stale = hb > 0 && System.currentTimeMillis() - hb > TimeUnit.HOURS.toMillis(2L * store.heartbeatEveryHours)
+    val linked = Account.user != null || store.topic.isNotBlank()
     Column(Modifier.fillMaxSize()) {
         Card(
             Modifier.fillMaxWidth().padding(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (store.topic.isBlank() || stale) MaterialTheme.colorScheme.errorContainer
+                containerColor = if (!linked || stale) MaterialTheme.colorScheme.errorContainer
                 else MaterialTheme.colorScheme.secondaryContainer,
             ),
         ) {
             Column(Modifier.padding(14.dp)) {
                 Text(
                     when {
-                        store.topic.isBlank() -> "Not paired yet"
+                        !linked -> "Not signed in"
                         stale -> "Computer quiet since ${ago(hb)}"
-                        else -> "Paired · computer last heard from ${ago(hb)}"
+                        hb == 0L -> "Signed in · waiting for the computer's first message"
+                        else -> "Signed in · computer last heard from ${ago(hb)}"
                     },
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    if (store.topic.isBlank()) "Open Settings and enter the pairing code shown by `python -m sfa notify pair` " +
-                        "or on the dashboard's Service page."
+                    if (!linked) "Open Settings and sign in with the Google account listed in the computer's SFA_NOTIFY_EMAILS."
                     else "${alerts.size} alerts kept on this phone.",
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -239,22 +243,67 @@ fun DashboardScreen(target: String) {
 }
 
 @Composable
-fun SettingsScreen(store: Store, say: (String) -> Unit) {
+fun SettingsScreen(activity: MainActivity, store: Store, say: (String) -> Unit) {
     val ctx = LocalContext.current
-    var topic by remember { mutableStateOf(store.topic) }
+    val scope = rememberCoroutineScope()
+    var email by remember { mutableStateOf(Account.user?.email) }
+    var busy by remember { mutableStateOf(false) }
     var url by remember { mutableStateOf(store.dashboardUrl) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Pairing", style = MaterialTheme.typography.titleMedium)
-        Text("On the computer run `python -m sfa notify pair`, or open the dashboard's Service page, and copy the code. " +
-            "Opening the sfa://pair link on this phone fills both fields for you.", style = MaterialTheme.typography.bodySmall)
-        OutlinedTextField(topic, { topic = it }, Modifier.fillMaxWidth(), label = { Text("Pairing code (sfa-…)") }, singleLine = true)
+        Text("Account", style = MaterialTheme.typography.titleMedium)
+        if (email == null) {
+            Text("Sign in with the Google account you listed in SFA_NOTIFY_EMAILS on the computer. Only that " +
+                "account's phones receive notifications.", style = MaterialTheme.typography.bodySmall)
+            Button(enabled = !busy, onClick = {
+                busy = true
+                scope.launch {
+                    try {
+                        email = Account.signIn(activity).email
+                        say("Signed in as $email. Use “Send test notification” on the dashboard's Service page to check.")
+                    } catch (e: Exception) {
+                        say(e.message ?: "Sign-in failed.")
+                    } finally {
+                        busy = false
+                    }
+                }
+            }) { Text(if (busy) "Signing in…" else "Sign in with Google") }
+        } else {
+            Text("Signed in as $email", fontWeight = FontWeight.SemiBold)
+            Text("This phone is registered to receive the computer's notifications. Registered " +
+                "${ago(store.lastRegistered)}.", style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(enabled = !busy, onClick = {
+                    busy = true
+                    scope.launch {
+                        val r = runCatching { Account.register(ctx) }
+                        say(if (r.isSuccess) "Registration refreshed." else "Could not register: ${r.exceptionOrNull()?.message}")
+                        busy = false
+                    }
+                }) { Text("Re-register") }
+                OutlinedButton(enabled = !busy, onClick = {
+                    busy = true
+                    scope.launch {
+                        Account.signOut(ctx)
+                        email = null
+                        busy = false
+                        say("Signed out: this phone no longer receives notifications.")
+                    }
+                }) { Text("Sign out") }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Text("Dashboard", style = MaterialTheme.typography.titleMedium)
+        Text("The address the Dashboard tab opens. Opening the set-up link from the dashboard's Service page on " +
+            "this phone fills it in.", style = MaterialTheme.typography.bodySmall)
         OutlinedTextField(url, { url = it }, Modifier.fillMaxWidth(), label = { Text("Dashboard address") },
             placeholder = { Text("http://my-pc.tailnet-name.ts.net:8000") }, singleLine = true)
         Button(onClick = {
-            if (!topic.trim().startsWith("sfa-")) say("The pairing code starts with “sfa-”.")
-            else MainActivity.pair(store, topic.trim(), url.trim()) { _, m -> say(m) }
-        }) { Text("Save and subscribe") }
+            val u = url.trim()
+            if (u.isNotBlank() && !u.startsWith("http://") && !u.startsWith("https://")) say("The address starts with http:// or https://")
+            else { store.dashboardUrl = u; say("Saved.") }
+        }) { Text("Save address") }
 
         Spacer(Modifier.height(8.dp))
         Text("Notify me about", style = MaterialTheme.typography.titleMedium)

@@ -50,10 +50,11 @@ class MainActivity : ComponentActivity() {
         if (data != null && data.scheme == "sfa" && data.host == "pair") {
             val topic = data.getQueryParameter("topic").orEmpty()
             val url = data.getQueryParameter("url").orEmpty()
-            if (topic.isBlank()) {
-                message.value = "That pairing link has no code."
-            } else {
-                pair(store, topic, url) { ok, msg -> message.value = msg; if (ok) pendingLink.value = null }
+            if (url.isNotBlank()) store.dashboardUrl = url
+            when {
+                topic.isNotBlank() -> pair(store, topic, url) { _, msg -> message.value = msg }
+                Account.user == null -> message.value = "Dashboard address saved. Now sign in with Google in Settings."
+                else -> message.value = "Dashboard address saved."
             }
             return
         }
@@ -65,7 +66,7 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_PATH = "path"
         const val EXTRA_URL = "url"
 
-        /** Subscribe to the computer's topic (the pairing code) and remember the dashboard address. */
+        /** Topic mode only: subscribe to the computer's shared topic and remember the dashboard address. */
         fun pair(store: Store, topic: String, url: String, done: (Boolean, String) -> Unit) {
             val fm = FirebaseMessaging.getInstance()
             val old = store.topic

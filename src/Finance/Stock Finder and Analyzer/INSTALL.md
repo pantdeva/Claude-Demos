@@ -20,7 +20,7 @@ Budget about 30 minutes of hands-on time. The first full data build then runs un
 | 6 | First full data build, including the remaining 443 companies of the model leaderboard | Only 383 of 826 companies were modelled in the cloud session | Step 6 |
 | 7 | Start-on-boot service | Keeps everything current | Step 7 |
 | 8 | Computer left on, and not sleeping, at the job times | Jobs run on a local clock | Step 7 |
-| 9 | Optional: phone notifications (Android app, Firebase project, service-account key) | Push alerts for leads, IPOs, valuations, digest and failures | [ANDROID.md](ANDROID.md) |
+| 9 | Optional: phone notifications (Android Studio, SFA Notifier app, Firebase project with Google sign-in, service-account key, `SFA_NOTIFY_EMAILS`) | Push alerts for leads, IPOs, valuations, digest and failures | [ANDROID.md](ANDROID.md) |
 | 10 | Optional: tag `V2.0.0` on GitHub | Couldn't be pushed from the cloud session (HTTP 403) | Step 10 |
 
 ---
@@ -117,6 +117,10 @@ Optional settings, also in `sfa.env`:
 |---|---|---|
 | `SFA_FINBERT_DIR` | `db/models/finbert` | Where the FinBERT weights live, if you already have them |
 | `SFA_DB` | `db/sfa.sqlite` | A different database file |
+| `SFA_HOST` | `127.0.0.1` | `0.0.0.0` lets the phone open the dashboard (home Wi-Fi or Tailscale only) |
+| `SFA_FCM_SERVICE_ACCOUNT` | — | Firebase service-account key file for phone notifications ([ANDROID.md](ANDROID.md)) |
+| `SFA_NOTIFY_EMAILS` | — | Google account(s) whose signed-in phones receive notifications, comma-separated |
+| `SFA_DASHBOARD_URL` | `http://localhost:8000` | Dashboard address the phone opens |
 
 ---
 
@@ -245,7 +249,7 @@ Open **http://localhost:8000**:
 
 The dashboard listens only on this computer. To open it from a phone, set `SFA_HOST=0.0.0.0` in `sfa.env` and restart. Then browse to `http://<your-computer's-IP>:8000` on the same Wi-Fi, or use the computer's Tailscale name from anywhere. It has no login, so do this only on a network you trust.
 
-For **push notifications on your phone** (leads, IPOs, valuation changes, daily digest, failures), follow [ANDROID.md](ANDROID.md). It covers the Firebase project, the SFA Notifier app and pairing.
+For **push notifications on your phone** (leads, IPOs, valuation changes, daily digest, failures), follow [ANDROID.md](ANDROID.md). It covers installing Android Studio, the Firebase project (Google sign-in, Firestore device registry, Cloud Messaging), building and installing the SFA Notifier app, and signing in.
 
 ---
 

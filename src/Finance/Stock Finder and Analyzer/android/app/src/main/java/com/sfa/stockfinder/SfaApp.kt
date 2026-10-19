@@ -8,6 +8,8 @@ class SfaApp : Application() {
         super.onCreate()
         Notifier.createChannels(this)
         HeartbeatWorker.schedule(this)
+        // signed in: refresh this phone's entry in the device registry (token may have changed)
+        Account.registerInBackground(this)
         val topic = Store(this).topic
         if (topic.isNotBlank()) FirebaseMessaging.getInstance().subscribeToTopic(topic)
     }

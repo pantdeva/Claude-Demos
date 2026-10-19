@@ -5,10 +5,13 @@
 enabled: true
 transport: fcm                    # fcm | log (log = write to the notify_log table only; for testing)
 service_account_env: SFA_FCM_SERVICE_ACCOUNT
-# Messages go to an FCM topic. The topic name is created randomly on first use and acts
-# as the pairing code you enter in the app (python -m sfa notify pair). It can be
-# overridden here.
-topic: null
+# Who receives messages:
+#   devices  phones signed in to SFA Notifier (Firebase Authentication, Google sign-in) with
+#            an account listed in SFA_NOTIFY_EMAILS (comma-separated, in sfa.env)
+#   topic    the original shared pairing code (no sign-in); see `python -m sfa notify pair`
+audience: devices
+allowed_emails_env: SFA_NOTIFY_EMAILS
+topic: null                       # topic mode only: fixed topic name instead of a random one
 dashboard_url_env: SFA_DASHBOARD_URL   # what the phone should open, e.g. http://my-pc.tailnet.ts.net:8000
 
 events:

@@ -17,7 +17,11 @@ class HeartbeatWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(
 
     override suspend fun doWork(): Result {
         val store = Store(applicationContext)
-        if (store.topic.isBlank() || store.lastHeartbeat == 0L) return Result.success()
+        val signedIn = Account.user != null
+        if (signedIn && System.currentTimeMillis() - store.lastRegistered > TimeUnit.DAYS.toMillis(1)) {
+            runCatching { Account.register(applicationContext) }        // keep the registry entry fresh
+        }
+        if ((!signedIn && store.topic.isBlank()) || store.lastHeartbeat == 0L) return Result.success()
         val limit = TimeUnit.HOURS.toMillis(2L * store.heartbeatEveryHours)
         val now = System.currentTimeMillis()
         val quietFor = now - store.lastHeartbeat

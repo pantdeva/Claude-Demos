@@ -1,3 +1,4 @@
+import os
 """Tests for push notifications (event detection, delivery rules, FCM payloads).
 
 Run from the "Stock Finder and Analyzer" folder:  python tests/test_notify.py
@@ -16,14 +17,34 @@ from sfa.db import now  # noqa: E402
 from sfa.finder import init as finder_init  # noqa: E402
 
 
-class FakeSender:
-    def __init__(self):
-        self.sent = []
+os.environ["SFA_NOTIFY_EMAILS"] = "me@example.com"
 
-    def send(self, topic, data, ttl_s=86400):
+
+class FakeSender:
+    """Stands in for FCMSender: one signed-in phone of an allowed account by default."""
+
+    def __init__(self, devs=None, gone=()):
+        self.sent, self.deleted, self.gone = [], [], set(gone)
+        self.devs = devs if devs is not None else [
+            {"uid": "u1", "email": "me@example.com", "device": "d1", "token": "tok1", "model": "Pixel", "updated": "",
+             "doc": "projects/x/databases/(default)/documents/users/u1/devices/d1"}]
+        self.asked = None
+
+    def devices(self, emails):
+        self.asked = set(emails)
+        return [d for d in self.devs if d["email"] in emails]
+
+    def send(self, data, token=None, topic=None, ttl_s=86400):
         assert all(isinstance(v, str) for v in data.values()), data
-        self.sent.append((topic, data))
+        assert token or topic
+        if token in self.gone:
+            from sfa.notify.fcm import FCMError
+            raise FCMError("FCM HTTP 404: UNREGISTERED", 404, unregistered=True)
+        self.sent.append((token or topic, data))
         return "projects/x/messages/1"
+
+    def delete_device(self, doc):
+        self.deleted.append(doc)
 
 
 def db():
@@ -144,7 +165,7 @@ def test_quiet_window_and_pairing():
     assert N.in_quiet(datetime(2026, 1, 1, 6, 59), ["22:00", "07:00"])
     con = db()
     t = N.topic(con)
-    assert t.startswith("sfa-") and N.topic(con) == t and N.pair_link(con).startswith("sfa://pair?topic=" + t)
+    assert t.startswith("sfa-") and N.topic(con) == t and N.pair_link(con).startswith("sfa://pair?url=")
 
 
 if __name__ == "__main__":
@@ -160,3 +181,42 @@ if __name__ == "__main__":
                 print("FAIL", name, repr(e))
                 traceback.print_exc()
     sys.exit(1 if fails else 0)
+
+
+def test_devices_mode_only_allowed_emails_and_prunes_dead_tokens():
+    from sfa import notify
+    devs = [{"uid": "u1", "email": "me@example.com", "device": "d1", "token": "tok1", "model": "Pixel", "updated": "", "doc": "D1"},
+            {"uid": "u1", "email": "me@example.com", "device": "d2", "token": "dead", "model": "Old", "updated": "", "doc": "D2"},
+            {"uid": "u2", "email": "other@example.com", "device": "d3", "token": "tok3", "model": "X", "updated": "", "doc": "D3"}]
+    con, s = db(), FakeSender(devs, gone={"dead"})
+    tg = notify.targets(con, s)
+    assert s.asked == {"me@example.com"} and [t["token"] for t in tg] == ["tok1", "dead"]
+    n = notify.broadcast(s, tg, {"type": "test", "title": "t"})
+    assert n == 1 and [x[0] for x in s.sent] == ["tok1"] and s.deleted == ["D2"]
+    assert len(notify._get(con, "devices")) == 2
+
+
+def test_no_allowed_emails_or_no_phone_means_logged():
+    from sfa import notify
+    old = os.environ.pop("SFA_NOTIFY_EMAILS")
+    try:
+        con, s = db(), FakeSender()
+        try:
+            notify.targets(con, s)
+            raise AssertionError("expected NoTargets")
+        except notify.NoTargets as e:
+            assert "SFA_NOTIFY_EMAILS" in str(e)
+    finally:
+        os.environ["SFA_NOTIFY_EMAILS"] = old
+    con, s = db(), FakeSender(devs=[])
+    try:
+        notify.targets(con, s)
+        raise AssertionError("expected NoTargets")
+    except notify.NoTargets as e:
+        assert "sign in" in str(e)
+
+
+def test_pair_link_devices_mode_has_no_topic():
+    from sfa import notify
+    con = db()
+    assert notify.pair_link(con).startswith("sfa://pair?url=") and "topic=" not in notify.pair_link(con)

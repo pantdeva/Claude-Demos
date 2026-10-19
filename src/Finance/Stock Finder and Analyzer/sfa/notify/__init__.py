@@ -8,6 +8,14 @@ Events (config/notify.yaml):
   alert      a job failed, or prices have not been refreshed for too long
   heartbeat  silent: lets the app warn you when the computer stops reporting
 
+Who receives them (config/notify.yaml → audience):
+  devices  (default) every phone signed in to SFA Notifier with a Google account listed in
+           SFA_NOTIFY_EMAILS. The app records its FCM token in Firestore under
+           users/{uid}/devices (security rules let only that user write there); this side
+           reads the registry with the service-account key and checks each user's
+           verified email with Firebase Authentication before sending.
+  topic    the original shared pairing-code mode (anyone with your app build and the code).
+
 The first run only records the current state (no flood of "new" events). Each run
 compares with the stored state, applies quiet hours and a per-run cap, and sends via
 FCM (or only logs when FCM is not configured). Every message is kept in notify_log.
@@ -69,7 +77,10 @@ def dashboard_url() -> str:
 
 
 def pair_link(con) -> str:
-    return f"sfa://pair?topic={quote(topic(con))}&url={quote(dashboard_url(), safe='')}"
+    """Link that sets up the app: the dashboard address, plus the topic in topic mode."""
+    if load("notify").get("audience", "devices") == "topic":
+        return f"sfa://pair?topic={quote(topic(con))}&url={quote(dashboard_url(), safe='')}"
+    return f"sfa://pair?url={quote(dashboard_url(), safe='')}"
 
 
 def _table(con, name):
@@ -252,6 +263,52 @@ def _sender():
         return None, str(e)
 
 
+def allowed_emails() -> set[str]:
+    env = load("notify").get("allowed_emails_env", "SFA_NOTIFY_EMAILS")
+    return {e.strip().lower() for e in (os.environ.get(env) or "").replace(";", ",").split(",") if e.strip()}
+
+
+class NoTargets(RuntimeError):
+    pass
+
+
+def targets(con, sender) -> list[dict]:
+    """Where to send: the signed-in devices of allowed accounts (audience "devices"), or
+    the shared topic (audience "topic", the original pairing-code mode)."""
+    cfg = load("notify")
+    if cfg.get("audience", "devices") == "topic":
+        return [{"topic": topic(con)}]
+    emails = allowed_emails()
+    if not emails:
+        raise NoTargets(f"set {cfg.get('allowed_emails_env', 'SFA_NOTIFY_EMAILS')} to the Google account(s) allowed "
+                        "to receive notifications")
+    devs = sender.devices(emails)
+    _set(con, "devices", [{k: d.get(k) for k in ("email", "model", "updated", "device")} for d in devs])
+    _set(con, "devices_checked", now())
+    if not devs:
+        raise NoTargets("no signed-in phone yet: sign in to SFA Notifier with an allowed Google account")
+    return [{"token": d["token"], "doc": d.get("doc"), "email": d["email"]} for d in devs]
+
+
+def broadcast(sender, tgts: list[dict], data: dict, ttl_s: int = 86400) -> int:
+    """Send to every target; prune devices whose registration is gone. Returns how many got it."""
+    ok, last_err = 0, None
+    for t in tgts:
+        try:
+            sender.send(data, token=t.get("token"), topic=t.get("topic"), ttl_s=ttl_s)
+            ok += 1
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            if getattr(e, "unregistered", False) and t.get("doc"):
+                try:
+                    sender.delete_device(t["doc"])
+                except Exception:  # noqa: BLE001
+                    pass
+    if not ok and last_err is not None:
+        raise last_err
+    return ok
+
+
 def _payload(con, ev, mid) -> dict:
     return {"id": mid, "type": ev["type"], "title": ev["title"], "body": ev["body"], "symbol": ev.get("symbol") or "",
             "path": ev.get("path") or "", "url": dashboard_url(), "sent": now(), "channel": CHANNEL[ev["type"]]}
@@ -292,8 +349,13 @@ def deliver(con, events: list[dict], local_now: datetime | None = None, sender=N
         sender, why = _sender()
     else:
         why = None
-    t = topic(con)
     stats = {"queued": len(events), "sent": 0, "logged": 0, "held": 0, "failed": 0}
+    tgts = None
+    if sender is not None and send_now:
+        try:
+            tgts = targets(con, sender)
+        except Exception as e:  # noqa: BLE001 - nobody to send to yet: keep the messages as logged
+            sender, why = None, str(e)
     for r in send_now:
         data = json.loads(r["data"])
         if sender is None:
@@ -301,8 +363,9 @@ def deliver(con, events: list[dict], local_now: datetime | None = None, sender=N
             stats["logged"] += 1
             continue
         try:
-            sender.send(t, data)
-            con.execute("UPDATE notify_log SET status='sent', sent_at=? WHERE id=?", (now(), r["id"]))
+            n = broadcast(sender, tgts, data)
+            con.execute("UPDATE notify_log SET status='sent', sent_at=?, error=? WHERE id=?",
+                        (now(), f"{n} device(s)" if len(tgts) > 1 or "token" in tgts[0] else None, r["id"]))
             stats["sent"] += 1
         except Exception as e:  # noqa: BLE001
             con.execute("UPDATE notify_log SET status='failed', error=? WHERE id=?", (str(e)[:300], r["id"]))
@@ -321,8 +384,8 @@ def heartbeat(con, cfg, sender) -> bool:
     if sender is None:
         return False
     try:
-        sender.send(topic(con), {"type": "heartbeat", "sent": now(), "url": dashboard_url(),
-                                 "every_hours": str(hrs)}, ttl_s=hrs * 3600)
+        broadcast(sender, targets(con, sender), {"type": "heartbeat", "sent": now(), "url": dashboard_url(),
+                                                 "every_hours": str(hrs)}, ttl_s=hrs * 3600)
         return True
     except Exception:  # noqa: BLE001
         return False

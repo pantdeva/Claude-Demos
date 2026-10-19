@@ -196,14 +196,14 @@ Location: `src/Finance/Stock Finder and Analyzer/` (design in `PLAN.md`, usage i
 
 **Phone notifications (after Milestone 5):**
 - `sfa/notify` detects events: new or rising top leads, IPO pipeline new names and stage moves, valuation verdict changes or big fair-value moves, a daily digest at 08:45, failed jobs and stale prices.
-- Sent every 30 minutes as Firebase Cloud Messaging (HTTP v1) data messages to a private topic, which is the pairing code.
+- Sent every 30 minutes as Firebase Cloud Messaging (HTTP v1) data messages to signed-in phones. The app signs in with Google (Credential Manager → Firebase Authentication) and writes its token to Firestore `users/{uid}/devices/{id}` (rules in `android/firestore.rules`: owner only). The computer reads the registry with the service-account key, checks each user's verified email through Identity Toolkit `accounts:lookup`, sends only to accounts in `SFA_NOTIFY_EMAILS`, and deletes unregistered tokens. The older shared-topic mode remains as `audience: topic`.
 - Delivery rules: quiet hours 22:00–07:00 (alerts still go through), at most 8 per pass (extras folded into one), and duplicates suppressed. Everything is logged in `notify_log`.
 - A silent heartbeat goes out every 6 hours.
-- `android/` holds the Android Studio project **SFA Notifier** (Kotlin, Jetpack Compose, Firebase Messaging, WorkManager): five notification channels, alert history, the dashboard in a WebView, pairing by code or an `sfa://pair` link, per-type mute, and a watchdog when the computer is quiet for 12 hours.
+- `android/` holds the Android Studio project **SFA Notifier** (Kotlin, Jetpack Compose, Firebase Messaging, WorkManager): five notification channels, alert history, the dashboard in a WebView, Google sign-in/out, an `sfa://pair?url=` set-up link for the dashboard address, per-type mute, and a watchdog when the computer is quiet for 12 hours.
 - It wasn't compiled in the cloud session (Google's Android repositories are blocked there); the user builds it in Android Studio.
-- Setup guide in `ANDROID.md`: Firebase project, google-services.json, service-account key in `sfa.env`, build and install, pairing, Tailscale, battery settings.
-- New settings: `SFA_FCM_SERVICE_ACCOUNT`, `SFA_DASHBOARD_URL`, `SFA_HOST`.
-- 9 more tests (84 in total).
+- Setup guide in `ANDROID.md`: Android Studio per OS, Firebase project, Google sign-in provider, SHA-1 fingerprint, google-services.json, Firestore and rules, service-account key, build/run/APK/update, sign-in and test, Tailscale, battery settings, troubleshooting, security model.
+- New settings: `SFA_FCM_SERVICE_ACCOUNT`, `SFA_NOTIFY_EMAILS`, `SFA_DASHBOARD_URL`, `SFA_HOST`.
+- 12 more tests (87 in total).
 
 ---
 

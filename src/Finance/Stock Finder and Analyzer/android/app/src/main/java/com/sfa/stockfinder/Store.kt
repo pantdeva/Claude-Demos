@@ -35,10 +35,20 @@ data class Alert(
     }
 }
 
-/** Small key-value store (SharedPreferences): pairing, settings, alert history, heartbeat. */
+/** Small key-value store (SharedPreferences): settings, alert history, heartbeat, device id. */
 class Store(context: Context) {
     private val p = context.applicationContext.getSharedPreferences("sfa", Context.MODE_PRIVATE)
 
+    /** Random id of this installation in the Firestore device registry. */
+    var deviceId: String
+        get() = p.getString("device_id", "") ?: ""
+        set(v) = p.edit().putString("device_id", v).apply()
+
+    var lastRegistered: Long
+        get() = p.getLong("registered", 0L)
+        set(v) = p.edit().putLong("registered", v).apply()
+
+    /** Only for computers set to `audience: topic` (the older shared-code mode). */
     var topic: String
         get() = p.getString("topic", "") ?: ""
         set(v) = p.edit().putString("topic", v.trim()).apply()

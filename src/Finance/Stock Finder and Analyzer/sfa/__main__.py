@@ -134,9 +134,21 @@ def main(argv=None):
     elif a.cmd == "notify":
         from . import notify
         if a.action == "pair":
-            print(f"Pairing code (FCM topic): {notify.topic(con)}")
+            from .config import load as _load
+            if _load("notify").get("audience", "devices") == "topic":
+                print(f"Pairing code (FCM topic): {notify.topic(con)}")
+            else:
+                emails = sorted(notify.allowed_emails())
+                print("Sign in to SFA Notifier with: " + (", ".join(emails) if emails else
+                      "(none yet: set SFA_NOTIFY_EMAILS in sfa.env)"))
+                try:
+                    from .notify.fcm import FCMSender
+                    devs = FCMSender().devices(set(emails)) if emails else []
+                    print(f"Signed-in phones: {len(devs)}" + "".join(f"\n  {d['email']}  {d['model']}  {d['updated']}" for d in devs))
+                except Exception as e:  # noqa: BLE001
+                    print(f"Signed-in phones: unknown ({e})")
             print(f"Dashboard URL sent to the phone: {notify.dashboard_url()}")
-            print(f"Pairing link (open on the phone): {notify.pair_link(con)}")
+            print(f"Set-up link (open on the phone): {notify.pair_link(con)}")
         elif a.action == "test":
             print(notify.send_test(con))
         elif a.action == "run":

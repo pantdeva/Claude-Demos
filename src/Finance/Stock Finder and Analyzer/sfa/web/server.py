@@ -211,7 +211,7 @@ def api_service(con, q):
     out["feeds"] = _rows(con, "SELECT source, url, ok, fails, last_ok, last_error, items_last, checked FROM feed_health "
                               "ORDER BY source, url") if _exists(con, "feed_health") else []
     import os
-    out["env"] = {k: bool(os.environ.get(k)) for k in ("NEWSAPI_KEY", "SFA_SEC_USER_AGENT", "SFA_FCM_SERVICE_ACCOUNT",
+    out["env"] = {k: bool(os.environ.get(k)) for k in ("NEWSAPI_KEY", "SFA_SEC_USER_AGENT", "SFA_FCM_SERVICE_ACCOUNT", "SFA_NOTIFY_EMAILS",
                                                        "SFA_DASHBOARD_URL", "SFA_FINBERT_DIR", "SFA_DB")}
     out["phone"] = phone_info(con)
     return out
@@ -219,14 +219,20 @@ def api_service(con, q):
 
 def phone_info(con):
     from .. import notify
-    t = notify._get(con, "topic") if _exists(con, "notify_state") else None
-    info = {"topic": t, "dashboard_url": notify.dashboard_url(),
-            "pair_link": None, "fcm_configured": bool(os.environ.get("SFA_FCM_SERVICE_ACCOUNT")),
+    from ..config import load
+    have = _exists(con, "notify_state")
+    audience = load("notify").get("audience", "devices")
+    info = {"audience": audience, "dashboard_url": notify.dashboard_url(),
+            "fcm_configured": bool(os.environ.get("SFA_FCM_SERVICE_ACCOUNT")),
+            "allowed_emails": sorted(notify.allowed_emails()),
+            "devices": (notify._get(con, "devices", []) if have else []),
+            "devices_checked": (notify._get(con, "devices_checked") if have else None),
+            "topic": (notify._get(con, "topic") if have and audience == "topic" else None),
+            "pair_link": notify.pair_link(con) if (audience != "topic" or have) else None,
             "recent": _rows(con, "SELECT created, type, status, title, error FROM notify_log ORDER BY created DESC LIMIT 15")
             if _exists(con, "notify_log") else []}
-    if t:
-        from urllib.parse import quote
-        info["pair_link"] = f"sfa://pair?topic={quote(t)}&url={quote(info['dashboard_url'], safe='')}"
+    if audience == "topic" and not info["topic"]:
+        info["pair_link"] = None
     return info
 
 

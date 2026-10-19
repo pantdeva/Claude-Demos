@@ -28,7 +28,9 @@ class SfaMessagingService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String) {
-        // a new registration loses topic subscriptions: subscribe again
+        // the computer sends to the token stored in the registry: store the new one
+        Account.registerInBackground(this, token)
+        // a new registration also loses topic subscriptions (topic mode only)
         val topic = Store(this).topic
         if (topic.isNotBlank()) FirebaseMessaging.getInstance().subscribeToTopic(topic)
     }

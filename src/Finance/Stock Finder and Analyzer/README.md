@@ -139,7 +139,7 @@ Outputs: `exports/analysis/<SYMBOL>.md` (readable report), `exports/analysis/<SY
 | Markets | Classification maps, expansion suggestions, IPO events |
 | Service | Settings detected, schedule, runs, feed health |
 
-**Phone notifications:** the `notify` job (every 30 min) sends Firebase push messages to the **SFA Notifier** Android app in `android/`. The events are new or rising top leads, IPO pipeline changes, valuation verdict changes, a daily digest at 08:45, and failed jobs or stale data. Quiet hours run 22:00–07:00. The app keeps an alert history, opens the dashboard, and warns when the computer goes quiet. Setup is in [ANDROID.md](ANDROID.md); commands: `python -m sfa notify pair|test|run|log`.
+**Phone notifications:** the `notify` job (every 30 min) sends Firebase push messages to the **SFA Notifier** Android app in `android/`. The events are new or rising top leads, IPO pipeline changes, valuation verdict changes, a daily digest at 08:45, and failed jobs or stale data. Quiet hours run 22:00–07:00. The app signs in with Google (Firebase Authentication) and registers itself in Firestore; the computer sends only to phones of the accounts listed in `SFA_NOTIFY_EMAILS`. It keeps an alert history, opens the dashboard, and warns when the computer goes quiet. Setup, including Android Studio and Firebase, is in [ANDROID.md](ANDROID.md); commands: `python -m sfa notify pair|test|run|log`.
 
 Start-on-boot scripts are in `deploy/`: Windows Task Scheduler (`install_task.ps1`), macOS launchd (`install_launchd.sh`) and Linux systemd user service (`install_systemd.sh`). Each restarts the app if it stops and logs to `logs/sfa.log`. See [INSTALL.md](INSTALL.md).
 

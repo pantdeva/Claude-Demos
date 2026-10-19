@@ -282,9 +282,12 @@ async function service() {
   const phone = `<h2>Phone notifications (Android app)</h2>
   <div class="card"><dl>
     <dt>Firebase key</dt><dd>${ph.fcm_configured?'<span class="chip good">configured</span>':'<span class="chip warn">not set — messages are only logged (see ANDROID.md)</span>'}</dd>
-    <dt>Pairing code</dt><dd><b>${esc(ph.topic||"created on first run: python -m sfa notify pair")}</b></dd>
+    ${ph.audience==="topic"
+      ? `<dt>Pairing code</dt><dd><b>${esc(ph.topic||"created on first run: python -m sfa notify pair")}</b></dd>`
+      : `<dt>Allowed Google accounts</dt><dd>${(ph.allowed_emails||[]).length?ph.allowed_emails.map(e=>`<span class="chip good">${esc(e)}</span>`).join(" "):'<span class="chip warn">none — set SFA_NOTIFY_EMAILS in sfa.env</span>'}</dd>
+         <dt>Signed-in phones</dt><dd>${(ph.devices||[]).length?ph.devices.map(x=>`${esc(x.model||"phone")} <span class="mut">(${esc(x.email)}, registered ${esc((x.updated||"").slice(0,16))})</span>`).join("<br>"):'<span class="mut">none yet — sign in to SFA Notifier</span>'}${ph.devices_checked?` <span class="mut">· checked ${esc(ph.devices_checked.slice(0,16))}</span>`:""}</dd>`}
     <dt>Dashboard URL for the phone</dt><dd>${esc(ph.dashboard_url)}</dd>
-    <dt>Pairing link</dt><dd>${ph.pair_link?`<a href="${esc(ph.pair_link)}">${esc(ph.pair_link)}</a> <span class="mut">(open it on the phone, or type the code in the app)</span>`:"—"}</dd>
+    <dt>Set-up link</dt><dd>${ph.pair_link?`<a href="${esc(ph.pair_link)}">${esc(ph.pair_link)}</a> <span class="mut">(open it on the phone to fill in the dashboard address)</span>`:"—"}</dd>
   </dl><p><button class="btn primary" onclick="notifyTest()">Send test notification</button> <span id="ntst" class="note"></span></p></div>
   ${table([{h:"Created (UTC)",f:r=>esc(r.created)},{h:"Type",f:r=>esc(r.type)},{h:"Status",f:r=>`<span class="chip ${r.status==="sent"?"good":r.status==="failed"?"bad":"warn"}">${esc(r.status)}</span>`},
            {h:"Title",w:1,f:r=>esc(r.title)},{h:"Error",w:1,f:r=>`<span class="mut">${esc(r.error||"")}</span>`}], ph.recent||[])}`;
@@ -301,7 +304,7 @@ async function service() {
 async function notifyTest() {
   const e = $("#ntst"); e.textContent = "Sending…";
   const r = await fetch("/api/notify_test", {method:"POST"}).then(r => r.json());
-  e.textContent = r.sent ? "Sent — check your phone." : r.logged ? "Logged only: Firebase key not configured." : "Failed: see the table below.";
+  e.textContent = r.sent ? "Sent — check your phone." : r.logged ? "Logged only — the Error column below says why." : "Failed: see the table below.";
   setTimeout(render, 1500);
 }
 
