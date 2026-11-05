@@ -25,6 +25,8 @@ Budget about 30 minutes of hands-on time. The first full data build then runs un
 
 ---
 
+> **Windows shortcut:** once the app folder is on your computer (step 2), double-click `deploy\windows\setup_windows.bat`. It installs Python if needed, creates the virtual environment, installs the packages, opens `sfa.env` for your keys, runs the readiness check and starts the service. That covers steps 1 and 3–7, except the NewsAPI key itself (step 4).
+
 ## 1. Install Python and Git
 
 **Windows**
