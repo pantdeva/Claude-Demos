@@ -66,7 +66,7 @@ echo [4/5] Readiness check:
 
 rem ---- 5. Service --------------------------------------------------------------
 echo.
-choice /c YN /m "[5/5] Start the service now and every time you log on"
+choice /c YN /t 30 /d Y /m "[5/5] Start the service now and every time you log on (Y in 30 s)"
 if errorlevel 2 (
   echo Skipped. Start it later with: deploy\windows\start_sfa.bat ^(or install_task.ps1 for log-on start^)
 ) else (
