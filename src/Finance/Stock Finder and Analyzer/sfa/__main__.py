@@ -32,7 +32,19 @@ from .data import rss
 from .db import connect
 
 
+def _utf8_output():
+    """Windows writes redirected output in the ANSI code page (cp1252), which cannot hold
+    characters such as → used in progress messages; use UTF-8 and never fail on output."""
+    import sys
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv=None):
+    _utf8_output()
     p = argparse.ArgumentParser(prog="sfa", description="Stock Finder and Analyzer – Stage 0 backend")
     sub = p.add_subparsers(dest="cmd", required=True)
     for c in ("init", "prices", "fundamentals", "classify", "news", "feeds", "all", "jobs", "leaderboard"):
