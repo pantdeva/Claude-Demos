@@ -39,6 +39,12 @@ if errorlevel 1 (
   exit /b 1
 )
 
+rem ---- 1b. Database from StockFinder-database.zip, if it was put next to this folder
+if exist "..\StockFinder-database.zip" if not exist "db\.seeded" (
+  echo [1/5] Unpacking the database from ..\StockFinder-database.zip ...
+  powershell -NoProfile -Command "Expand-Archive -Force -Path '..\StockFinder-database.zip' -DestinationPath '.'" && (echo seeded> "db\.seeded")
+)
+
 rem ---- 2. Virtual environment and packages -------------------------------------
 if not exist ".venv\Scripts\python.exe" (
   echo [2/5] Creating the virtual environment .venv ...
