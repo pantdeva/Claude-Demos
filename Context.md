@@ -196,14 +196,13 @@ Location: `src/Finance/Stock Finder and Analyzer/` (design in `PLAN.md`, usage i
 
 **Phone notifications (after Milestone 5):**
 - `sfa/notify` detects events: new or rising top leads, IPO pipeline new names and stage moves, valuation verdict changes or big fair-value moves, a daily digest at 08:45, failed jobs and stale prices.
-- Sent every 30 minutes as Firebase Cloud Messaging (HTTP v1) data messages to signed-in phones. The app signs in with Google (Credential Manager → Firebase Authentication) and writes its token to Firestore `users/{uid}/devices/{id}` (rules in `android/firestore.rules`: owner only). The computer reads the registry with the service-account key, checks each user's verified email through Identity Toolkit `accounts:lookup`, sends only to accounts in `SFA_NOTIFY_EMAILS`, and deletes unregistered tokens. The older shared-topic mode remains as `audience: topic`.
+- Delivery is standard **Web Push** sent straight from the computer (`sfa/notify/webpush.py`): RFC 8291 aes128gcm encryption and RFC 8292 VAPID signing, implemented on `cryptography` (pywebpush's http-ece dependency would not build). Encryption is checked against the RFC 8291 test vector. The VAPID key pair is created in `db/push/` on first use.
+- The dashboard is an installable web app (PWA: `manifest.webmanifest`, `sw.js`, icons) with an **Alerts** page: enable notifications on the device, mute per type and device, send a test, list or remove devices, and read the notification history. Subscriptions are stored in `push_subs`; subscriptions a push service reports as gone (404/410) are deleted.
+- The phone reaches the dashboard through **Tailscale Serve** (`tailscale serve --bg 8000`), a private HTTPS address only the tailnet can open; the dashboard stays on 127.0.0.1. All POSTs need an `X-SFA: 1` header (CSRF guard).
 - Delivery rules: quiet hours 22:00–07:00 (alerts still go through), at most 8 per pass (extras folded into one), and duplicates suppressed. Everything is logged in `notify_log`.
-- A silent heartbeat goes out every 6 hours.
-- `android/` holds the Android Studio project **SFA Notifier** (Kotlin, Jetpack Compose, Firebase Messaging, WorkManager): five notification channels, alert history, the dashboard in a WebView, Google sign-in/out, an `sfa://pair?url=` set-up link for the dashboard address, per-type mute, and a watchdog when the computer is quiet for 12 hours.
-- It wasn't compiled in the cloud session (Google's Android repositories are blocked there); the user builds it in Android Studio.
-- Setup guide in `ANDROID.md`: Android Studio per OS, Firebase project, Google sign-in provider, SHA-1 fingerprint, google-services.json, Firestore and rules, service-account key, build/run/APK/update, sign-in and test, Tailscale, battery settings, troubleshooting, security model.
-- New settings: `SFA_FCM_SERVICE_ACCOUNT`, `SFA_NOTIFY_EMAILS`, `SFA_DASHBOARD_URL`, `SFA_HOST`.
-- 12 more tests (87 in total).
+- This replaced the Android app + Firebase design at the user's request; `android/`, `ANDROID.md` and the FCM/Firestore code were removed. Web Push cannot send silent heartbeats, so the phone-side "computer went quiet" watchdog is gone; the Alerts page shows when the computer last checked.
+- Guide: `PHONE.md`. Settings: `SFA_DASHBOARD_URL` (the https ts.net address), optional `SFA_PUSH_CONTACT`.
+- The laptop (Windows, `C:\Users\dpant\Documents\Stock Finder and Analyzer`) runs the service via Task Scheduler; `deploy\windows\setup_windows.bat` and `restart_service.bat` handle setup and restarts. Logs are written as UTF-8.
 
 ---
 

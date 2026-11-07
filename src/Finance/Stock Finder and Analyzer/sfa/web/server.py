@@ -4,8 +4,11 @@ A small threaded HTTP server: the page (static/index.html) calls the JSON endpoi
 below, each of which reads the SQLite database read-only. "Analyze now" runs the
 Stage 2 analyzer for one symbol in a background thread with its own connection.
 
-Binds to 127.0.0.1 by default; pass --host 0.0.0.0 to open it to other devices on
-your network (there is no login, so only do that on a network you trust).
+It is also an installable web app (manifest + service worker) that receives push
+notifications: see PHONE.md. Binds to 127.0.0.1 by default; reach it from the phone
+through Tailscale Serve (HTTPS, your devices only). There is no login, so never expose
+it to the internet. State-changing requests must carry an "X-SFA: 1" header, which
+pages on other sites cannot send without a CORS preflight this server never grants.
 """
 
 from __future__ import annotations
@@ -25,6 +28,9 @@ from ..config import EXPORT_DIR, load
 from ..db import connect
 
 STATIC = Path(__file__).parent / "static"
+PWA_FILES = {"/sw.js": "application/javascript; charset=utf-8", "/manifest.webmanifest": "application/manifest+json",
+             "/icon-192.png": "image/png", "/icon-512.png": "image/png", "/apple-touch-icon.png": "image/png",
+             "/badge-72.png": "image/png"}
 _jobs: dict[str, dict] = {}
 
 
@@ -211,29 +217,32 @@ def api_service(con, q):
     out["feeds"] = _rows(con, "SELECT source, url, ok, fails, last_ok, last_error, items_last, checked FROM feed_health "
                               "ORDER BY source, url") if _exists(con, "feed_health") else []
     import os
-    out["env"] = {k: bool(os.environ.get(k)) for k in ("NEWSAPI_KEY", "SFA_SEC_USER_AGENT", "SFA_FCM_SERVICE_ACCOUNT", "SFA_NOTIFY_EMAILS",
-                                                       "SFA_DASHBOARD_URL", "SFA_FINBERT_DIR", "SFA_DB")}
+    out["env"] = {k: bool(os.environ.get(k)) for k in ("NEWSAPI_KEY", "SFA_SEC_USER_AGENT", "SFA_DASHBOARD_URL",
+                                                       "SFA_FINBERT_DIR", "SFA_DB")}
     out["phone"] = phone_info(con)
     return out
 
 
 def phone_info(con):
     from .. import notify
-    from ..config import load
-    have = _exists(con, "notify_state")
-    audience = load("notify").get("audience", "devices")
-    info = {"audience": audience, "dashboard_url": notify.dashboard_url(),
-            "fcm_configured": bool(os.environ.get("SFA_FCM_SERVICE_ACCOUNT")),
-            "allowed_emails": sorted(notify.allowed_emails()),
-            "devices": (notify._get(con, "devices", []) if have else []),
-            "devices_checked": (notify._get(con, "devices_checked") if have else None),
-            "topic": (notify._get(con, "topic") if have and audience == "topic" else None),
-            "pair_link": notify.pair_link(con) if (audience != "topic" or have) else None,
-            "recent": _rows(con, "SELECT created, type, status, title, error FROM notify_log ORDER BY created DESC LIMIT 15")
-            if _exists(con, "notify_log") else []}
-    if audience == "topic" and not info["topic"]:
-        info["pair_link"] = None
-    return info
+    return {"dashboard_url": notify.dashboard_url(), "transport": load("notify").get("transport", "webpush"),
+            "devices": len(notify.devices(con)) if _exists(con, "push_subs") else 0}
+
+
+def api_alerts(con, q):
+    from .. import notify
+    have = _exists(con, "notify_log")
+    return {"dashboard_url": notify.dashboard_url(), "types": notify.TYPES,
+            "transport": load("notify").get("transport", "webpush"),
+            "last_run": notify._get(con, "last_run") if _exists(con, "notify_state") else None,
+            "devices": notify.devices(con) if _exists(con, "push_subs") else [],
+            "recent": _rows(con, "SELECT id, created, type, status, title, body, data, error FROM notify_log "
+                                 "WHERE type != 'heartbeat' ORDER BY created DESC LIMIT 100") if have else []}
+
+
+def api_push_key(con, q):
+    from .. import notify
+    return {"publicKey": notify.public_key()}
 
 
 def api_analyze_status(con, q):
@@ -243,7 +252,8 @@ def api_analyze_status(con, q):
 
 ROUTES = {"/api/overview": api_overview, "/api/leads": api_leads, "/api/search": api_search,
           "/api/company": api_company, "/api/leaderboard": api_leaderboard, "/api/markets": api_markets,
-          "/api/service": api_service, "/api/analyze_status": api_analyze_status}
+          "/api/service": api_service, "/api/analyze_status": api_analyze_status, "/api/alerts": api_alerts,
+          "/api/push/key": api_push_key}
 
 
 def start_analysis(symbol: str, db_path: str | None):
@@ -289,6 +299,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if u.path in ("/", "/index.html"):
                 return self._send(200, (STATIC / "index.html").read_bytes(), "text/html; charset=utf-8")
+            if u.path in PWA_FILES:
+                return self._send(200, (STATIC / u.path[1:]).read_bytes(), PWA_FILES[u.path])
             if u.path in ROUTES:
                 con = ro(self.db_path)
                 try:
@@ -309,20 +321,49 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:  # noqa: BLE001
             return self._json(500, {"error": f"{type(e).__name__}: {e}"})
 
+    def _body(self) -> dict:
+        n = int(self.headers.get("Content-Length") or 0)
+        if n > 64 * 1024:
+            raise ValueError("request too large")
+        raw = self.rfile.read(n) if n else b""
+        return json.loads(raw) if raw else {}
+
     def do_POST(self):
         u = urlparse(self.path)
         q = parse_qs(u.query)
+        if self.headers.get("X-SFA") != "1":
+            return self._json(403, {"error": "missing X-SFA header"})
+        try:
+            body = self._body()
+        except Exception as e:  # noqa: BLE001
+            return self._json(400, {"error": str(e)})
         if u.path == "/api/analyze":
             sym = q.get("symbol", [""])[0].strip()
             if not sym:
                 return self._json(400, {"error": "symbol required"})
             return self._json(202, start_analysis(sym, self.db_path))
-        if u.path == "/api/notify_test":
+        if u.path in ("/api/notify_test", "/api/push/subscribe", "/api/push/unsubscribe", "/api/push/prefs",
+                      "/api/push/device"):
             from .. import notify
             con = connect(self.db_path)
             try:
-                notify.topic(con)
-                return self._json(200, notify.send_test(con))
+                ep = body.get("endpoint") or (body.get("subscription") or {}).get("endpoint")
+                if u.path == "/api/notify_test":
+                    return self._json(200, notify.send_test(con, endpoint=ep))
+                if u.path == "/api/push/subscribe":
+                    if body.get("replaces") and body["replaces"] != ep:
+                        notify.unsubscribe(con, body["replaces"])
+                    return self._json(200, notify.subscribe(con, body.get("subscription") or {}, body.get("label") or "",
+                                                            self.headers.get("User-Agent") or ""))
+                if u.path == "/api/push/unsubscribe":
+                    return self._json(200, {"removed": notify.unsubscribe(con, ep or "")})
+                if u.path == "/api/push/prefs":
+                    return self._json(200, notify.set_muted(con, ep or "", body.get("muted") or []))
+                return self._json(200, {"device": notify.device(con, ep or "")})
+            except (ValueError, RuntimeError) as e:
+                return self._json(400, {"error": str(e)})
+            except Exception as e:  # noqa: BLE001
+                return self._json(500, {"error": f"{type(e).__name__}: {e}"})
             finally:
                 con.close()
         return self._json(404, {"error": "not found"})

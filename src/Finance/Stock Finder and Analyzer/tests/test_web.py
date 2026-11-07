@@ -23,6 +23,7 @@ from sfa.finder import leads, linking, rules  # noqa: E402
 from sfa.web import server  # noqa: E402
 
 _srv = {}
+os.environ["SFA_PUSH_DIR"] = tempfile.mkdtemp()          # VAPID keys for the test server, not db/push
 
 
 def _start():
@@ -97,6 +98,35 @@ def test_not_found_and_traversal_blocked():
             raise AssertionError(p)
         except urllib.error.HTTPError as e:
             assert e.code == 404
+
+
+def post(path, body, header=True):
+    req = urllib.request.Request(_start() + path, data=json.dumps(body).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", **({"X-SFA": "1"} if header else {})})
+    with urllib.request.urlopen(req, timeout=10) as r:
+        return r.status, json.loads(r.read())
+
+
+def test_web_app_files_and_push_subscription():
+    for p, kind in (("/sw.js", "javascript"), ("/manifest.webmanifest", "manifest"), ("/icon-192.png", "image/png")):
+        with urllib.request.urlopen(_start() + p, timeout=10) as r:
+            assert r.status == 200 and kind in r.headers["Content-Type"], p
+    _, k = getj("/api/push/key")
+    assert len(k["publicKey"]) == 87                                   # 65-byte P-256 point, base64url
+    sub = {"endpoint": "https://fcm.googleapis.com/fcm/send/abc", "keys": {"p256dh": "BPk", "auth": "au"}}
+    try:
+        post("/api/push/subscribe", {"subscription": sub}, header=False)    # no X-SFA header: refused
+        raise AssertionError("accepted a POST without X-SFA")
+    except urllib.error.HTTPError as e:
+        assert e.code == 403
+    code, d = post("/api/push/subscribe", {"subscription": sub, "label": "Android · Chrome"})
+    assert code == 200 and d["label"] == "Android · Chrome"
+    _, d = post("/api/push/prefs", {"endpoint": sub["endpoint"], "muted": ["digest"]})
+    assert d["muted"] == ["digest"]
+    _, a = getj("/api/alerts")
+    assert [x["label"] for x in a["devices"]] == ["Android · Chrome"] and "lead" in a["types"]
+    _, d = post("/api/push/unsubscribe", {"endpoint": sub["endpoint"]})
+    assert d["removed"] is True and getj("/api/alerts")[1]["devices"] == []
 
 
 def test_clean_json():

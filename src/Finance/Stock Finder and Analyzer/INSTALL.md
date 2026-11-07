@@ -20,7 +20,7 @@ Budget about 30 minutes of hands-on time. The first full data build then runs un
 | 6 | First full data build, including the remaining 443 companies of the model leaderboard | Only 383 of 826 companies were modelled in the cloud session | Step 6 |
 | 7 | Start-on-boot service | Keeps everything current | Step 7 |
 | 8 | Computer left on, and not sleeping, at the job times | Jobs run on a local clock | Step 7 |
-| 9 | Optional: phone notifications (Android Studio, SFA Notifier app, Firebase project with Google sign-in, service-account key, `SFA_NOTIFY_EMAILS`) | Push alerts for leads, IPOs, valuations, digest and failures | [ANDROID.md](ANDROID.md) |
+| 9 | Optional: the dashboard and push notifications on your phone (Tailscale, then install the web app) | Push alerts for leads, IPOs, valuations, digest and failures | [PHONE.md](PHONE.md) |
 | 10 | Optional: tag `V2.0.0` on GitHub | Couldn't be pushed from the cloud session (HTTP 403) | Step 10 |
 
 ---
@@ -120,9 +120,8 @@ Optional settings, also in `sfa.env`:
 | `SFA_FINBERT_DIR` | `db/models/finbert` | Where the FinBERT weights live, if you already have them |
 | `SFA_DB` | `db/sfa.sqlite` | A different database file |
 | `SFA_HOST` | `127.0.0.1` | `0.0.0.0` lets the phone open the dashboard (home Wi-Fi or Tailscale only) |
-| `SFA_FCM_SERVICE_ACCOUNT` | — | Firebase service-account key file for phone notifications ([ANDROID.md](ANDROID.md)) |
-| `SFA_NOTIFY_EMAILS` | — | Google account(s) whose signed-in phones receive notifications, comma-separated |
-| `SFA_DASHBOARD_URL` | `http://localhost:8000` | Dashboard address the phone opens |
+| `SFA_DASHBOARD_URL` | `http://localhost:8000` | The HTTPS address your phone opens, from Tailscale Serve ([PHONE.md](PHONE.md)) |
+| `SFA_PUSH_CONTACT` | the dashboard address | Optional `mailto:` contact sent to the browser push services |
 
 ---
 
@@ -153,7 +152,7 @@ The app talks to these sites over HTTPS. If you are on a work network or use a f
 | News feeds | `feeds.bloomberg.com`, `www.ft.com`, `feeds.content.dowjones.io` (WSJ, MarketWatch), `news.google.com` (Reuters and IPO searches), `finance.yahoo.com`, `feeds.finance.yahoo.com`, `www.economist.com`, `economictimes.indiatimes.com`, `www.livemint.com`, `www.moneycontrol.com`, `pulse.zerodha.com`, `in.investing.com` |
 | IPO filings | `www.sec.gov`, `www.sebi.gov.in` |
 | Country risk premiums | `pages.stern.nyu.edu` (Damodaran) |
-| Phone notifications (optional) | `fcm.googleapis.com`, `oauth2.googleapis.com` |
+| Phone notifications (optional) | `fcm.googleapis.com` (Chrome/Android), `web.push.apple.com` (Safari/iPhone), `updates.push.services.mozilla.com` (Firefox) |
 
 Two notes on the sources:
 - **Unconfirmed feed addresses.** The news-feed addresses couldn't be tested from the cloud session. After the first news run, `python -m sfa feeds` (or the dashboard's **Service** page) shows which feeds work. A feed that fails three times in a row is read through a Google News search of its site instead, and it is retried once a day.
@@ -223,7 +222,7 @@ To remove it: `bash deploy/linux/uninstall_systemd.sh`
 | ipo_pipeline | every 3 h | IPO events, resolution of new listings |
 | finder | every 6 h | Rules A–D, leads, NewsAPI deep dives, exports |
 | fundamentals, universe, leaderboard | weekly | Statements, new listings, new forecast dates |
-| notify | every 30 min | Push notifications to the Android app (see [ANDROID.md](ANDROID.md)); without a Firebase key they are only logged |
+| notify | every 30 min | Push notifications to the phones and browsers that enabled them (see [PHONE.md](PHONE.md)); with none enabled they are only logged |
 
 In India (IST), 06:30 picks up the previous US close. Indian prices for the day arrive the next morning. Change the times in `jobs.yaml` if you prefer.
 
@@ -251,7 +250,7 @@ Open **http://localhost:8000**:
 
 The dashboard listens only on this computer. To open it from a phone, set `SFA_HOST=0.0.0.0` in `sfa.env` and restart. Then browse to `http://<your-computer's-IP>:8000` on the same Wi-Fi, or use the computer's Tailscale name from anywhere. It has no login, so do this only on a network you trust.
 
-For **push notifications on your phone** (leads, IPOs, valuation changes, daily digest, failures), follow [ANDROID.md](ANDROID.md). It covers installing Android Studio, the Firebase project (Google sign-in, Firestore device registry, Cloud Messaging), building and installing the SFA Notifier app, and signing in.
+For **the dashboard and push notifications on your phone** (leads, IPOs, valuation changes, daily digest, failures), follow [PHONE.md](PHONE.md). The dashboard is an installable web app: Tailscale gives your computer a private HTTPS address, you add the app to the phone's home screen and tap **Enable notifications**. No app store or Firebase is involved.
 
 ---
 

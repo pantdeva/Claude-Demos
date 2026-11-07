@@ -18,7 +18,7 @@
     python -m sfa web [--host H] [--port P]     dashboard only (http://localhost:8000)
     python -m sfa start [--host H] [--port P]   dashboard + background scheduler (what start-on-boot runs)
     python -m sfa doctor               check Python, packages, settings, network and data
-    python -m sfa notify pair|test|run|log   push notifications to the Android app (see ANDROID.md)
+    python -m sfa notify devices|test|run|log   phone push notifications (see PHONE.md)
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ def main(argv=None):
         w.add_argument("--port", type=int, default=8000)
     sub.add_parser("doctor")
     nt = sub.add_parser("notify")
-    nt.add_argument("action", choices=["pair", "test", "run", "log"])
+    nt.add_argument("action", choices=["devices", "test", "run", "log"])
     an = sub.add_parser("analyze")
     an.add_argument("symbols", nargs="*")
     mo = sub.add_parser("models")
@@ -145,22 +145,14 @@ def main(argv=None):
         service.run()
     elif a.cmd == "notify":
         from . import notify
-        if a.action == "pair":
-            from .config import load as _load
-            if _load("notify").get("audience", "devices") == "topic":
-                print(f"Pairing code (FCM topic): {notify.topic(con)}")
-            else:
-                emails = sorted(notify.allowed_emails())
-                print("Sign in to SFA Notifier with: " + (", ".join(emails) if emails else
-                      "(none yet: set SFA_NOTIFY_EMAILS in sfa.env)"))
-                try:
-                    from .notify.fcm import FCMSender
-                    devs = FCMSender().devices(set(emails)) if emails else []
-                    print(f"Signed-in phones: {len(devs)}" + "".join(f"\n  {d['email']}  {d['model']}  {d['updated']}" for d in devs))
-                except Exception as e:  # noqa: BLE001
-                    print(f"Signed-in phones: unknown ({e})")
-            print(f"Dashboard URL sent to the phone: {notify.dashboard_url()}")
-            print(f"Set-up link (open on the phone): {notify.pair_link(con)}")
+        if a.action == "devices":
+            devs = notify.devices(con)
+            print(f"Open {notify.dashboard_url()} on the phone, then Alerts → Enable notifications.")
+            print(f"Devices with notifications enabled: {len(devs)}")
+            for d in devs:
+                print(f"  {d['label'] or '(unnamed)'}  via {d['service']}  since {d['created']}"
+                      + (f"  muted: {', '.join(d['muted'])}" if d["muted"] else "")
+                      + (f"  last error: {d['last_error']}" if d["last_error"] else ""))
         elif a.action == "test":
             print(notify.send_test(con))
         elif a.action == "run":

@@ -1,4 +1,4 @@
-"""Push notifications: detect events in the database and send them to the Android app.
+"""Push notifications: detect events in the database and send them to your phone's browser.
 
 Events (config/notify.yaml):
   lead       a company enters the top N listed leads, or its score jumps
@@ -6,23 +6,19 @@ Events (config/notify.yaml):
   valuation  a verdict changes, or the combined fair value moves a lot
   digest     one morning summary
   alert      a job failed, or prices have not been refreshed for too long
-  heartbeat  silent: lets the app warn you when the computer stops reporting
 
-Who receives them (config/notify.yaml → audience):
-  devices  (default) every phone signed in to SFA Notifier with a Google account listed in
-           SFA_NOTIFY_EMAILS. The app records its FCM token in Firestore under
-           users/{uid}/devices (security rules let only that user write there); this side
-           reads the registry with the service-account key and checks each user's
-           verified email with Firebase Authentication before sending.
-  topic    the original shared pairing-code mode (anyone with your app build and the code).
+Delivery is standard Web Push (see webpush.py): the dashboard is installable as a web
+app, and each phone or browser that taps "Enable notifications" stores a subscription
+in the push_subs table. No Firebase or app store is involved; browsers only allow push
+on HTTPS, which Tailscale Serve provides (PHONE.md).
 
 The first run only records the current state (no flood of "new" events). Each run
-compares with the stored state, applies quiet hours and a per-run cap, and sends via
-FCM (or only logs when FCM is not configured). Every message is kept in notify_log.
+compares with the stored state, applies quiet hours and a per-run cap, and sends to
+every subscribed device that has not muted that type (or only logs when nobody is
+subscribed). Every message is kept in notify_log, which the Alerts page shows.
 
-Message contract with the app (all values are strings):
-  id, type, title, body, symbol, path (dashboard route such as "#company/TSM"),
-  url (dashboard base URL), sent (UTC ISO time), channel
+Message sent to the service worker (JSON): id, type, title, body, symbol, path
+(dashboard route such as "#company/TSM"), sent (UTC ISO time)
 """
 
 from __future__ import annotations
@@ -31,7 +27,6 @@ import json
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
-from urllib.parse import quote
 
 from ..config import load
 from ..db import now
@@ -43,9 +38,12 @@ CREATE TABLE IF NOT EXISTS notify_log (
     status TEXT, sent_at TEXT, error TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_notify_status ON notify_log(status);
+CREATE TABLE IF NOT EXISTS push_subs (
+    endpoint TEXT PRIMARY KEY, p256dh TEXT, auth TEXT, label TEXT, user_agent TEXT,
+    muted TEXT DEFAULT '[]', created TEXT, last_ok TEXT, fails INTEGER DEFAULT 0, last_error TEXT
+);
 """
-CHANNEL = {"lead": "leads", "ipo": "ipo", "valuation": "valuation", "digest": "digest", "alert": "alerts",
-           "heartbeat": "heartbeat", "test": "alerts"}
+TYPES = ["lead", "ipo", "valuation", "digest", "alert"]
 STAGE_ORDER = {"planning": 0, "filed": 1, "priced": 2, "listed": 3}
 
 
@@ -62,25 +60,58 @@ def _set(con, key, value):
     con.execute("INSERT OR REPLACE INTO notify_state VALUES (?,?)", (key, json.dumps(value)))
 
 
-def topic(con) -> str:
-    init(con)
-    t = load("notify").get("topic") or _get(con, "topic")
-    if not t:
-        t = "sfa-" + secrets.token_hex(8)
-        _set(con, "topic", t)
-        con.commit()
-    return t
-
-
 def dashboard_url() -> str:
     return os.environ.get(load("notify").get("dashboard_url_env", "SFA_DASHBOARD_URL")) or "http://localhost:8000"
 
 
-def pair_link(con) -> str:
-    """Link that sets up the app: the dashboard address, plus the topic in topic mode."""
-    if load("notify").get("audience", "devices") == "topic":
-        return f"sfa://pair?topic={quote(topic(con))}&url={quote(dashboard_url(), safe='')}"
-    return f"sfa://pair?url={quote(dashboard_url(), safe='')}"
+# ---------------------------------------------------------------- subscriptions
+def subscribe(con, sub: dict, label: str = "", user_agent: str = "") -> dict:
+    """Store (or refresh) a browser's push subscription: {endpoint, keys: {p256dh, auth}}."""
+    init(con)
+    ep, keys = sub.get("endpoint", ""), sub.get("keys") or {}
+    if not ep.startswith("https://") or not keys.get("p256dh") or not keys.get("auth"):
+        raise ValueError("not a push subscription")
+    con.execute("""INSERT INTO push_subs (endpoint, p256dh, auth, label, user_agent, created, fails)
+                   VALUES (?,?,?,?,?,?,0)
+                   ON CONFLICT(endpoint) DO UPDATE SET p256dh=excluded.p256dh, auth=excluded.auth,
+                   label=COALESCE(NULLIF(excluded.label,''), push_subs.label), user_agent=excluded.user_agent,
+                   fails=0, last_error=NULL""",
+                (ep, keys["p256dh"], keys["auth"], label[:60], user_agent[:200], now()))
+    con.commit()
+    return device(con, ep)
+
+
+def unsubscribe(con, endpoint: str) -> bool:
+    init(con)
+    n = con.execute("DELETE FROM push_subs WHERE endpoint=?", (endpoint,)).rowcount
+    con.commit()
+    return n > 0
+
+
+def set_muted(con, endpoint: str, muted: list[str]) -> dict:
+    init(con)
+    con.execute("UPDATE push_subs SET muted=? WHERE endpoint=?",
+                (json.dumps(sorted(t for t in muted if t in TYPES)), endpoint))
+    con.commit()
+    return device(con, endpoint)
+
+
+def _dev(r) -> dict:
+    return {"endpoint": r["endpoint"], "label": r["label"] or "", "user_agent": r["user_agent"] or "",
+            "muted": json.loads(r["muted"] or "[]"), "created": r["created"], "last_ok": r["last_ok"],
+            "fails": r["fails"], "last_error": r["last_error"],
+            "service": (r["endpoint"].split("/")[2] if r["endpoint"].count("/") >= 2 else "")}
+
+
+def device(con, endpoint: str) -> dict | None:
+    r = con.execute("SELECT * FROM push_subs WHERE endpoint=?", (endpoint,)).fetchone()
+    return _dev(r) if r else None
+
+
+def devices(con) -> list[dict]:
+    if not _table(con, "push_subs"):              # read-only callers (dashboard) must not create tables
+        return []
+    return [_dev(r) for r in con.execute("SELECT * FROM push_subs ORDER BY created")]
 
 
 def _table(con, name):
@@ -252,66 +283,58 @@ def in_quiet(local_now: datetime, quiet: list[str]) -> bool:
     return (a <= t or t < b) if a > b else (a <= t < b)
 
 
+def contact() -> str:
+    """VAPID 'sub' claim: how push services can reach the sender (Apple requires one)."""
+    c = os.environ.get(load("notify").get("contact_env", "SFA_PUSH_CONTACT"), "").strip()
+    if c:
+        return c if c.startswith(("mailto:", "https://")) else f"mailto:{c}"
+    url = dashboard_url()
+    return url if url.startswith("https://") else "mailto:sfa-notifier@localhost"
+
+
 def _sender():
-    cfg = load("notify")
-    if cfg.get("transport") != "fcm":
+    if load("notify").get("transport", "webpush") != "webpush":
         return None, "transport is 'log'"
     try:
-        from .fcm import FCMError, FCMSender
-        return FCMSender(os.environ.get(cfg.get("service_account_env", "SFA_FCM_SERVICE_ACCOUNT"))), None
-    except Exception as e:  # noqa: BLE001 - not configured yet: keep logging
+        from .webpush import WebPushSender
+        return WebPushSender(contact()), None
+    except Exception as e:  # noqa: BLE001 - keep logging
         return None, str(e)
 
 
-def allowed_emails() -> set[str]:
-    env = load("notify").get("allowed_emails_env", "SFA_NOTIFY_EMAILS")
-    return {e.strip().lower() for e in (os.environ.get(env) or "").replace(";", ",").split(",") if e.strip()}
+def public_key() -> str:
+    from .webpush import Vapid
+    return Vapid().public_b64
 
 
-class NoTargets(RuntimeError):
-    pass
-
-
-def targets(con, sender) -> list[dict]:
-    """Where to send: the signed-in devices of allowed accounts (audience "devices"), or
-    the shared topic (audience "topic", the original pairing-code mode)."""
-    cfg = load("notify")
-    if cfg.get("audience", "devices") == "topic":
-        return [{"topic": topic(con)}]
-    emails = allowed_emails()
-    if not emails:
-        raise NoTargets(f"set {cfg.get('allowed_emails_env', 'SFA_NOTIFY_EMAILS')} to the Google account(s) allowed "
-                        "to receive notifications")
-    devs = sender.devices(emails)
-    _set(con, "devices", [{k: d.get(k) for k in ("email", "model", "updated", "device")} for d in devs])
-    _set(con, "devices_checked", now())
-    if not devs:
-        raise NoTargets("no signed-in phone yet: sign in to SFA Notifier with an allowed Google account")
-    return [{"token": d["token"], "doc": d.get("doc"), "email": d["email"]} for d in devs]
-
-
-def broadcast(sender, tgts: list[dict], data: dict, ttl_s: int = 86400) -> int:
-    """Send to every target; prune devices whose registration is gone. Returns how many got it."""
-    ok, last_err = 0, None
-    for t in tgts:
+def broadcast(con, sender, data: dict, ttl_s: int = 86400) -> int:
+    """Send to every subscribed device that has not muted this type; delete subscriptions
+    the push service reports as gone. Returns how many devices got it."""
+    ok, last_err, tried = 0, None, 0
+    for r in con.execute("SELECT * FROM push_subs").fetchall():
+        if data["type"] in json.loads(r["muted"] or "[]"):
+            continue
+        tried += 1
         try:
-            sender.send(data, token=t.get("token"), topic=t.get("topic"), ttl_s=ttl_s)
+            sender.send({"endpoint": r["endpoint"], "p256dh": r["p256dh"], "auth": r["auth"]}, data, ttl_s=ttl_s)
+            con.execute("UPDATE push_subs SET last_ok=?, fails=0, last_error=NULL WHERE endpoint=?",
+                        (now(), r["endpoint"]))
             ok += 1
         except Exception as e:  # noqa: BLE001
             last_err = e
-            if getattr(e, "unregistered", False) and t.get("doc"):
-                try:
-                    sender.delete_device(t["doc"])
-                except Exception:  # noqa: BLE001
-                    pass
-    if not ok and last_err is not None:
+            if getattr(e, "gone", False):
+                con.execute("DELETE FROM push_subs WHERE endpoint=?", (r["endpoint"],))
+            else:
+                con.execute("UPDATE push_subs SET fails=fails+1, last_error=? WHERE endpoint=?",
+                            (str(e)[:300], r["endpoint"]))
+    if tried and not ok and last_err is not None:
         raise last_err
     return ok
 
 
-def _payload(con, ev, mid) -> dict:
+def _payload(ev, mid) -> dict:
     return {"id": mid, "type": ev["type"], "title": ev["title"], "body": ev["body"], "symbol": ev.get("symbol") or "",
-            "path": ev.get("path") or "", "url": dashboard_url(), "sent": now(), "channel": CHANNEL[ev["type"]]}
+            "path": ev.get("path") or "", "sent": now()}
 
 
 def deliver(con, events: list[dict], local_now: datetime | None = None, sender=None, log=print) -> dict:
@@ -325,10 +348,10 @@ def deliver(con, events: list[dict], local_now: datetime | None = None, sender=N
         mid = secrets.token_hex(6)
         con.execute("INSERT INTO notify_log VALUES (?,?,?,?,?,?,?,?,?,?)",
                     (mid, now(), ev["type"], ev["dedupe"], ev["title"], ev["body"],
-                     json.dumps(_payload(con, ev, mid)), "pending", None, None))
+                     json.dumps(_payload(ev, mid)), "pending", None, None))
     quiet = in_quiet(local_now, cfg["delivery"]["quiet_hours"])
     due = con.execute("SELECT * FROM notify_log WHERE status IN ('pending','held') ORDER BY created").fetchall()
-    send_now = [r for r in due if not quiet or r["type"] in ("alert", "heartbeat", "test")]
+    send_now = [r for r in due if not quiet or r["type"] in ("alert", "test")]
     for r in due:
         if r not in send_now and r["status"] == "pending":
             con.execute("UPDATE notify_log SET status='held' WHERE id=?", (r["id"],))
@@ -337,10 +360,10 @@ def deliver(con, events: list[dict], local_now: datetime | None = None, sender=N
     send_now = send_now[:cap - 1] if extra else send_now
     if extra:
         mid = secrets.token_hex(6)
-        ev = {"type": "digest", "title": f"…and {len(extra)} more updates", "symbol": "", "path": "#leads",
+        ev = {"type": "digest", "title": f"…and {len(extra)} more updates", "symbol": "", "path": "#alerts",
               "body": "; ".join(r["title"] for r in extra)[:300]}
         con.execute("INSERT INTO notify_log VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    (mid, now(), "digest", f"fold:{mid}", ev["title"], ev["body"], json.dumps(_payload(con, ev, mid)),
+                    (mid, now(), "digest", f"fold:{mid}", ev["title"], ev["body"], json.dumps(_payload(ev, mid)),
                      "pending", None, None))
         for r in extra:
             con.execute("UPDATE notify_log SET status='folded' WHERE id=?", (r["id"],))
@@ -349,13 +372,9 @@ def deliver(con, events: list[dict], local_now: datetime | None = None, sender=N
         sender, why = _sender()
     else:
         why = None
+    if sender is not None and send_now and not con.execute("SELECT 1 FROM push_subs LIMIT 1").fetchone():
+        sender, why = None, "no device has enabled notifications yet (dashboard → Alerts → Enable notifications)"
     stats = {"queued": len(events), "sent": 0, "logged": 0, "held": 0, "failed": 0}
-    tgts = None
-    if sender is not None and send_now:
-        try:
-            tgts = targets(con, sender)
-        except Exception as e:  # noqa: BLE001 - nobody to send to yet: keep the messages as logged
-            sender, why = None, str(e)
     for r in send_now:
         data = json.loads(r["data"])
         if sender is None:
@@ -363,32 +382,16 @@ def deliver(con, events: list[dict], local_now: datetime | None = None, sender=N
             stats["logged"] += 1
             continue
         try:
-            n = broadcast(sender, tgts, data)
-            con.execute("UPDATE notify_log SET status='sent', sent_at=?, error=? WHERE id=?",
-                        (now(), f"{n} device(s)" if len(tgts) > 1 or "token" in tgts[0] else None, r["id"]))
-            stats["sent"] += 1
+            n = broadcast(con, sender, data)
+            con.execute("UPDATE notify_log SET status=?, sent_at=?, error=? WHERE id=?",
+                        ("sent" if n else "logged", now(), f"{n} device(s)" if n else "muted on every device", r["id"]))
+            stats["sent" if n else "logged"] += 1
         except Exception as e:  # noqa: BLE001
             con.execute("UPDATE notify_log SET status='failed', error=? WHERE id=?", (str(e)[:300], r["id"]))
             stats["failed"] += 1
     stats["held"] = con.execute("SELECT COUNT(*) FROM notify_log WHERE status='held'").fetchone()[0]
     con.commit()
     return stats
-
-
-def heartbeat(con, cfg, sender) -> bool:
-    last = _get(con, "heartbeat_at")
-    hrs = cfg["delivery"]["heartbeat_hours"]
-    if last and datetime.now(timezone.utc) - datetime.fromisoformat(last) < timedelta(hours=hrs):
-        return False
-    _set(con, "heartbeat_at", datetime.now(timezone.utc).isoformat())
-    if sender is None:
-        return False
-    try:
-        broadcast(sender, targets(con, sender), {"type": "heartbeat", "sent": now(), "url": dashboard_url(),
-                                                 "every_hours": str(hrs)}, ttl_s=hrs * 3600)
-        return True
-    except Exception:  # noqa: BLE001
-        return False
 
 
 def run(con, local_now: datetime | None = None, sender=None, log=print) -> dict:
@@ -410,17 +413,32 @@ def run(con, local_now: datetime | None = None, sender=None, log=print) -> dict:
         events += alert_events(con, ev_cfg["alerts"])
     if ev_cfg["digest"]["enabled"]:
         events += digest_event(con, ev_cfg["digest"], local_now)
+    _set(con, "last_run", now())
     con.commit()
-    if sender is None:
-        sender, _ = _sender()
     out = deliver(con, events, local_now, sender=sender, log=log)
-    out["heartbeat"] = heartbeat(con, cfg, sender)
     con.commit()
     return out
 
 
-def send_test(con, sender=None) -> dict:
+def send_test(con, sender=None, endpoint: str | None = None) -> dict:
+    """A test message: to one device (endpoint given) or to all of them."""
     init(con)
-    ev = {"type": "test", "dedupe": f"test:{secrets.token_hex(4)}", "title": "Stock Finder test notification",
-          "body": "If you can read this on your phone, push notifications work.", "symbol": "", "path": "#service"}
-    return deliver(con, [ev], sender=sender)
+    mid = secrets.token_hex(6)
+    ev = {"type": "test", "dedupe": f"test:{mid}", "title": "Stock Finder test notification",
+          "body": "If you can read this, push notifications work on this device.", "symbol": "", "path": "#alerts"}
+    if endpoint is None:
+        return deliver(con, [ev], sender=sender)
+    if sender is None:
+        sender, why = _sender()
+        if sender is None:
+            raise RuntimeError(why)
+    r = con.execute("SELECT * FROM push_subs WHERE endpoint=?", (endpoint,)).fetchone()
+    if not r:
+        raise ValueError("this device is not subscribed")
+    sender.send({"endpoint": r["endpoint"], "p256dh": r["p256dh"], "auth": r["auth"]}, _payload(ev, mid), ttl_s=600)
+    con.execute("INSERT INTO notify_log VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (mid, now(), "test", ev["dedupe"], ev["title"], ev["body"], json.dumps(_payload(ev, mid)),
+                 "sent", now(), "1 device(s)"))
+    con.execute("UPDATE push_subs SET last_ok=?, fails=0, last_error=NULL WHERE endpoint=?", (now(), endpoint))
+    con.commit()
+    return {"sent": 1}

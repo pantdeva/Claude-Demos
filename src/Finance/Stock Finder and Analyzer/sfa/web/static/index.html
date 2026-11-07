@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stock Finder and Analyzer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2457c5">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stock Finder">
 <style>
 :root{
   --bg:#f6f7f9; --panel:#ffffff; --ink:#18202b; --muted:#5f6b7a; --line:#e2e6eb; --accent:#2457c5;
@@ -66,7 +72,7 @@ svg.spark{width:100%;height:160px}
   <div class="brand">Stock Finder and Analyzer <span>· local</span></div>
   <nav id="nav">
     <a href="#overview">Overview</a><a href="#leads">Leads</a><a href="#company">Company</a>
-    <a href="#models">Models</a><a href="#markets">Markets</a><a href="#service">Service</a>
+    <a href="#models">Models</a><a href="#markets">Markets</a><a href="#alerts">Alerts</a><a href="#service">Service</a>
   </nav>
   <div class="search"><input id="q" placeholder="Search company or symbol…" autocomplete="off"><div class="drop" id="drop"></div></div>
 </div></header>
@@ -80,6 +86,8 @@ const sgn = v => v == null || isNaN(v) ? "" : (v > 0 ? "pos" : v < 0 ? "neg" : "
 const sc = v => v == null || v === "None" || isNaN(v) ? "—" : (v>0?"+":"") + Number(v).toFixed(2);
 const big = v => v == null ? "—" : Math.abs(v) >= 1e12 ? (v/1e12).toFixed(2)+"T" : Math.abs(v) >= 1e9 ? (v/1e9).toFixed(1)+"B" : Math.abs(v) >= 1e6 ? (v/1e6).toFixed(0)+"M" : num(v,0);
 const api = p => fetch(p).then(r => r.json());
+const post = (p, body) => fetch(p, {method: "POST", headers: {"Content-Type": "application/json", "X-SFA": "1"},
+                                     body: JSON.stringify(body || {})}).then(r => r.json());
 const verdictChip = v => !v ? "" : `<span class="chip ${v==="Undervalued"?"good":v==="Overvalued"?"bad":""}">${esc(v)}</span>`;
 const route = rs => { const r = (rs||[]).find(x => x.ok); return r ? `${esc(r.route)}${r.symbol?` <span class="mut">(${esc(r.symbol)})</span>`:""}` : '<span class="mut">no practical route</span>'; };
 const go = h => { location.hash = h; };
@@ -224,7 +232,7 @@ async function company(sym) {
 
 async function analyze(sym) {
   window._an = window._an || {}; window._an[sym] = "running"; render();
-  await fetch("/api/analyze?symbol=" + encodeURIComponent(sym), {method:"POST"});
+  await post("/api/analyze?symbol=" + encodeURIComponent(sym));
   const poll = async () => {
     const s = await api("/api/analyze_status?symbol=" + encodeURIComponent(sym));
     if (s.state === "running") return setTimeout(poll, 2000);
@@ -279,18 +287,10 @@ async function service() {
   const env = Object.entries(d.env).map(([k,v]) => `<span class="chip ${v?"good":"warn"}">${esc(k)}: ${v?"set":"not set"}</span>`).join(" ");
   const okFeeds = d.feeds.filter(f=>f.ok).length;
   const ph = d.phone || {};
-  const phone = `<h2>Phone notifications (Android app)</h2>
-  <div class="card"><dl>
-    <dt>Firebase key</dt><dd>${ph.fcm_configured?'<span class="chip good">configured</span>':'<span class="chip warn">not set — messages are only logged (see ANDROID.md)</span>'}</dd>
-    ${ph.audience==="topic"
-      ? `<dt>Pairing code</dt><dd><b>${esc(ph.topic||"created on first run: python -m sfa notify pair")}</b></dd>`
-      : `<dt>Allowed Google accounts</dt><dd>${(ph.allowed_emails||[]).length?ph.allowed_emails.map(e=>`<span class="chip good">${esc(e)}</span>`).join(" "):'<span class="chip warn">none — set SFA_NOTIFY_EMAILS in sfa.env</span>'}</dd>
-         <dt>Signed-in phones</dt><dd>${(ph.devices||[]).length?ph.devices.map(x=>`${esc(x.model||"phone")} <span class="mut">(${esc(x.email)}, registered ${esc((x.updated||"").slice(0,16))})</span>`).join("<br>"):'<span class="mut">none yet — sign in to SFA Notifier</span>'}${ph.devices_checked?` <span class="mut">· checked ${esc(ph.devices_checked.slice(0,16))}</span>`:""}</dd>`}
-    <dt>Dashboard URL for the phone</dt><dd>${esc(ph.dashboard_url)}</dd>
-    <dt>Set-up link</dt><dd>${ph.pair_link?`<a href="${esc(ph.pair_link)}">${esc(ph.pair_link)}</a> <span class="mut">(open it on the phone to fill in the dashboard address)</span>`:"—"}</dd>
-  </dl><p><button class="btn primary" onclick="notifyTest()">Send test notification</button> <span id="ntst" class="note"></span></p></div>
-  ${table([{h:"Created (UTC)",f:r=>esc(r.created)},{h:"Type",f:r=>esc(r.type)},{h:"Status",f:r=>`<span class="chip ${r.status==="sent"?"good":r.status==="failed"?"bad":"warn"}">${esc(r.status)}</span>`},
-           {h:"Title",w:1,f:r=>esc(r.title)},{h:"Error",w:1,f:r=>`<span class="mut">${esc(r.error||"")}</span>`}], ph.recent||[])}`;
+  const phone = `<h2>Phone notifications</h2><div class="card">
+    ${ph.devices?`<span class="chip good">${ph.devices} device(s) enabled</span>`:'<span class="chip warn">no device enabled yet</span>'}
+    <span class="mut">Phone address: ${esc(ph.dashboard_url)}${ph.dashboard_url && !ph.dashboard_url.startsWith("https://")?" (needs https:// for notifications, see PHONE.md)":""}</span>
+    · <a href="#alerts">Alerts page</a></div>`;
   return `<h1>Service</h1><p>${env}</p>${phone}
   <p class="note">Settings the running service can see. Set them before starting the service (see INSTALL.md).</p>
   <h2>Jobs</h2>${table([{h:"Job",f:r=>esc(r.job)},{h:"Enabled",f:r=>r.enabled?'<span class="chip good">yes</span>':'<span class="chip">no</span>'},{h:"Schedule",f:r=>esc(r.schedule)},
@@ -301,15 +301,107 @@ async function service() {
      {h:"Items",n:1,f:r=>r.items_last||0},{h:"Checked",f:r=>esc(r.checked||"")},{h:"URL / error",w:1,f:r=>`<span class="mut">${esc(r.url)}${r.last_error?" — "+esc(r.last_error.slice(0,120)):""}</span>`}], d.feeds)}`;
 }
 
-async function notifyTest() {
-  const e = $("#ntst"); e.textContent = "Sending…";
-  const r = await fetch("/api/notify_test", {method:"POST"}).then(r => r.json());
-  e.textContent = r.sent ? "Sent — check your phone." : r.logged ? "Logged only — the Error column below says why." : "Failed: see the table below.";
-  setTimeout(render, 1500);
+// ---------------------------------------------------------------- alerts + push (web app)
+const TYPE_NAMES = {lead: "Top leads", ipo: "IPO pipeline", valuation: "Valuations", digest: "Daily digest", alert: "Service alerts"};
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const pushOK = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const b64key = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
+let swReg = null;
+async function getReg() {
+  if (swReg || !("serviceWorker" in navigator) || !isSecureContext) return swReg;
+  swReg = await navigator.serviceWorker.register("sw.js");
+  await navigator.serviceWorker.ready;
+  return swReg;
+}
+async function mySub() { const r = await getReg(); return r ? r.pushManager.getSubscription() : null; }
+function deviceName() {
+  const ua = navigator.userAgent;
+  const os = /android/i.test(ua) ? "Android" : isIOS ? "iPhone/iPad" : /windows/i.test(ua) ? "Windows" : /mac/i.test(ua) ? "Mac" : /linux/i.test(ua) ? "Linux" : "Device";
+  const br = /edg\//i.test(ua) ? "Edge" : /firefox/i.test(ua) ? "Firefox" : /chrome|crios/i.test(ua) ? "Chrome" : /safari/i.test(ua) ? "Safari" : "browser";
+  return `${os} · ${br}`;
+}
+
+async function alerts() {
+  const d = await api("/api/alerts");
+  const sub = pushOK && isSecureContext ? await mySub().catch(() => null) : null;
+  const me = sub ? (await post("/api/push/device", {endpoint: sub.endpoint})).device : null;
+  let state;
+  if (!isSecureContext) state = `<p><span class="chip warn">This address is not HTTPS</span> Browsers only allow notifications on a secure address.
+      Open <b>${esc(d.dashboard_url && d.dashboard_url.startsWith("https://") ? d.dashboard_url : "your Tailscale https:// address")}</b> on this device instead (PHONE.md).</p>`;
+  else if (isIOS && !standalone) state = `<p><span class="chip warn">Add to Home Screen first</span> On iPhone and iPad, notifications work only in the installed app:
+      tap <b>Share</b> → <b>Add to Home Screen</b>, open <b>Stock Finder</b> from the home screen, and come back to Alerts.</p>`;
+  else if (!pushOK) state = `<p><span class="chip warn">Not supported</span> This browser does not support push notifications.</p>`;
+  else if (Notification.permission === "denied") state = `<p><span class="chip bad">Blocked</span> Notifications are blocked for this site.
+      Allow them in the browser's site settings (lock icon → Permissions → Notifications), then reload.</p>`;
+  else if (me) state = `<p><span class="chip good">Notifications on</span> for <b>${esc(me.label || deviceName())}</b>.
+      <button class="btn" onclick="pushTest()">Send a test</button> <button class="btn" onclick="pushOff()">Turn off on this device</button> <span id="pmsg" class="note"></span></p>
+      <h3>Notify this device about</h3><p>${d.types.map(t => `<label style="margin-right:14px;white-space:nowrap"><input type="checkbox" ${me.muted.includes(t)?"":"checked"}
+        onchange="pushMute()" data-t="${t}"> ${TYPE_NAMES[t]}</label>`).join("")}</p>`;
+  else state = `<p>Get leads, IPO moves, valuation changes, the morning digest and service alerts on this device.</p>
+      <p><button class="btn primary" onclick="pushOn()">Enable notifications</button> <span id="pmsg" class="note"></span></p>
+      ${!standalone ? `<p class="note">Tip: install it first (Chrome menu → <b>Add to Home screen</b> / <b>Install app</b>) so it opens like an app.</p>` : ""}`;
+  const devs = table([{h:"Device",f:r=>esc(r.label||"(unnamed)") + (me && r.endpoint===me.endpoint?' <span class="chip good">this one</span>':"")},
+      {h:"Since",f:r=>esc((r.created||"").slice(0,16))},{h:"Last delivered",f:r=>esc((r.last_ok||"—").slice(0,16))},
+      {h:"Muted",f:r=>esc(r.muted.map(t=>TYPE_NAMES[t]).join(", ")||"—")},
+      {h:"Status",f:r=>r.fails?`<span class="chip bad">${r.fails} failure(s)</span> <span class="mut">${esc((r.last_error||"").slice(0,80))}</span>`:'<span class="chip good">ok</span>'},
+      {h:"",f:r=>`<button class="btn" onclick='pushRemove(${JSON.stringify(r.endpoint)})'>Remove</button>`}], d.devices);
+  const hist = d.recent.map(r => { const p = (JSON.parse(r.data || "{}").path) || "#alerts";
+    return `<div class="card" style="margin-bottom:8px;cursor:pointer" onclick="go('${esc(p)}')">
+      <div style="display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap"><b>${esc(r.title)}</b>
+      <span class="mut">${esc(TYPE_NAMES[r.type]||r.type)} · ${esc((r.created||"").replace("T"," ").slice(0,16))} UTC
+      <span class="chip ${r.status==="sent"?"good":r.status==="failed"?"bad":"warn"}">${esc(r.status)}</span></span></div>
+      <div class="mut" style="white-space:pre-line">${esc(r.body||"")}</div>${r.error && r.status!=="sent"?`<div class="note">${esc(r.error)}</div>`:""}</div>`; }).join("");
+  return `<h1>Alerts</h1><div class="card">${state}</div>
+    <h2>Devices with notifications on (${d.devices.length})</h2>${devs}
+    <h2>Recent notifications</h2>${hist || '<p class="mut">Nothing yet. The service checks for news every 30 minutes; the first pass only records the current state.</p>'}`;
+}
+
+function pmsg(t) { const e = $("#pmsg"); if (e) e.textContent = t; }
+async function pushOn() {
+  try {
+    pmsg("Asking for permission…");
+    if (await Notification.requestPermission() !== "granted") { pmsg("Permission not given."); return render(); }
+    const reg = await getReg();
+    const {publicKey} = await api("/api/push/key");
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64key(publicKey)});
+    const r = await post("/api/push/subscribe", {subscription: sub.toJSON(), label: deviceName()});
+    if (r.error) throw new Error(r.error);
+    await post("/api/notify_test", {endpoint: sub.endpoint});
+    render();
+  } catch (e) { pmsg("Could not enable: " + e.message); }
+}
+async function pushOff() {
+  const sub = await mySub();
+  if (sub) { await post("/api/push/unsubscribe", {endpoint: sub.endpoint}); await sub.unsubscribe(); }
+  render();
+}
+async function pushRemove(ep) {
+  await post("/api/push/unsubscribe", {endpoint: ep});
+  const sub = await mySub().catch(() => null);
+  if (sub && sub.endpoint === ep) await sub.unsubscribe();
+  render();
+}
+async function pushMute() {
+  const sub = await mySub();
+  const muted = [...document.querySelectorAll("input[data-t]")].filter(x => !x.checked).map(x => x.dataset.t);
+  await post("/api/push/prefs", {endpoint: sub.endpoint, muted});
+  pmsg("Saved.");
+}
+async function pushTest() {
+  const sub = await mySub();
+  pmsg("Sending…");
+  const r = await post("/api/notify_test", {endpoint: sub && sub.endpoint});
+  pmsg(r.error ? "Failed: " + r.error : "Sent — it should appear within a few seconds.");
+}
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data && e.data.open) location.href = e.data.open; });
+  if (isSecureContext) getReg().catch(() => {});
 }
 
 // ---------------------------------------------------------------- router
-const PAGES = {overview, leads, company, models, markets, service};
+const PAGES = {overview, leads, company, models, markets, alerts, service};
 async function render() {
   const [page, arg] = (location.hash.slice(1) || "overview").split("/");
   document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + page));

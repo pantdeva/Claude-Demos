@@ -1,18 +1,11 @@
-# Push notifications to the Android app via Firebase Cloud Messaging (FCM).
-# Setup: see ANDROID.md. The service-account key file stays on this computer and its
-# path goes in sfa.env as SFA_FCM_SERVICE_ACCOUNT (never commit it).
+# Push notifications to your phone (or any browser) through standard Web Push.
+# Setup: PHONE.md. Open the dashboard on the phone over HTTPS (Tailscale Serve), add it
+# to the home screen, then Alerts → Enable notifications. No Firebase or app store.
 
 enabled: true
-transport: fcm                    # fcm | log (log = write to the notify_log table only; for testing)
-service_account_env: SFA_FCM_SERVICE_ACCOUNT
-# Who receives messages:
-#   devices  phones signed in to SFA Notifier (Firebase Authentication, Google sign-in) with
-#            an account listed in SFA_NOTIFY_EMAILS (comma-separated, in sfa.env)
-#   topic    the original shared pairing code (no sign-in); see `python -m sfa notify pair`
-audience: devices
-allowed_emails_env: SFA_NOTIFY_EMAILS
-topic: null                       # topic mode only: fixed topic name instead of a random one
-dashboard_url_env: SFA_DASHBOARD_URL   # what the phone should open, e.g. http://my-pc.tailnet.ts.net:8000
+transport: webpush                # webpush | log (log = write to the notify_log table only; for testing)
+dashboard_url_env: SFA_DASHBOARD_URL   # the HTTPS address the phone uses, e.g. https://my-pc.tail1234.ts.net
+contact_env: SFA_PUSH_CONTACT          # optional: mailto: or https: contact sent to push services (default: the dashboard URL)
 
 events:
   leads:
@@ -37,4 +30,3 @@ events:
 delivery:
   quiet_hours: ["22:00", "07:00"] # local; non-alert messages wait until the quiet hours end
   max_per_run: 8                  # more than this are folded into one "and N more" message
-  heartbeat_hours: 6              # silent message so the app can warn when the computer goes quiet

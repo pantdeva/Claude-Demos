@@ -1,5 +1,5 @@
 import os
-"""Tests for push notifications (event detection, delivery rules, FCM payloads).
+"""Tests for push notifications (event detection, delivery rules, Web Push).
 
 Run from the "Stock Finder and Analyzer" folder:  python tests/test_notify.py
 """
@@ -17,34 +17,23 @@ from sfa.db import now  # noqa: E402
 from sfa.finder import init as finder_init  # noqa: E402
 
 
-os.environ["SFA_NOTIFY_EMAILS"] = "me@example.com"
-
-
 class FakeSender:
-    """Stands in for FCMSender: one signed-in phone of an allowed account by default."""
+    """Stands in for WebPushSender: records (endpoint, message); endpoints in `gone` answer 410."""
 
-    def __init__(self, devs=None, gone=()):
-        self.sent, self.deleted, self.gone = [], [], set(gone)
-        self.devs = devs if devs is not None else [
-            {"uid": "u1", "email": "me@example.com", "device": "d1", "token": "tok1", "model": "Pixel", "updated": "",
-             "doc": "projects/x/databases/(default)/documents/users/u1/devices/d1"}]
-        self.asked = None
+    def __init__(self, gone=()):
+        self.sent, self.gone = [], set(gone)
 
-    def devices(self, emails):
-        self.asked = set(emails)
-        return [d for d in self.devs if d["email"] in emails]
+    def send(self, sub, data, ttl_s=86400):
+        assert sub["endpoint"].startswith("https://") and sub["p256dh"] and sub["auth"]
+        json.dumps(data)
+        if sub["endpoint"] in self.gone:
+            from sfa.notify.webpush import PushError
+            raise PushError("push service HTTP 410: gone", 410, gone=True)
+        self.sent.append((sub["endpoint"], data))
+        return 201
 
-    def send(self, data, token=None, topic=None, ttl_s=86400):
-        assert all(isinstance(v, str) for v in data.values()), data
-        assert token or topic
-        if token in self.gone:
-            from sfa.notify.fcm import FCMError
-            raise FCMError("FCM HTTP 404: UNREGISTERED", 404, unregistered=True)
-        self.sent.append((token or topic, data))
-        return "projects/x/messages/1"
 
-    def delete_device(self, doc):
-        self.deleted.append(doc)
+PHONE = {"endpoint": "https://fcm.googleapis.com/fcm/send/phone1", "keys": {"p256dh": "BPk", "auth": "au"}}
 
 
 def db():
@@ -52,6 +41,7 @@ def db():
     con = fixture()
     finder_init(con)
     N.init(con)
+    N.subscribe(con, PHONE, "Android · Chrome")
     return con
 
 
@@ -70,7 +60,7 @@ def test_first_run_only_snapshots():
     con, s = db(), FakeSender()
     put_lead(con, "listed:1", "Infosys Limited", "INFY.NS", 0.3)
     out = N.run(con, local_now=DAY.replace(hour=8), sender=s)       # before 08:45: no digest either
-    assert out["sent"] == 0 and [d["type"] for _, d in s.sent] == ["heartbeat"]
+    assert out["sent"] == 0 and s.sent == []
 
 
 def test_new_top_lead_and_score_jump():
@@ -84,7 +74,7 @@ def test_new_top_lead_and_score_jump():
     assert any(t.startswith("Wipro Limited entered the top") for t in titles)
     assert any(t.startswith("Infosys Limited score up") for t in titles)
     d = next(d for _, d in s.sent if d["type"] == "lead")
-    assert d["path"].startswith("#company/") and d["channel"] == "leads" and d["url"]
+    assert d["path"].startswith("#company/") and d["id"] and d["sent"]
 
 
 def test_ipo_new_name_and_stage_advance():
@@ -150,22 +140,125 @@ def test_cap_folds_extra_messages():
     assert len(s.sent) == 8
 
 
-def test_no_sender_logs_instead():
+def test_nobody_subscribed_logs_instead():
     con = db()
-    import os
-    os.environ.pop("SFA_FCM_SERVICE_ACCOUNT", None)                   # FCM not configured → logged only
+    N.unsubscribe(con, PHONE["endpoint"])
     out = N.deliver(con, [{"type": "test", "dedupe": "t1", "title": "T", "body": "B", "symbol": "", "path": ""}],
-                    local_now=DAY)
+                    local_now=DAY, sender=FakeSender())
     assert out["logged"] == 1 and out["sent"] == 0
-    assert con.execute("SELECT status FROM notify_log WHERE dedupe='t1'").fetchone()[0] == "logged"
+    st, err = con.execute("SELECT status, error FROM notify_log WHERE dedupe='t1'").fetchone()
+    assert st == "logged" and "Enable notifications" in err
 
 
-def test_quiet_window_and_pairing():
+def test_quiet_window():
     assert N.in_quiet(NIGHT, ["22:00", "07:00"]) and not N.in_quiet(DAY, ["22:00", "07:00"])
     assert N.in_quiet(datetime(2026, 1, 1, 6, 59), ["22:00", "07:00"])
+
+
+def test_muted_types_and_gone_subscriptions():
     con = db()
-    t = N.topic(con)
-    assert t.startswith("sfa-") and N.topic(con) == t and N.pair_link(con).startswith("sfa://pair?url=")
+    tablet = {"endpoint": "https://web.push.apple.com/tablet", "keys": {"p256dh": "BQ", "auth": "a2"}}
+    old = {"endpoint": "https://fcm.googleapis.com/fcm/send/old", "keys": {"p256dh": "BO", "auth": "a3"}}
+    N.subscribe(con, tablet, "iPhone/iPad · Safari")
+    N.subscribe(con, old, "Old phone")
+    N.set_muted(con, tablet["endpoint"], ["lead", "nonsense"])
+    assert N.device(con, tablet["endpoint"])["muted"] == ["lead"]
+    s = FakeSender(gone={old["endpoint"]})
+    N.deliver(con, [{"type": "lead", "dedupe": "l1", "title": "L", "body": "", "symbol": "", "path": "#leads"},
+                    {"type": "ipo", "dedupe": "i1", "title": "I", "body": "", "symbol": "", "path": "#leads"}],
+              local_now=DAY, sender=s)
+    got = {(ep.rsplit("/", 1)[1], d["title"]) for ep, d in s.sent}
+    assert got == {("phone1", "L"), ("phone1", "I"), ("tablet", "I")}           # tablet muted leads
+    assert N.device(con, old["endpoint"]) is None                                   # 410 → removed
+    assert [d["label"] for d in N.devices(con)] == ["Android · Chrome", "iPhone/iPad · Safari"]
+
+
+def test_subscribe_validation_and_refresh():
+    con = db()
+    for bad in ({}, {"endpoint": "http://x/y", "keys": {"p256dh": "a", "auth": "b"}},
+                {"endpoint": "https://x/y", "keys": {"p256dh": "a"}}):
+        try:
+            N.subscribe(con, bad)
+            raise AssertionError("accepted a bad subscription")
+        except ValueError:
+            pass
+    N.subscribe(con, {"endpoint": PHONE["endpoint"], "keys": {"p256dh": "NEW", "auth": "au"}})   # keys rotate, label kept
+    r = con.execute("SELECT p256dh, label FROM push_subs").fetchall()
+    assert len(r) == 1 and r[0]["p256dh"] == "NEW" and r[0]["label"] == "Android · Chrome"
+
+
+def test_send_test_to_one_device():
+    con, s = db(), FakeSender()
+    assert N.send_test(con, sender=s, endpoint=PHONE["endpoint"]) == {"sent": 1}
+    assert s.sent[0][1]["type"] == "test"
+    assert con.execute("SELECT status FROM notify_log WHERE type='test'").fetchone()[0] == "sent"
+
+
+def test_webpush_rfc8291_vector_and_vapid():
+    """Encryption matches RFC 8291 appendix A; the VAPID token verifies with the public key."""
+    import tempfile
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+    from sfa.notify.webpush import Vapid, b64u, b64u_dec, decrypt, encrypt
+    key = lambda s: ec.derive_private_key(int.from_bytes(b64u_dec(s), "big"), ec.SECP256R1())  # noqa: E731
+    body = encrypt(b"When I grow up, I want to be a watermelon",
+                   "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4",
+                   "BTBZMqHH6r4Tts7J_aSIgg", salt=b64u_dec("DGv6ra1nlYgDCS1FRnbzlw"),
+                   server_key=key("yfWPiYE-n46HLnH0KqZOF1fJJU3MYrct3AELtAQ-oRw"))
+    assert b64u(body) == ("DGv6ra1nlYgDCS1FRnbzlwAAEABBBP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8"
+                          "wEqKK6PBru3jl7A_yl95bQpu6cVPTpK4Mqgkf1CXztLVBSt2Ks3oZwbuwXPXLWyouBWLVWGNWQexSgSxsj_Qulcy4a-fN")
+    assert decrypt(body, key("q1dXpw3UpT5VOmu_cf_v6ih07Aems3njxI-JWgLcM94"), "BTBZMqHH6r4Tts7J_aSIgg") == \
+        b"When I grow up, I want to be a watermelon"
+    d = tempfile.mkdtemp()
+    v = Vapid(d)
+    assert Vapid(d).public_b64 == v.public_b64 and len(b64u_dec(v.public_b64)) == 65      # stored and reused
+    hdr = v.auth_header("https://web.push.apple.com/abc", "mailto:me@example.com")
+    jwt = hdr.split("t=")[1].split(",")[0]
+    h, c, sig = jwt.split(".")
+    claims = json.loads(b64u_dec(c))
+    assert claims["aud"] == "https://web.push.apple.com" and claims["sub"] == "mailto:me@example.com"
+    raw = b64u_dec(sig)
+    pub = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), b64u_dec(v.public_b64))
+    pub.verify(encode_dss_signature(int.from_bytes(raw[:32], "big"), int.from_bytes(raw[32:], "big")),
+               f"{h}.{c}".encode(), ec.ECDSA(hashes.SHA256()))
+
+
+def test_webpush_sender_request():
+    """The HTTP request a push service receives: headers, and a body the browser can decrypt."""
+    import tempfile
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from sfa.notify.webpush import PushError, Vapid, WebPushSender, b64u, decrypt
+    ua = ec.generate_private_key(ec.SECP256R1())
+    from cryptography.hazmat.primitives import serialization
+    p256dh = b64u(ua.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint))
+    auth = b64u(b"0123456789abcdef")
+
+    class Resp:
+        def __init__(self, code):
+            self.status_code, self.text = code, ""
+
+    class Session:
+        def __init__(self, code):
+            self.code, self.calls = code, []
+
+        def post(self, url, data=None, headers=None, timeout=None):
+            self.calls.append((url, data, headers))
+            return Resp(self.code)
+
+    sess = Session(201)
+    snd = WebPushSender("mailto:me@example.com", Vapid(tempfile.mkdtemp()), sess)
+    snd.send({"endpoint": "https://fcm.googleapis.com/fcm/send/x", "p256dh": p256dh, "auth": auth},
+             {"title": "Hi", "type": "test"}, ttl_s=60)
+    url, body, h = sess.calls[0]
+    assert h["Content-Encoding"] == "aes128gcm" and h["TTL"] == "60" and h["Authorization"].startswith("vapid t=")
+    assert json.loads(decrypt(body, ua, auth)) == {"title": "Hi", "type": "test"}
+    try:
+        WebPushSender("mailto:x@y.z", Vapid(tempfile.mkdtemp()), Session(410)).send(
+            {"endpoint": "https://a/b", "p256dh": p256dh, "auth": auth}, {"t": 1})
+        raise AssertionError("expected PushError")
+    except PushError as e:
+        assert e.gone
 
 
 if __name__ == "__main__":
@@ -182,41 +275,3 @@ if __name__ == "__main__":
                 traceback.print_exc()
     sys.exit(1 if fails else 0)
 
-
-def test_devices_mode_only_allowed_emails_and_prunes_dead_tokens():
-    from sfa import notify
-    devs = [{"uid": "u1", "email": "me@example.com", "device": "d1", "token": "tok1", "model": "Pixel", "updated": "", "doc": "D1"},
-            {"uid": "u1", "email": "me@example.com", "device": "d2", "token": "dead", "model": "Old", "updated": "", "doc": "D2"},
-            {"uid": "u2", "email": "other@example.com", "device": "d3", "token": "tok3", "model": "X", "updated": "", "doc": "D3"}]
-    con, s = db(), FakeSender(devs, gone={"dead"})
-    tg = notify.targets(con, s)
-    assert s.asked == {"me@example.com"} and [t["token"] for t in tg] == ["tok1", "dead"]
-    n = notify.broadcast(s, tg, {"type": "test", "title": "t"})
-    assert n == 1 and [x[0] for x in s.sent] == ["tok1"] and s.deleted == ["D2"]
-    assert len(notify._get(con, "devices")) == 2
-
-
-def test_no_allowed_emails_or_no_phone_means_logged():
-    from sfa import notify
-    old = os.environ.pop("SFA_NOTIFY_EMAILS")
-    try:
-        con, s = db(), FakeSender()
-        try:
-            notify.targets(con, s)
-            raise AssertionError("expected NoTargets")
-        except notify.NoTargets as e:
-            assert "SFA_NOTIFY_EMAILS" in str(e)
-    finally:
-        os.environ["SFA_NOTIFY_EMAILS"] = old
-    con, s = db(), FakeSender(devs=[])
-    try:
-        notify.targets(con, s)
-        raise AssertionError("expected NoTargets")
-    except notify.NoTargets as e:
-        assert "sign in" in str(e)
-
-
-def test_pair_link_devices_mode_has_no_topic():
-    from sfa import notify
-    con = db()
-    assert notify.pair_link(con).startswith("sfa://pair?url=") and "topic=" not in notify.pair_link(con)

@@ -17,7 +17,7 @@ from .config import DB_DIR, ROOT
 
 OK, WARN, BAD = "OK  ", "WARN", "FAIL"
 PACKAGES = [("requests", "2.28"), ("yaml", "6.0"), ("numpy", "1.24"), ("scipy", "1.10"), ("pandas", "2.0"),
-            ("openpyxl", "3.1")]
+            ("openpyxl", "3.1"), ("cryptography", "41")]
 SITES = [  # (label, url, essential?)
     ("Yahoo Finance (prices, statements, news)", "https://query1.finance.yahoo.com/v1/finance/search?q=AAPL", True),
     ("FRED (interest rates)", "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10", True),
@@ -32,10 +32,9 @@ SITES = [  # (label, url, essential?)
     ("SEC EDGAR", "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=S-1&count=1&output=atom", False),
     ("SEBI RSS", "https://www.sebi.gov.in/sebirss.xml", False),
     ("Damodaran country risk premiums", "https://pages.stern.nyu.edu/~adamodar/pc/datasets/ctryprem.xlsx", False),
-    ("Firebase Cloud Messaging (phone notifications)", "https://fcm.googleapis.com/", False),
-    ("Google sign-in for Firebase", "https://oauth2.googleapis.com/token", False),
-    ("Cloud Firestore (phone registry)", "https://firestore.googleapis.com/", False),
-    ("Firebase Authentication (account check)", "https://identitytoolkit.googleapis.com/", False),
+    ("Web Push for Chrome / Android (push service)", "https://fcm.googleapis.com/", False),
+    ("Web Push for iPhone / Safari (push service)", "https://web.push.apple.com/", False),
+    ("Web Push for Firefox (push service)", "https://updates.push.services.mozilla.com/", False),
 ]
 
 
@@ -66,37 +65,32 @@ def run() -> int:
     print()
     hints = {"NEWSAPI_KEY": "NewsAPI deep dives on leads (newsapi.org → account → API key)",
              "SFA_SEC_USER_AGENT": 'SEC IPO filings feed: "Your Name you@example.com"',
-             "SFA_FCM_SERVICE_ACCOUNT": "optional: Firebase key file for phone notifications (ANDROID.md)",
-             "SFA_NOTIFY_EMAILS": "optional: Google account(s) allowed to receive phone notifications",
-             "SFA_DASHBOARD_URL": "optional: dashboard address the phone opens (e.g. Tailscale name)",
+             "SFA_DASHBOARD_URL": "for phone notifications: the HTTPS address the phone opens (Tailscale, PHONE.md)",
              "SFA_FINBERT_DIR": "optional: FinBERT weights folder (default db/models/finbert)",
              "SFA_DB": "optional: database file (default db/sfa.sqlite)"}
     for k, h in hints.items():
         st = OK if os.environ.get(k) else (WARN if k in ("NEWSAPI_KEY", "SFA_SEC_USER_AGENT") else "  - ")
         print(f"[{st}] {k} {'set' if os.environ.get(k) else 'not set'}  — {h}")
-    key = os.environ.get("SFA_FCM_SERVICE_ACCOUNT")
-    if key:
-        ok_file = os.path.exists(key)
+    try:
+        from .notify.webpush import Vapid
+        Vapid()
+        con_n = None
         try:
-            import google.auth  # noqa: F401
-            ga = True
-        except ImportError:
-            ga = False
-        st = OK if ok_file and ga else WARN
-        print(f"[{st}] Phone notifications: key file {'found' if ok_file else 'NOT FOUND at ' + key}, "
-              f"google-auth {'installed' if ga else 'missing → pip install google-auth'}")
-        from .config import load as _load
-        if _load("notify").get("audience", "devices") != "topic" and not os.environ.get("SFA_NOTIFY_EMAILS"):
-            print(f"[{WARN}] SFA_NOTIFY_EMAILS not set: nobody is allowed to receive notifications yet")
-        elif ok_file and ga and os.environ.get("SFA_NOTIFY_EMAILS"):
-            try:
-                from .notify.fcm import FCMSender
-                from .notify import allowed_emails
-                devs = FCMSender(key).devices(allowed_emails())
-                print(f"[{OK if devs else WARN}] Signed-in phones: {len(devs)}"
-                      + ("" if devs else "  → sign in to SFA Notifier with an allowed account"))
-            except Exception as e:  # noqa: BLE001
-                print(f"[{WARN}] Could not read the phone registry: {str(e)[:160]}")
+            from .db import connect
+            from . import notify
+            c = connect()
+            con_n = len(notify.devices(c))
+            c.close()
+        except Exception:  # noqa: BLE001
+            pass
+        url = os.environ.get("SFA_DASHBOARD_URL", "")
+        st = OK if con_n else WARN
+        print(f"[{st}] Phone notifications (Web Push): keys ready, {con_n if con_n is not None else '?'} device(s) enabled"
+              + ("" if con_n else "  → on the phone open the dashboard over HTTPS, then Alerts → Enable notifications (PHONE.md)"))
+        if not url.startswith("https://"):
+            print(f"[{WARN}] SFA_DASHBOARD_URL is not an https:// address: phones need HTTPS for notifications (PHONE.md)")
+    except Exception as e:  # noqa: BLE001
+        print(f"[{WARN}] Phone notifications: {str(e)[:160]}")
     print()
     try:
         import requests
